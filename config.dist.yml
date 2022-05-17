@@ -1,0 +1,23 @@
+# Haseul Bot configuration file
+
+# Discord credentials
+discord:
+	token: "<DISCORD TOKEN HERE>"
+	logChannelID: "<DISCORD LOG CHANNEL ID HERE>"
+
+# Last.fm credentials
+lastFm:
+	key: 	"<LAST FM API KEY HERE>"
+	secret: "<LAST FM API SECRET HERE>"
+
+patreon:
+	campaignID: "<PATREON CAMPAIGN ID HERE>"
+	accessToken: "<PATREON ACCESS TOKEN HERE>"
+	refreshToken: "<PATREON REFRESH TOKEN HERE>"
+	secret: "<PATREON SECRET HERE>"
+
+# Twitter API credentials
+twitter:
+	bearerToken: "<TWITTER BEARER TOKEN HERE>"
+	consumerKey: "<TWITTER CONSUMER KEY HERE>"
+	consumerSecret: "<TWITTER CONSUMER SECRET HERE>"
