@@ -10,6 +10,6 @@ func (h *Handler) InteractionCreate(
 
 	switch data := interaction.Data.(type) {
 	case *discord.ButtonInteraction:
-		h.HandleButton(interaction, data)
+		h.HandleButtonPress(interaction, data)
 	}
 }
