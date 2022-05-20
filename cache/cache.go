@@ -40,7 +40,10 @@ func GetInstance() *Cache {
 }
 
 func (c *Cache) onStartup(rt *router.Router, ev *gateway.ReadyEvent) {
-	// TEMPORARY
+	// TEMPORARY - after initially adding available guilds to database,
+	// guilds should only be added upon successfully joining afterwards.
+	// guilds database is also used for guild whitelisting.
+	// there is potentially a more elegant solution than this.
 	guilds, _ := rt.State.Guilds()
 	for _, guild := range guilds {
 		c.Guilds.Add(guild.ID)

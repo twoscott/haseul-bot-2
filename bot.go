@@ -34,7 +34,7 @@ func main() {
 	//		  user info module
 	//  	  notifications module
 	//
-	//        CHANGE GUILD PROCESSING IN CACHE AT END
+	//      STOP GUILDS FROM BEING AUTO ADDED IN PRODUCTION ENV
 	/////
 
 	rt := router.New(st)
