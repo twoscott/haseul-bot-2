@@ -147,6 +147,7 @@ func BuildStarPostsURL(channelCode string, limit int) (*url.URL, error) {
 			"channelCode,"+
 			"backgroundColor,"+
 			"channelProfileImage},"+
+
 			"contentType,"+
 			"createdAt,"+
 			"officialVideo,"+
@@ -168,6 +169,7 @@ func BuildStarPostsURL(channelCode string, limit int) (*url.URL, error) {
 	return postsURL, nil
 }
 
+// StarPostsFile gets the URL path to a channelCode's start posts file
 func StarPostsFile(channelCode string) string {
 	return fmt.Sprintf("/channel-%s/starPosts", channelCode)
 }
