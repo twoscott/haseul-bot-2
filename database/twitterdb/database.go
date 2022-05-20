@@ -15,8 +15,8 @@ func New(dbConn *sqlx.DB) *DB {
 }
 
 func (db *DB) createTables() {
+	db.MustExec(createTwitterUsersTableQuery)
 	db.MustExec(createTwitterFeedsTableQuery)
 	db.MustExec(createTwitterMentionsTableQuery)
 	db.MustExec(createTwitterRetriesTableQuery)
-	db.MustExec(createTwitterUsersTableQuery)
 }
