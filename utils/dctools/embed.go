@@ -25,7 +25,9 @@ func EmbedTime(t time.Time) string {
 // EmbedColour returns a Discord colour where default black colours are
 // replaced with the default embed background colour.
 func EmbedColour(colour discord.Color) discord.Color {
-	if colour == 0x000000 {
+	if colour == 0x000000 ||
+		colour == discord.DefaultEmbedColor ||
+		colour == discord.NullColor {
 		colour = EmbedBackColour
 	}
 	return colour
