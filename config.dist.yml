@@ -5,11 +5,18 @@ discord:
 	token: "<DISCORD TOKEN HERE>"
 	logChannelID: "<DISCORD LOG CHANNEL ID HERE>"
 
-# Last.fm credentials
+# PostgreSQL database config
+postgresql:
+  database: "<DATABASE NAME HERE>"
+  username: "<POSTGRES USERNAME HERE>"
+  password: "<POSTGRES PASSWORD HERE>"
+
+# Last.fm API credentials
 lastFm:
 	key: 	"<LAST FM API KEY HERE>"
 	secret: "<LAST FM API SECRET HERE>"
 
+# Patreon API credentials
 patreon:
 	campaignID: "<PATREON CAMPAIGN ID HERE>"
 	accessToken: "<PATREON ACCESS TOKEN HERE>"
