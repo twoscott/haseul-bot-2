@@ -26,7 +26,7 @@ func getTimeframe(period string) *timeframe {
 			datePreset:    "LAST_90_DAYS",
 			displayPeriod: "Last 3 Months",
 		}
-	case "190", "180day", "180days", "6month", "6months", "6m":
+	case "180", "180day", "180days", "6month", "6months", "6m":
 		return &timeframe{
 			apiPeriod:     "6month",
 			datePreset:    "LAST_180_DAYS",
