@@ -171,19 +171,16 @@ func sendNotification(
 		Color:     dctools.EmbedColour(colour),
 	}
 
-	button := discord.ButtonComponent{
-		Label: "Jump to Message",
-		Style: discord.LinkButton,
-		URL:   msg.URL(),
-	}
-
 	rt.State.SendMessageComplex(dmChannel.ID, api.SendMessageData{
 		Content: content,
 		Embeds:  []discord.Embed{embed},
-		Components: []discord.Component{
-			discord.ActionRowComponent{
-				Components: []discord.Component{button},
+		Components: discord.Components(
+			&discord.ActionRowComponent{
+				&discord.ButtonComponent{
+					Label: "Jump to Message",
+					Style: discord.LinkButtonStyle(msg.URL()),
+				},
 			},
-		},
+		),
 	})
 }

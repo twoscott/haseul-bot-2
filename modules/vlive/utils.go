@@ -63,4 +63,4 @@ func parseChannelArg(
 	return channel, true
 }
 
-func fetchUser(channelCode string)
+func fetchUser(channelCode string) {}

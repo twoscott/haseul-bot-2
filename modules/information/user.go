@@ -130,7 +130,7 @@ func memberEmbed(
 	ctx *router.CommandCtx, member *discord.Member) *discord.Embed {
 
 	colour := member.User.Accent
-	if colour == 0x000000 {
+	if colour == 0x000000 || colour == discord.NullColor {
 		colour, _ = ctx.State.MemberColor(ctx.Msg.GuildID, member.User.ID)
 	}
 

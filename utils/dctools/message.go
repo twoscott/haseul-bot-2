@@ -24,5 +24,5 @@ func MessageLink(
 func IsUserMessage(msgType discord.MessageType) bool {
 	return msgType == discord.DefaultMessage ||
 		msgType == discord.InlinedReplyMessage ||
-		msgType == discord.ApplicationCommandMessage
+		msgType == discord.ChatInputCommandMessage
 }

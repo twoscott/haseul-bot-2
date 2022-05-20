@@ -171,13 +171,14 @@ func (rt *Router) AddButtonPager(options ButtonPagerOptions) error {
 }
 
 // HandleButton routes a button press to the relevant button pager.
-func (rt *Router) HandleButton(button *gateway.InteractionCreateEvent) {
+func (rt *Router) HandleButton(
+	button *gateway.InteractionCreateEvent, data *discord.ButtonInteraction) {
 	buttonPager, ok := rt.buttonPagers[button.Message.ID]
 	if !ok {
 		return
 	}
 
-	buttonPager.handleButton(rt, button)
+	buttonPager.handleButton(rt, button, data)
 }
 
 func registerCommandToDestination(destination CommandMap, cmd *Command) {

@@ -56,7 +56,9 @@ func (b ButtonPager) currentPage() *MessagePage {
 }
 
 func (b *ButtonPager) handleButton(
-	rt *Router, button *gateway.InteractionCreateEvent) {
+	rt *Router,
+	button *gateway.InteractionCreateEvent,
+	data *discord.ButtonInteraction) {
 
 	user := button.User
 	if user == nil {
@@ -70,20 +72,22 @@ func (b *ButtonPager) handleButton(
 		return
 	}
 
-	if button.Data.CustomID == dctools.ButtonIDConfirm {
+	if data.CustomID == dctools.ButtonIDConfirm {
 		b.confirmPage(rt, button)
 		return
 	}
 
-	b.changePages(rt, button)
+	b.changePages(rt, button, data)
 }
 
 func (b *ButtonPager) changePages(
-	rt *Router, button *gateway.InteractionCreateEvent) {
+	rt *Router,
+	button *gateway.InteractionCreateEvent,
+	data *discord.ButtonInteraction) {
 
 	startPage := b.PageNumber
 
-	switch button.Data.CustomID {
+	switch data.CustomID {
 	case dctools.ButtonIDFirstPage:
 		b.PageNumber = 0
 	case dctools.ButtonIDLastPage:
@@ -127,7 +131,7 @@ func (b *ButtonPager) confirmPage(
 		api.InteractionResponse{
 			Type: api.UpdateMessage,
 			Data: &api.InteractionResponseData{
-				Components: &[]discord.Component{},
+				Components: discord.ComponentsPtr(),
 			},
 		},
 	)

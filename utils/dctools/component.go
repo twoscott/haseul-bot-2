@@ -16,36 +16,36 @@ const (
 )
 
 var (
-	// PagerButtons is a slice of discord components for use with button paging.
-	PagerButtons = []discord.Component{
-		discord.ButtonComponent{
+	// PagerActionRow is a set of buttons for use with button paging.
+	PagerActionRow = discord.ActionRowComponent{
+		&discord.ButtonComponent{
 			Label:    "First",
 			CustomID: ButtonIDFirstPage,
-			Style:    discord.SecondaryButton,
+			Style:    discord.SecondaryButtonStyle(),
 		},
-		discord.ButtonComponent{
+		&discord.ButtonComponent{
 			Label:    "Prev",
 			CustomID: ButtonIDPrevPage,
-			Style:    discord.PrimaryButton,
+			Style:    discord.PrimaryButtonStyle(),
 		},
-		discord.ButtonComponent{
+		&discord.ButtonComponent{
 			Label:    "Next",
 			CustomID: ButtonIDNextPage,
-			Style:    discord.PrimaryButton,
+			Style:    discord.PrimaryButtonStyle(),
 		},
-		discord.ButtonComponent{
+		&discord.ButtonComponent{
 			Label:    "Last",
 			CustomID: ButtonIDLastPage,
-			Style:    discord.SecondaryButton,
+			Style:    discord.SecondaryButtonStyle(),
 		},
 	}
-	CheckButton = discord.ButtonComponent{
-		Emoji: &discord.ButtonEmoji{
+	CheckButton = &discord.ButtonComponent{
+		Emoji: &discord.ComponentEmoji{
 			ID:   ButtonCheckEmoji().ID,
 			Name: ButtonCheckEmoji().Name,
 		},
 		CustomID: ButtonIDConfirm,
-		Style:    discord.SuccessButton,
+		Style:    discord.SuccessButtonStyle(),
 	}
 )
 
@@ -78,18 +78,16 @@ func replyWithPager(
 	confirm bool,
 	embeds ...discord.Embed) (*discord.Message, error) {
 
-	rowComponents := make([]discord.Component, len(PagerButtons))
-	copy(rowComponents, PagerButtons)
+	rowComponents := make(discord.ActionRowComponent, len(PagerActionRow))
+	copy(rowComponents, PagerActionRow)
 	if confirm {
 		rowComponents = append(rowComponents, CheckButton)
 	}
 
 	return ReplyNoPingComplex(st, msg, api.SendMessageData{
-		Content: content,
-		Embeds:  embeds,
-		Components: []discord.Component{
-			discord.ActionRowComponent{Components: rowComponents},
-		},
+		Content:    content,
+		Embeds:     embeds,
+		Components: discord.Components(&rowComponents),
 	})
 }
 
@@ -122,43 +120,44 @@ func sendWithPager(
 	confirm bool,
 	embeds ...discord.Embed) (*discord.Message, error) {
 
-	rowComponents := make([]discord.Component, len(PagerButtons))
-	copy(rowComponents, PagerButtons)
+	rowComponents := make(discord.ActionRowComponent, len(PagerActionRow))
+	copy(rowComponents, PagerActionRow)
 	if confirm {
 		rowComponents = append(rowComponents, CheckButton)
 	}
 
 	return st.SendMessageComplex(channelID, api.SendMessageData{
-		Content: content,
-		Embeds:  embeds,
-		Components: []discord.Component{
-			discord.ActionRowComponent{Components: rowComponents},
-		},
+		Content:    content,
+		Embeds:     embeds,
+		Components: discord.Components(&rowComponents),
 	})
 }
 
-//DisableAllButtons disables all buttons in a given message's components field.
+// DisableAllButtons disables all buttons in a given message's components field.
 func DisableAllButtons(st *state.State, msg *discord.Message) error {
-	components := discord.UnwrapComponents(msg.Components)
-	for _, c := range components {
+	newComponents := make(discord.ContainerComponents, 0)
+	copy(newComponents, msg.Components)
+	for _, c := range msg.Components {
 		switch c := c.(type) {
 		case *discord.ActionRowComponent:
-			for _, c := range c.Components {
-				switch c := c.(type) {
+			for _, ic := range *c {
+				switch ic := ic.(type) {
 				case *discord.ButtonComponent:
-					c.Disabled = true
+					ic.Disabled = true
 				}
 			}
+
 		}
 	}
 
 	_, err := st.EditMessageComplex(msg.ChannelID, msg.ID, api.EditMessageData{
-		Components: &components,
+		Components: &newComponents,
 	})
 
 	return err
 }
 
+// RemoveAllComponents removes all components from a message sent by the bot.
 func RemoveAllComponents(
 	st *state.State,
 	channelID discord.ChannelID,
@@ -166,7 +165,7 @@ func RemoveAllComponents(
 
 	_, err := st.EditMessageComplex(channelID, messageID,
 		api.EditMessageData{
-			Components: &[]discord.Component{},
+			Components: &discord.ContainerComponents{},
 		},
 	)
 

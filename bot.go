@@ -24,15 +24,14 @@ func main() {
 		log.Panic("No token found in config file")
 	}
 
-	st, err := state.New("Bot " + token)
-	if err != nil {
-		panic(err)
-	}
+	st := state.New("Bot " + token)
 
 	/////
-	//	TODO: twitter modules
-	//		  user info module
-	//  	  notifications module
+	//	TODO:
+	//		slash commands integration
+	//		twitter modules
+	//		user info module
+	//  	notifications module
 	//
 	//      STOP GUILDS FROM BEING AUTO ADDED IN PRODUCTION ENV
 	/////
@@ -40,12 +39,12 @@ func main() {
 	rt := router.New(st)
 	hnd := handler.New(rt)
 
-	setIntents(st.Gateway)
+	setIntents(st)
 	setHandlers(st, hnd)
 	cache.Init(rt)
 	modules.Init(rt)
 
-	err = st.Open(context.Background())
+	err := st.Open(context.Background())
 	if err != nil {
 		log.Panic("Failed to connect to Discord: ", err)
 	}
@@ -62,16 +61,16 @@ func main() {
 	<-sigs
 }
 
-func setIntents(g *gateway.Gateway) {
-	g.AddIntents(gateway.IntentGuilds)
-	g.AddIntents(gateway.IntentGuildMembers)
-	g.AddIntents(gateway.IntentGuildInvites)
-	g.AddIntents(gateway.IntentGuildMessages)
+func setIntents(st *state.State) {
+	st.AddIntents(gateway.IntentGuilds)
+	st.AddIntents(gateway.IntentGuildMembers)
+	st.AddIntents(gateway.IntentGuildInvites)
+	st.AddIntents(gateway.IntentGuildMessages)
 }
 
-func setHandlers(s *state.State, h *handler.Handler) {
-	s.AddHandler(h.GuildJoin)
-	s.AddHandler(h.MessageCreate)
-	s.AddHandler(h.Ready)
-	s.AddHandler(h.InteractionCreate)
+func setHandlers(st *state.State, h *handler.Handler) {
+	st.AddHandler(h.GuildJoin)
+	st.AddHandler(h.MessageCreate)
+	st.AddHandler(h.Ready)
+	st.AddHandler(h.InteractionCreate)
 }
