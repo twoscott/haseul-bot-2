@@ -9,14 +9,14 @@ import (
 
 	"github.com/dghubble/go-twitter/twitter"
 	"github.com/diamondburned/arikawa/v3/state"
+	"github.com/dustin/go-humanize"
 	"github.com/twoscott/haseul-bot-2/database/twitterdb"
 	"github.com/twoscott/haseul-bot-2/utils/dctools"
-	"github.com/twoscott/haseul-bot-2/utils/util"
 )
 
 const (
 	rateLimit24h      = 100000
-	rateLimitInterval = util.Day / rateLimit24h
+	rateLimitInterval = humanize.Day / rateLimit24h
 	minInterval       = time.Minute
 )
 

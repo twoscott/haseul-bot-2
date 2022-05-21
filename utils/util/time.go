@@ -4,13 +4,8 @@ import (
 	"fmt"
 	"strings"
 	"time"
-)
 
-const (
-	// Day is a time constant for 24 hours.
-	Day = 24 * time.Hour
-	// Week is a time constant for 7 days.
-	Week = 7 * Day
+	"github.com/dustin/go-humanize"
 )
 
 type TimePeriod struct {
@@ -74,14 +69,14 @@ func MaxTimeAgoString(epoch time.Time) string {
 	} else if timeSince < time.Hour {
 		minutes := timeSince / time.Minute
 		timeAgoString = fmt.Sprintf("%dm", minutes)
-	} else if timeSince < Day {
+	} else if timeSince < humanize.Day {
 		hours := timeSince / time.Hour
 		timeAgoString = fmt.Sprintf("%dh", hours)
-	} else if timeSince < Week {
-		days := timeSince / Day
+	} else if timeSince < humanize.Week {
+		days := timeSince / humanize.Day
 		timeAgoString = fmt.Sprintf("%dd", days)
 	} else {
-		weeks := timeSince / Week
+		weeks := timeSince / humanize.Week
 		timeAgoString = fmt.Sprintf("%dwk", weeks)
 	}
 
