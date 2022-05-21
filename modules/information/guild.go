@@ -62,7 +62,7 @@ func guildEmbed(ctx *router.CommandCtx, guild *discord.Guild) *discord.Embed {
 		Color:  dctools.EmbedBackColour,
 	}
 
-	if dctools.GuildHasFeature(guild.Features, discord.Discoverable) {
+	if dctools.GuildHasFeature(guild, discord.Discoverable) {
 		embed.Description = guild.Description
 	}
 

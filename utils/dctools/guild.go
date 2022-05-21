@@ -3,6 +3,7 @@ package dctools
 import (
 	"github.com/diamondburned/arikawa/v3/discord"
 	"github.com/diamondburned/arikawa/v3/state"
+	"golang.org/x/exp/slices"
 )
 
 // MemberNumber returns the position a member holds in the sequence of all guild
@@ -29,18 +30,9 @@ func MemberNumber(
 	return memberNo
 }
 
-// GuildHasFeature returns whether a feature exists in an array of
-// guild features.
-func GuildHasFeature(
-	features []discord.GuildFeature, feature discord.GuildFeature) bool {
-
-	for _, f := range features {
-		if f == feature {
-			return true
-		}
-	}
-
-	return false
+// GuildHasFeature returns whether a feature exists in a guild.
+func GuildHasFeature(guild *discord.Guild, feature discord.GuildFeature) bool {
+	return slices.Contains(guild.Features, feature)
 }
 
 // GuildEmojiLimit returns the emoji limit for a given guild boost level.
