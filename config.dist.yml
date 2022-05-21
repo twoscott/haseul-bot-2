@@ -2,8 +2,8 @@
 
 # Discord credentials
 discord:
-	token: "<DISCORD TOKEN HERE>"
-	logChannelID: "<DISCORD LOG CHANNEL ID HERE>"
+  token: "<DISCORD TOKEN HERE>"
+  logChannelID: "<DISCORD LOG CHANNEL ID HERE>"
 
 # PostgreSQL database config
 postgresql:
@@ -13,18 +13,18 @@ postgresql:
 
 # Last.fm API credentials
 lastFm:
-	key: 	"<LAST FM API KEY HERE>"
-	secret: "<LAST FM API SECRET HERE>"
+  key: "<LAST FM API KEY HERE>"
+  secret: "<LAST FM API SECRET HERE>"
 
 # Patreon API credentials
 patreon:
-	campaignID: "<PATREON CAMPAIGN ID HERE>"
-	accessToken: "<PATREON ACCESS TOKEN HERE>"
-	refreshToken: "<PATREON REFRESH TOKEN HERE>"
-	secret: "<PATREON SECRET HERE>"
+  campaignID: "<PATREON CAMPAIGN ID HERE>"
+  accessToken: "<PATREON ACCESS TOKEN HERE>"
+  refreshToken: "<PATREON REFRESH TOKEN HERE>"
+  secret: "<PATREON SECRET HERE>"
 
 # Twitter API credentials
 twitter:
-	bearerToken: "<TWITTER BEARER TOKEN HERE>"
-	consumerKey: "<TWITTER CONSUMER KEY HERE>"
-	consumerSecret: "<TWITTER CONSUMER SECRET HERE>"
+  bearerToken: "<TWITTER BEARER TOKEN HERE>"
+  consumerKey: "<TWITTER CONSUMER KEY HERE>"
+  consumerSecret: "<TWITTER CONSUMER SECRET HERE>"
