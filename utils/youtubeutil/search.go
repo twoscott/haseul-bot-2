@@ -7,6 +7,9 @@ import (
 	"net/http"
 	"net/url"
 	"regexp"
+	"time"
+
+	"github.com/twoscott/haseul-bot-2/utils/util"
 )
 
 const (
@@ -15,6 +18,7 @@ const (
 )
 
 var (
+	HttpClient         = util.NewHttpClient(5 * time.Second)
 	ErrNoResultsFound  = errors.New("No results found")
 	ErrUnknown         = errors.New("Unknown error occurred")
 	ytInitialDataRegex = regexp.MustCompile(`var ytInitialData\s*=.+?;`)
@@ -53,7 +57,7 @@ func getResults(query string, resultLimit int) ([]string, error) {
 	queryBuilder.Set("sp", videoOnly)
 	queryURL.RawQuery = queryBuilder.Encode()
 
-	res, err := http.Get(queryURL.String())
+	res, err := HttpClient.Get(queryURL.String())
 	if err != nil {
 		log.Println(err)
 		return nil, err
@@ -79,7 +83,7 @@ func getResults(query string, resultLimit int) ([]string, error) {
 	if renderersMatch == nil {
 		return nil, ErrNoResultsFound
 	}
-	
+
 	searchResults := make([]string, 0, resultLimit)
 	for _, match := range renderersMatch {
 		videoID := string(match[1])
