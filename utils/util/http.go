@@ -6,6 +6,14 @@ import (
 	"time"
 )
 
+// NewHttpClient provides a clean way to create a new HTTP client with a
+// custom request timeout duration.
+func NewHttpClient(timeout time.Duration) *http.Client {
+	return &http.Client{
+		Timeout: timeout,
+	}
+}
+
 // ImgUploadTime returns the time an image was uploaded
 // (or its last-modified header)
 func ImgUploadTime(url string) (time.Time, error) {
