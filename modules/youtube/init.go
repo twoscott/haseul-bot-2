@@ -1,7 +1,19 @@
 package youtube
 
-import "github.com/twoscott/haseul-bot-2/router"
+import (
+	"github.com/twoscott/haseul-bot-2/database"
+	"github.com/twoscott/haseul-bot-2/router"
+)
 
-func Init(router *router.Router) {
-	router.MustRegisterCommand(ytCommand)
+var db *database.DB
+
+func Init(rt *router.Router) {
+	db = database.GetInstance()
+
+	rt.AddCommand(youTubeCommand)
+	youTubeCommand.AddSubCommand(youTubeSearchCommand)
+
+	youTubeCommand.AddSubCommandGroup(youTubeHistoryCommand)
+	youTubeHistoryCommand.AddSubCommand(youTubeHistoryClearCommand)
+	youTubeHistoryCommand.AddSubCommand(youTubeHistoryToggleCommand)
 }

@@ -6,6 +6,8 @@ import (
 	"errors"
 	"io"
 	"net/http"
+
+	"github.com/twoscott/haseul-bot-2/utils/httputil"
 )
 
 type ImageType uint8
@@ -42,7 +44,7 @@ func NewImage(data []byte) *Image {
 }
 
 func ImageFromURL(url string) (*Image, *http.Response, error) {
-	res, err := http.Get(url)
+	res, err := httputil.Get(url)
 	if err != nil {
 		return nil, res, err
 	}

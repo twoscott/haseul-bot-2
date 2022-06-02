@@ -13,7 +13,18 @@ import (
 	"github.com/twoscott/haseul-bot-2/handler"
 	"github.com/twoscott/haseul-bot-2/modules"
 	"github.com/twoscott/haseul-bot-2/router"
+	"github.com/twoscott/haseul-bot-2/utils/dctools"
 )
+
+/////
+//	TODO:
+//		slash commands integration
+//		twitter modules
+//		user info module
+//		notifications module
+//
+//      STOP GUILDS FROM BEING AUTO WHITELISTED IN PRODUCTION ENV
+/////
 
 func main() {
 	log.Println("Haseul Bot starting...")
@@ -24,18 +35,8 @@ func main() {
 		log.Panic("No token found in config file")
 	}
 
-	st := state.New("Bot " + token)
-
-	/////
-	//	TODO:
-	//		slash commands integration
-	//		twitter modules
-	//		user info module
-	//  	notifications module
-	//
-	//      STOP GUILDS FROM BEING AUTO ADDED IN PRODUCTION ENV
-	/////
-
+	botToken := dctools.BotToken(token)
+	st := state.New(botToken)
 	rt := router.New(st)
 	hnd := handler.New(rt)
 
@@ -53,6 +54,13 @@ func main() {
 	if err != nil {
 		log.Panic("Failed to fetch myself: ", err)
 	}
+
+	err = rt.AddCommandsToDiscord()
+	if err != nil {
+		log.Panic(err)
+	}
+
+	rt.MustRegisterCommandHandlers()
 
 	log.Print("Haseul Bot is now running. Press Ctrl-C to exit. ")
 	sigs := make(chan os.Signal, 1)

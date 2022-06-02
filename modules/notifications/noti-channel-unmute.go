@@ -8,67 +8,73 @@ import (
 	"github.com/twoscott/haseul-bot-2/utils/dctools"
 )
 
-var notiChannelUnmuteCommand = &router.Command{
-	Name:      "unmute",
-	Aliases:   []string{"whitelist", "unignore"},
-	UseTyping: true,
-	Run:       notiChannelUnmuteRun,
+var notiChannelUnmuteCommand = &router.SubCommand{
+	Name:        "unmute",
+	Description: "Unmutes notifications for a channel",
+	Handler: &router.CommandHandler{
+		Executor:  notiChannelUnmuteExec,
+		Ephemeral: true,
+	},
+	Options: []discord.CommandOptionValue{
+		&discord.ChannelOption{
+			OptionName:  "channel",
+			Description: "The channel to unmute notifications in",
+			ChannelTypes: []discord.ChannelType{
+				discord.GuildText,
+				discord.GuildNews,
+			},
+			Required: true,
+		},
+	},
 }
 
-func notiChannelUnmuteRun(ctx router.CommandCtx, args []string) {
-	var channelID discord.ChannelID
+func notiChannelUnmuteExec(ctx router.CommandCtx) {
+	snowflake, _ := ctx.Options.Find("channel").SnowflakeValue()
+	channelID := discord.ChannelID(snowflake)
+	if !channelID.IsValid() {
+		ctx.RespondWarning("Invalid channel provided.")
+		return
+	}
 
-	if len(args) < 1 {
-		channelID = ctx.Msg.ChannelID
-	} else {
-		channelID = dctools.ParseChannelID(args[0])
-		if !channelID.IsValid() {
-			dctools.ReplyWithWarning(ctx.State, ctx.Msg,
-				"Malformed Discord channel provided.",
-			)
-			return
-		}
-
-		channel, err := ctx.State.Channel(channelID)
-		if err != nil {
-			dctools.ReplyWithWarning(ctx.State, ctx.Msg,
-				"Invalid Discord channel provided.",
-			)
-			return
-		}
-		if channel.GuildID != ctx.Msg.GuildID {
-			dctools.ReplyWithWarning(ctx.State, ctx.Msg,
-				"Channel provided must belong to this server.",
-			)
-			return
-		}
-		if !dctools.IsTextChannel(channel.Type) {
-			dctools.ReplyWithWarning(ctx.State, ctx.Msg,
-				"Channel provided must be a text channel.",
-			)
-			return
-		}
+	channel, err := ctx.State.Channel(channelID)
+	if err != nil {
+		ctx.RespondWarning(
+			"Invalid Discord channel provided.",
+		)
+		return
+	}
+	if channel.GuildID != channel.GuildID {
+		ctx.RespondWarning(
+			"Channel provided must belong to this server.",
+		)
+		return
+	}
+	if !dctools.IsTextChannel(channel.Type) {
+		ctx.RespondWarning(
+			"Channel provided must be a text channel.",
+		)
+		return
 	}
 
 	unmuted, err := db.Notifications.UnmuteChannel(
-		ctx.Msg.Author.ID, ctx.Msg.ChannelID,
+		ctx.Interaction.SenderID(), channelID,
 	)
 	if err != nil {
 		log.Println(err)
-		dctools.SendError(ctx.State, ctx.Msg.ChannelID,
-			"Error occurred while trying to the mute the channel",
+		ctx.RespondError(
+			"Error occurred while trying to the unmute the channel",
 		)
 		return
 	}
 
 	if unmuted {
-		dctools.SendSuccess(ctx.State, ctx.Msg.ChannelID,
-			"You will now be notified for keywords mentioned in "+
-				channelID.Mention()+".",
+		ctx.RespondSuccess(
+			"You will now be notified for keywords mentioned in " +
+				channelID.Mention() + ".",
 		)
 	} else {
-		dctools.SendWarning(ctx.State, ctx.Msg.ChannelID,
-			channelID.Mention()+" is already unmuted.",
+		ctx.RespondWarning(
+			channelID.Mention() + " is already unmuted.",
 		)
 	}
 }

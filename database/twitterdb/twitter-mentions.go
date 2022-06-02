@@ -25,6 +25,9 @@ const (
 	getMentionRolesQuery = `
 		SELECT roleID FROM TwitterMentions 
 		WHERE channelID = $1 AND twitterUserID = $2`
+	getMentionsQuery = `
+			SELECT * FROM TwitterMentions 
+			WHERE channelID = $1 AND twitterUserID = $2`
 	getMentionsByGuildQuery = `
 		SELECT * FROM TwitterMentions WHERE channelID IN (
 			SELECT channelID FROM TwitterFeeds WHERE guildID = $1
@@ -57,6 +60,14 @@ func (db *DB) GetMentionRoles(channelID discord.ChannelID, twitterUserID int64) 
 	err := db.Select(&roleIDs, getMentionRolesQuery, channelID, twitterUserID)
 
 	return roleIDs, err
+}
+
+// GetMentionsByGuild returns all Twitter mentions in a guild ID.
+func (db *DB) GetMentions(channelID discord.ChannelID, twitterUserID int64) ([]Mention, error) {
+	var mentionRoles []Mention
+	err := db.Select(&mentionRoles, getMentionsQuery, channelID, twitterUserID)
+
+	return mentionRoles, err
 }
 
 // GetMentionsByGuild returns all Twitter mentions in a guild ID.

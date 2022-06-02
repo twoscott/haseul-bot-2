@@ -30,6 +30,14 @@ func MemberNumber(
 	return memberNo
 }
 
+// GuildStatuses returns the approximate number of online and offline
+// members in a guild.
+func GuildStatuses(guild *discord.Guild) (uint64, uint64) {
+	online := guild.ApproximatePresences
+	offline := guild.ApproximateMembers - online
+	return online, offline
+}
+
 // GuildHasFeature returns whether a feature exists in a guild.
 func GuildHasFeature(guild *discord.Guild, feature discord.GuildFeature) bool {
 	return slices.Contains(guild.Features, feature)

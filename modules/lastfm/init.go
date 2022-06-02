@@ -20,13 +20,18 @@ func Init(rt *router.Router) {
 	secret := cfg.LastFm.Secret
 	lf = lastfm.New(key, secret)
 
-	rt.MustRegisterCommand(fmCommand)
-	fmCommand.MustRegisterSubCommand(fmDeleteCommand)
-	fmCommand.MustRegisterSubCommand(fmNpCommand)
-	fmCommand.MustRegisterSubCommand(fmRecentCommand)
-	fmCommand.MustRegisterSubCommand(fmSetCommand)
-	fmCommand.MustRegisterSubCommand(fmTaCommand)
-	fmCommand.MustRegisterSubCommand(fmTalbCommand)
-	fmCommand.MustRegisterSubCommand(fmTtCommand)
-	fmCommand.MustRegisterSubCommand(fmYtCommand)
+	rt.AddCommand(fmCommand)
+	fmCommand.AddSubCommand(fmCurrentCommand)
+	fmCommand.AddSubCommand(fmDeleteCommand)
+	fmCommand.AddSubCommand(fmRecentCommand)
+	fmCommand.AddSubCommand(fmSetCommand)
+	fmCommand.AddSubCommand(fmYouTubeCommand)
+
+	fmCommand.AddSubCommandGroup(fmTopCommandGroup)
+	fmTopCommandGroup.AddSubCommand(fmTopAlbumsCommand)
+	fmTopCommandGroup.AddSubCommand(fmTopArtistsCommand)
+	fmTopCommandGroup.AddSubCommand(fmTopTracksCommand)
+
+	// TODO:
+	//	/fm collage [type] [dimensions] [timeframe]
 }

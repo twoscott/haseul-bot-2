@@ -1,7 +1,6 @@
 package cache
 
 import (
-	"log"
 	"sync"
 
 	"github.com/diamondburned/arikawa/v3/discord"
@@ -40,6 +39,7 @@ func GetInstance() *Cache {
 }
 
 func (c *Cache) onStartup(rt *router.Router, ev *gateway.ReadyEvent) {
+	// TODO:
 	// TEMPORARY - after initially adding available guilds to database,
 	// guilds should only be added upon successfully joining afterwards.
 	// guilds database is also used for guild whitelisting.
@@ -60,7 +60,6 @@ func (c *Cache) onStartup(rt *router.Router, ev *gateway.ReadyEvent) {
 }
 
 func (c *Cache) onGuildJoin(rt *router.Router, guild *state.GuildJoinEvent) {
-	log.Println(guild.Name)
 	c.AddGuild(guild.ID)
 }
 
@@ -84,16 +83,6 @@ func (c *Cache) AddGuild(guildID discord.GuildID) error {
 }
 
 // GetGuildConfig returns a guild config for a given guild ID.
-func (c Cache) GetGuildConfig(guildID discord.GuildID) *guilddb.GuildConfig {
+func (c Cache) GuildConfig(guildID discord.GuildID) *guilddb.GuildConfig {
 	return c.configs[guildID]
-}
-
-// GetPrefix returns the bot's prefix for a guild ID.
-func (c Cache) GetPrefix(guildID discord.GuildID) string {
-	config := c.configs[guildID]
-	if config == nil {
-		return ""
-	}
-
-	return config.Prefix
 }

@@ -7,6 +7,7 @@ import (
 	"github.com/diamondburned/arikawa/v3/discord"
 	"github.com/dustin/go-humanize"
 	"github.com/twoscott/haseul-bot-2/utils/dctools"
+	"github.com/twoscott/haseul-bot-2/utils/httputil"
 	"github.com/twoscott/haseul-bot-2/utils/util"
 )
 
@@ -31,7 +32,7 @@ func ImageInfoEmbed(title, url string, colour discord.Color) *discord.Embed {
 		width = dims[0]
 		height = dims[1]
 
-		modified, _ = util.HeaderModifiedTime(res.Header)
+		modified, _ = httputil.HeaderModifiedTime(res.Header)
 	}
 
 	embed := discord.Embed{
@@ -40,11 +41,11 @@ func ImageInfoEmbed(title, url string, colour discord.Color) *discord.Embed {
 			URL: url,
 		},
 		Footer: &discord.EmbedFooter{
-			Text: fmt.Sprintf(
-				"Type: %s%sSize: %dx%d - %1.2fMB",
-				format,
-				dctools.EmbedFooterSep,
-				width, height, sizeMB,
+			Text: dctools.SeparateEmbedFooter(
+				fmt.Sprintf("Type: %s", format),
+				fmt.Sprintf(
+					"Size: %dx%d - %1.2fMB",
+					width, height, sizeMB),
 			),
 		},
 		Color: dctools.EmbedColour(colour),

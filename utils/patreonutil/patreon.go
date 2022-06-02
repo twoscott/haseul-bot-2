@@ -49,7 +49,7 @@ func GetPatreonHelper() *PatreonHelper {
 }
 
 // GetPatrons returns all patrons for the campaign ID.
-func (p *PatreonHelper) GetPatrons() ([]*patreon.Member, error) {
+func (p PatreonHelper) GetPatrons() ([]*patreon.Member, error) {
 	members, err := p.client.GetAllMembersByCampaignID(
 		p.campaignID,
 		patreon.WithIncludes("user", "currently_entitled_tiers"),
@@ -70,7 +70,7 @@ func (p *PatreonHelper) GetPatrons() ([]*patreon.Member, error) {
 }
 
 // GetActivePatrons returns all patrons for the campaign ID that are active.
-func (p *PatreonHelper) GetActivePatrons() ([]*patreon.Member, error) {
+func (p PatreonHelper) GetActivePatrons() ([]*patreon.Member, error) {
 	patrons, err := p.GetPatrons()
 	if err != nil {
 		return nil, err
@@ -88,7 +88,7 @@ func (p *PatreonHelper) GetActivePatrons() ([]*patreon.Member, error) {
 
 // GetActiveDiscordPatron returns a patreon member whose account is linked to
 // the discord account with the given user ID.
-func (p *PatreonHelper) GetActiveDiscordPatron(
+func (p PatreonHelper) GetActiveDiscordPatron(
 	userID discord.UserID) (*patreon.Member, error) {
 
 	patrons, err := p.GetActivePatrons()

@@ -1,23 +1,21 @@
 package lastfm
 
 import (
-	"database/sql"
 	"errors"
 	"fmt"
-	"log"
 	"net/http"
+	"regexp"
 	"strconv"
 
 	"github.com/dustin/go-humanize"
 	"github.com/shkh/lastfm-go/lastfm"
-	"github.com/twoscott/haseul-bot-2/router"
-	"github.com/twoscott/haseul-bot-2/utils/dctools"
+	"github.com/twoscott/haseul-bot-2/utils/httputil"
 )
 
 const (
 	lastFmURL     = "https://www.last.fm"
-	thumbURLFrame = "lastfm.freetls.fastly.net/i/u/174s/%s.jpg"
-	imageURLFrame = "lastfm.freetls.fastly.net/i/u/%s.jpg"
+	thumbURLFrame = "https://lastfm.freetls.fastly.net/i/u/174s/%s"
+	imageURLFrame = "https://lastfm.freetls.fastly.net/i/u/%s"
 
 	noArtistHash = "2a96cbd8b46e442fc41c2b86b821562f"
 	noAlbumHash  = "c6f59c1e5e7240a4c0d427abd71f3dbb"
@@ -37,6 +35,30 @@ const (
 	trackColour    = 0x0066ff
 )
 
+var imageRegexp = regexp.MustCompile(
+	`https?://lastfm\.freetls\.fastly\.net/i/u/(.+?)/(.+?)(?:\.|$)`,
+)
+
+func toThumbnail(url string) string {
+	match := imageRegexp.FindStringSubmatch(url)
+	if match == nil {
+		return ""
+	}
+
+	hash := match[2]
+	return getThumbURL(hash)
+}
+
+func toImage(url string) string {
+	match := imageRegexp.FindStringSubmatch(url)
+	if match == nil {
+		return ""
+	}
+
+	hash := match[2]
+	return getImageURL(hash)
+}
+
 func getThumbURL(hash string) string {
 	return fmt.Sprintf(thumbURLFrame, hash)
 }
@@ -52,7 +74,7 @@ func checkUserExists(user string) (bool, error) {
 	}
 
 	userURL := "https://www.last.fm/user/" + user
-	res, err := http.Head(userURL)
+	res, err := httputil.Head(userURL)
 	if err != nil {
 		return false, err
 	}
@@ -69,26 +91,6 @@ func checkUserExists(user string) (bool, error) {
 	return true, nil
 }
 
-func getLfUser(ctx router.CommandCtx) (string, bool) {
-	lfUser, err := db.LastFM.GetUser(ctx.Msg.Author.ID)
-	if errors.Is(err, sql.ErrNoRows) {
-		dctools.ReplyWithWarning(ctx.State, ctx.Msg,
-			"Please link a Last.fm username to your account using "+
-				"`fm set`.",
-		)
-		return "", false
-	}
-	if err != nil {
-		log.Println(err)
-		dctools.ReplyWithError(ctx.State, ctx.Msg,
-			"Error occurred trying to find your Last.fm username.",
-		)
-		return "", false
-	}
-
-	return lfUser, true
-}
-
 func getLfError(err error) *lastfm.LastfmError {
 	lfErr, ok := err.(*lastfm.LastfmError)
 	if !ok {
@@ -102,67 +104,54 @@ func getLfError(err error) *lastfm.LastfmError {
 }
 
 func getArtistLibraryURL(user string, tf timeframe) string {
-	return lastFmURL + "/user/" + user +
-		"/library/artists?date_preset=" + tf.datePreset
+	return fmt.Sprintf(
+		"%s/user/%s/library/artists?date_preset=%s",
+		lastFmURL, user, tf.datePreset,
+	)
 }
 
 func getAlbumLibraryURL(user string, tf timeframe) string {
-	return lastFmURL + "/user/" + user +
-		"/library/albums?date_preset=" + tf.datePreset
+	return fmt.Sprintf(
+		"%s/user/%s/library/albums?date_preset=%s",
+		lastFmURL, user, tf.datePreset,
+	)
 }
 
 func getTrackLibraryURL(user string, tf timeframe) string {
-	return lastFmURL + "/user/" + user +
-		"/library/tracks?date_preset=" + tf.datePreset
+	return fmt.Sprintf(
+		"%s/user/%s/library/tracks?date_preset=%s",
+		lastFmURL, user, tf.datePreset,
+	)
 }
 
 func getLibraryURL(user string) string {
-	return lastFmURL + "/user/" + user + "/library"
+	return fmt.Sprintf("%s/user/%s/library", lastFmURL, user)
 }
 
-func recentTracks(
-	ctx router.CommandCtx,
-	lfUser string,
-	limit int) (*lastfm.UserGetRecentTracks, bool) {
+func getRecentTracks(
+	user string, limit int64) (*lastfm.UserGetRecentTracks, error) {
+
 	res, err := lf.User.GetRecentTracks(lastfm.P{
-		"user": lfUser, "limit": limit,
+		"user": user, "limit": limit,
 	})
 	if err != nil {
-		lfErr := getLfError(err)
-		switch lfErr.Code {
-		case 6:
-			dctools.ReplyWithWarning(ctx.State, ctx.Msg,
-				fmt.Sprintf("Last.fm user %s does not exist.", lfUser),
-			)
-		case 8:
-			log.Println(err)
-			dctools.ReplyWithError(ctx.State, ctx.Msg,
-				"I could not get a response from Last.fm. Please try again.",
-			)
-		default:
-			log.Println(err)
-			dctools.ReplyWithError(ctx.State, ctx.Msg,
-				"Unknown Last.fm Error occurred.",
-			)
-		}
-		return nil, false
+		return nil, err
 	}
 
 	if res.User == "" {
-		res.User = lfUser
+		res.User = user
 	}
 
-	// correct extra track returned when now playing
-	if len(res.Tracks) > limit {
+	// correct extra track returned when a track is now playing.
+	if int64(len(res.Tracks)) > limit {
 		res.Tracks = res.Tracks[:limit]
 	}
 
-	return &res, true
+	return &res, nil
 }
 
-func trackInfo(
-	ctx router.CommandCtx,
-	recentTracks *lastfm.UserGetRecentTracks) (*lastfm.TrackGetInfo, bool) {
+func getTrackInfo(
+	recentTracks *lastfm.UserGetRecentTracks) (*lastfm.TrackGetInfo, error) {
 
 	track1 := recentTracks.Tracks[0]
 	lfUser := recentTracks.User
@@ -173,7 +162,7 @@ func trackInfo(
 		"username": lfUser,
 	})
 	if err != nil {
-		return nil, false
+		return nil, err
 	}
 
 	numPlayCount, err := strconv.Atoi(res.UserPlayCount)
@@ -181,5 +170,17 @@ func trackInfo(
 		res.UserPlayCount = humanize.Comma(int64(numPlayCount))
 	}
 
-	return &res, true
+	return &res, nil
+}
+
+func errorResponseMessage(err error) string {
+	lfErr := getLfError(err)
+	switch lfErr.Code {
+	case 6:
+		return "Invalid parameters provided."
+	case 8, 11, 16:
+		return "Unable to get a response from Last.fm. Please try again."
+	default:
+		return "Unknown Last.fm Error occurred."
+	}
 }

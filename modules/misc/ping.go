@@ -10,22 +10,27 @@ import (
 )
 
 var pingCommand = &router.Command{
-	Name: "ping",
-	Run:  pingRun,
+	Name:        "ping",
+	Description: "Times how long it takes for the bot to respond",
+	Handler: &router.CommandHandler{
+		Executor: pingExec,
+	},
 }
 
-func pingRun(ctx router.CommandCtx, args []string) {
+func pingExec(ctx router.CommandCtx) {
 	start := time.Now()
 
-	msg, err := dctools.TextReplyNoPing(ctx.State, ctx.Msg, "Ping: ...ms")
-	if err != nil {
-		log.Println(err)
-		return
-	}
+	err := dctools.DeferResponse(ctx.State, ctx.Interaction)
 
 	ping := time.Since(start)
 
-	ctx.State.EditText(msg.ChannelID, msg.ID,
+	if err != nil {
+		log.Println(err)
+		ctx.RespondError("Error occurred while timing response.")
+		return
+	}
+
+	dctools.FollowupRespondText(ctx.State, ctx.Interaction,
 		fmt.Sprintf("Ping: %dms", ping.Milliseconds()),
 	)
 }

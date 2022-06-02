@@ -5,49 +5,35 @@ import (
 
 	"github.com/diamondburned/arikawa/v3/api"
 	"github.com/diamondburned/arikawa/v3/discord"
-	"github.com/diamondburned/arikawa/v3/gateway"
 	"github.com/diamondburned/arikawa/v3/utils/json/option"
 	"github.com/twoscott/haseul-bot-2/utils/dctools"
 )
 
-type (
-	// ButtonPagerOptions is used to configure the creation of a button pager
-	ButtonPagerOptions struct {
-		AuthorID  discord.UserID
-		ChannelID discord.ChannelID
-		MessageID discord.MessageID
-		Pages     []MessagePage
-	}
-	// MessagePage represents a page for button pagers.
-	MessagePage struct {
-		Content string
-		Embeds  []discord.Embed
-	}
-)
-
 // ButtonPager represents a listener for paged button presses on a message.
 type ButtonPager struct {
-	Timeout time.Time
-
-	// AuthorID is the ID of the user who initiated the creation of the pager.
-	AuthorID  discord.UserID
-	ChannelID discord.ChannelID
-	MessageID discord.MessageID
-
-	Pages      []MessagePage
+	// Interaction is the interaction that invoked the pager.
+	Interaction *discord.InteractionEvent
+	// Pages consists of the pages that the attached buttons will
+	// change between.
+	Pages []MessagePage
+	// PageNumber tracks the current page that the pager is on.
 	PageNumber int
+	// Timeout defines how long the pager will be active for. Once the defined
+	// timeout period has elapsed, the buttons will be disabled and the pager
+	// deleted from memory.
+	Timeout time.Time
 }
 
-const listenTime = 3 * time.Minute
+const listenTime = 5 * time.Minute
 
-func newButtonPager(options ButtonPagerOptions) *ButtonPager {
+func newButtonPager(
+	interaction *discord.InteractionEvent, pages []MessagePage) *ButtonPager {
+
 	return &ButtonPager{
-		Timeout:    time.Now().Add(listenTime),
-		AuthorID:   options.AuthorID,
-		ChannelID:  options.ChannelID,
-		MessageID:  options.MessageID,
-		Pages:      options.Pages,
-		PageNumber: 0,
+		Interaction: interaction,
+		Pages:       pages,
+		PageNumber:  0,
+		Timeout:     time.Now().Add(listenTime),
 	}
 }
 
@@ -55,9 +41,9 @@ func (b ButtonPager) currentPage() *MessagePage {
 	return &b.Pages[b.PageNumber]
 }
 
-func (b *ButtonPager) handleButton(
+func (b *ButtonPager) handleButtonPress(
 	rt *Router,
-	button *gateway.InteractionCreateEvent,
+	button *discord.InteractionEvent,
 	data *discord.ButtonInteraction) {
 
 	user := button.User
@@ -68,7 +54,7 @@ func (b *ButtonPager) handleButton(
 		return
 	}
 
-	if user.ID != b.AuthorID {
+	if user.ID != b.Interaction.SenderID() {
 		return
 	}
 
@@ -82,7 +68,7 @@ func (b *ButtonPager) handleButton(
 
 func (b *ButtonPager) changePages(
 	rt *Router,
-	button *gateway.InteractionCreateEvent,
+	button *discord.InteractionEvent,
 	data *discord.ButtonInteraction) {
 
 	startPage := b.PageNumber
@@ -115,7 +101,7 @@ func (b *ButtonPager) changePages(
 		return
 	}
 
-	newPage := pageToInteractionData(b.currentPage())
+	newPage := b.currentPage().InteractionData()
 	rt.State.RespondInteraction(button.ID, button.Token,
 		api.InteractionResponse{
 			Type: api.UpdateMessage,
@@ -124,8 +110,8 @@ func (b *ButtonPager) changePages(
 	)
 }
 
-func (b *ButtonPager) confirmPage(
-	rt *Router, button *gateway.InteractionCreateEvent) {
+func (b ButtonPager) confirmPage(
+	rt *Router, button *discord.InteractionEvent) {
 
 	rt.State.RespondInteraction(button.ID, button.Token,
 		api.InteractionResponse{
@@ -136,34 +122,45 @@ func (b *ButtonPager) confirmPage(
 		},
 	)
 
-	delete(rt.buttonPagers, b.MessageID)
+	delete(rt.buttonPagers, b.Interaction.ID)
 }
 
-func (b *ButtonPager) deleteAfterTimeout(rt *Router) {
+func (b ButtonPager) deleteAfterTimeout(rt *Router) {
 	<-time.After(time.Until(b.Timeout))
 
-	if _, ok := rt.buttonPagers[b.MessageID]; !ok {
+	if _, ok := rt.buttonPagers[b.Interaction.ID]; !ok {
 		return
 	}
 
-	msg, err := rt.State.Message(b.ChannelID, b.MessageID)
-	if err != nil {
-		dctools.RemoveAllComponents(rt.State, b.ChannelID, b.MessageID)
-	} else {
-		dctools.DisableAllButtons(rt.State, msg)
-	}
+	disabledPagerButtons := dctools.DisabledButtons(dctools.PagerActionRow)
 
-	delete(rt.buttonPagers, b.MessageID)
+	rt.State.EditInteractionResponse(
+		b.Interaction.AppID,
+		b.Interaction.Token,
+		api.EditInteractionResponseData{
+			Components: discord.ComponentsPtr(&disabledPagerButtons),
+		},
+	)
+
+	delete(rt.buttonPagers, b.Interaction.ID)
 }
 
-func pageToInteractionData(page *MessagePage) *api.InteractionResponseData {
+// MessagePage represents a page for button pagers.
+type MessagePage struct {
+	Content string
+	Embeds  []discord.Embed
+}
+
+// InteractionData converts a message page to interaction response data that
+// can be used to update an interaction response message.
+func (p MessagePage) InteractionData() *api.InteractionResponseData {
 	data := api.InteractionResponseData{
-		Content:         option.NewNullableString(page.Content),
+		Content:         option.NewNullableString(p.Content),
 		AllowedMentions: dctools.NoMentions,
 	}
 
-	if len(page.Embeds) > 0 {
-		data.Embeds = &page.Embeds
+	if len(p.Embeds) > 0 {
+		data.Embeds = &p.Embeds
 	}
 
 	return &data

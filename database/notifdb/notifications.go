@@ -62,23 +62,32 @@ const (
 	addNotificationQuery = `
 		INSERT INTO Notifications VALUES($1, $2, $3, $4) ON CONFLICT DO NOTHING`
 	addGlobalNotificationQuery = `
-		INSERT INTO Notifications VALUES($1, $2, $3, 0) ON CONFLICT DO NOTHING`
+		INSERT INTO Notifications VALUES($1, $2, $3, 0 # 0) ON CONFLICT DO NOTHING`
 	removeNotificationQuery = `
 		DELETE FROM Notifications 
 		WHERE keyword = $1 AND userID = $2 AND guildID = $3`
 	removeGlobalNotificationQuery = `
 		DELETE FROM Notifications 
-		WHERE keyword = $1 AND userID = $2 AND guildID = 0`
+		WHERE keyword = $1 AND userID = $2 AND guildID = 0 # 0`
 	clearGuildUserNotifications = `
 		DELETE FROM Notifications WHERE userID = $1 AND guildID = $2`
 	clearGlobalUserNotifications = `
-		DELETE FROM Notifications WHERE userID = $1 AND guildID = 0`
+		DELETE FROM Notifications WHERE userID = $1 AND guildID = 0 # 0`
+
+	// getAllCheckingNotificationsQuery is an SQL query that fetches all stored
+	// notificatons that satisfy the following:
+	//
+	// - the notification is not registered under the incoming message's author
+	// - the guild ID is either that of the incoming message's guild, or is
+	//   global
+	// - the guild ID is not muted by the user the notification belongs to
+	// - the channel ID is not mutedb y the user the notification belongs to
 	getAllCheckingNotificationsQuery = `
 		SELECT * FROM Notifications 
 		WHERE (
 			userID != $1 
 				AND 
-			(guildID = $2 OR guildID = 0)
+			(guildID = $2 OR guildID = 0 # 0)
 				AND
 			userID NOT IN (SELECT userID FROM NotiDnD)
 				AND
@@ -92,10 +101,16 @@ const (
 				WHERE userID = Notifications.userID
 			)
 		)`
+
 	getUserNotificationsQuery = `
 		SELECT * FROM Notifications WHERE userID = $1`
+	getUserGlobalNotificationsQuery = `
+		SELECT * FROM Notifications WHERE userID = $1 AND guildID = 0 # 0`
 	getUserGuildNotificationsQuery = `
 		SELECT * FROM Notifications WHERE userID = $1 AND guildID = $2`
+	getUserGuildAndGlobalNotificationsQuery = `
+		SELECT * FROM Notifications 
+		WHERE userID = $1 AND (guildID = $2 OR guildID = 0 # 0)`
 )
 
 // Add adds a guild notifiaction for a keyword to send to userID.
@@ -207,6 +222,14 @@ func (db *DB) GetByUser(userID discord.UserID) ([]Notification, error) {
 	return notifications, err
 }
 
+// GetByGlobalUser returns all global notifications registered to a user.
+func (db *DB) GetByGlobalUser(userID discord.UserID) ([]Notification, error) {
+	var notifications []Notification
+	err := db.Select(&notifications, getUserGlobalNotificationsQuery, userID)
+
+	return notifications, err
+}
+
 // GetByGuildUser returns all notifications registered to a user in a guild.
 func (db *DB) GetByGuildUser(
 	userID discord.UserID, guildID discord.GuildID) ([]Notification, error) {
@@ -214,6 +237,22 @@ func (db *DB) GetByGuildUser(
 	var notifications []Notification
 	err := db.Select(
 		&notifications, getUserGuildNotificationsQuery, userID, guildID,
+	)
+
+	return notifications, err
+}
+
+// GetByGuildAndGlobalUser returns all notifications registered to a user
+// a guild and globally.
+func (db *DB) GetByGuildAndGlobalUser(
+	userID discord.UserID, guildID discord.GuildID) ([]Notification, error) {
+
+	var notifications []Notification
+	err := db.Select(
+		&notifications,
+		getUserGuildAndGlobalNotificationsQuery,
+		userID,
+		guildID,
 	)
 
 	return notifications, err

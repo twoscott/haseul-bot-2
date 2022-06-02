@@ -3,6 +3,8 @@ package util
 import (
 	"regexp"
 	"strings"
+
+	"golang.org/x/exp/slices"
 )
 
 var endsInEsRegex = regexp.MustCompile(`\S+(s|sh|ch|x|z)$`)
@@ -84,4 +86,26 @@ func TrimArgs(content string, limit int) string {
 	}
 
 	return strings.TrimSpace(content)
+}
+
+// SearchSort takes a slice of string results and a query to search for, and
+// then filters and sorts them accordingly.
+func SearchSort(results []string, query string) []string {
+	matches := make([]string, 0, len(results))
+	for _, r := range results {
+		if strings.Contains(r, query) {
+			matches = append(matches, r)
+		}
+	}
+
+	slices.Sort(matches)
+	matches = slices.Compact(matches)
+	slices.SortStableFunc(matches, func(a, b string) bool {
+		return len(a) < len(b)
+	})
+	slices.SortStableFunc(matches, func(a, b string) bool {
+		return strings.Index(a, query) < strings.Index(b, query)
+	})
+
+	return matches
 }

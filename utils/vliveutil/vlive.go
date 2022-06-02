@@ -4,6 +4,8 @@ import (
 	"net/http"
 	"net/url"
 	"time"
+
+	"github.com/twoscott/haseul-bot-2/utils/httputil"
 )
 
 const (
@@ -18,9 +20,7 @@ const (
 	AppID = "8c6cc7b45d2568fb668be6e05b6e5a3b"
 )
 
-var vliveClient = http.Client{
-	Timeout: 10 * time.Second,
-}
+var vliveClient = httputil.NewClient(10 * time.Second)
 
 func NewGetRequest(requestURL *url.URL) *http.Request {
 	return newRequest(requestURL, "GET")

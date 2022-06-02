@@ -17,7 +17,7 @@ func (h *Handler) Ready(ev *gateway.ReadyEvent) {
 	if !logChannelID.IsValid() {
 		log.Println("Configured log channel ID is invalid.")
 	} else {
-		_, err = h.State.SendMessage(logChannelID, "Ready to *Go!~*")
+		_, err = h.Router.State.SendMessage(logChannelID, "Ready to *Go!~*")
 	}
 
 	if err != nil {
@@ -25,7 +25,7 @@ func (h *Handler) Ready(ev *gateway.ReadyEvent) {
 	}
 
 	if !started {
-		h.HandleStartupEvent(ev)
+		h.Router.HandleStartupEvent(ev)
 		started = true
 	}
 }

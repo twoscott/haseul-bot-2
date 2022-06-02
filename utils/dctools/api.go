@@ -6,11 +6,14 @@ import (
 	"github.com/diamondburned/arikawa/v3/api"
 	"github.com/diamondburned/arikawa/v3/discord"
 	"github.com/diamondburned/arikawa/v3/state"
+	"github.com/diamondburned/arikawa/v3/utils/json/option"
 )
 
 // NoMentions is a zero value AllowedMentions object which allows no mentions.
 var NoMentions = new(api.AllowedMentions)
 
+// ReplyNoPingComplex replies to a message with the provided message data,
+// with mentions disabled.
 func ReplyNoPingComplex(
 	st *state.State,
 	msg *discord.Message,
@@ -55,62 +58,110 @@ func EmbedReplyNoPing(
 	return ReplyNoPing(st, msg, "", embeds...)
 }
 
-// ReplyWithSuccess replies to a message with the provided content, prepended
-// with a check emoji.
-func ReplyWithSuccess(
+// MessageRespond responds to an interaction with the supplied
+// response data.
+func MessageRespond(
 	st *state.State,
-	msg *discord.Message,
-	content string) (*discord.Message, error) {
+	interaction *discord.InteractionEvent,
+	data api.InteractionResponseData) error {
 
-	return TextReplyNoPing(st, msg, Success(content))
+	response := MessageResponse(data)
+	return st.RespondInteraction(interaction.ID, interaction.Token, *response)
 }
 
-// SendSuccess sends a message with the provided content, prepended
-// with a check emoji.
-func SendSuccess(
+// MessageRespondSimple responds to an interaction with the supplied
+// content and embed(s).
+func MessageRespondSimple(
 	st *state.State,
-	channelID discord.ChannelID,
-	content string) (*discord.Message, error) {
+	interaction *discord.InteractionEvent,
+	content string,
+	embeds ...discord.Embed) error {
 
-	return st.SendMessage(channelID, Success(content))
+	respData := api.InteractionResponseData{
+		Content: option.NewNullableString(content),
+		Embeds:  &embeds,
+	}
+
+	return MessageRespond(st, interaction, respData)
 }
 
-// ReplyWithError replies to a message with the provided content, prepended
-// with a cross emoji.
-func ReplyWithError(
+// MessageRespondText responds to an interaction with the supplied
+// content.
+func MessageRespondText(
 	st *state.State,
-	msg *discord.Message,
-	content string) (*discord.Message, error) {
+	interaction *discord.InteractionEvent,
+	content string) error {
 
-	return TextReplyNoPing(st, msg, Error(content))
+	return MessageRespondSimple(st, interaction, content)
 }
 
-// SendError sends a message with the provided content, prepended
-// with a cross emoji.
-func SendError(
+// MessageRespondEmbed responds to an interaction with the
+// supplied embed(s).
+func MessageRespondEmbed(
 	st *state.State,
-	channelID discord.ChannelID,
-	content string) (*discord.Message, error) {
+	interaction *discord.InteractionEvent,
+	embeds ...discord.Embed) error {
 
-	return st.SendMessage(channelID, Error(content))
+	return MessageRespondSimple(st, interaction, "", embeds...)
 }
 
-// ReplyWithWarning replies to a message with the provided content, prepended
-// with a warning emoji.
-func ReplyWithWarning(
-	st *state.State,
-	msg *discord.Message,
-	content string) (*discord.Message, error) {
+// DeferResponse responds to an interaction with a deferred message
+// interaction with source response, signalling to the response that
+// the full response will come later.
+func DeferResponse(
+	st *state.State, interaction *discord.InteractionEvent) error {
 
-	return TextReplyNoPing(st, msg, Warning(content))
+	return st.RespondInteraction(
+		interaction.ID,
+		interaction.Token,
+		*DeferredMessageResponse(api.InteractionResponseData{}),
+	)
 }
 
-// SendWarning sends a message with the provided content, prepended
-// with a warning emoji.
-func SendWarning(
+// FollowupRespond follows up the supplied deferred interaction with the
+// supplied response data.
+func FollowupRespond(
 	st *state.State,
-	channelID discord.ChannelID,
+	interaction *discord.InteractionEvent,
+	data api.InteractionResponseData) (*discord.Message, error) {
+
+	return st.CreateInteractionFollowup(
+		interaction.AppID, interaction.Token, data,
+	)
+}
+
+// FollowupRespondSimple responds to a deferred interaction with the supplied
+// content and embed(s).
+func FollowupRespondSimple(
+	st *state.State,
+	interaction *discord.InteractionEvent,
+	content string,
+	embeds ...discord.Embed) (*discord.Message, error) {
+
+	respData := api.InteractionResponseData{
+		Content: option.NewNullableString(content),
+		Embeds:  &embeds,
+	}
+
+	return FollowupRespond(st, interaction, respData)
+}
+
+// FollowupRespondText responds to a deferred interaction with the supplied
+// content.
+func FollowupRespondText(
+	st *state.State,
+	interaction *discord.InteractionEvent,
 	content string) (*discord.Message, error) {
 
-	return st.SendMessage(channelID, Warning(content))
+	return FollowupRespondSimple(st, interaction, content)
+}
+
+// FollowupRespondEmbed responds to a deffered interaction with the
+// supplied embed(s).
+func FollowupRespondEmbed(
+	st *state.State,
+	interaction *discord.InteractionEvent,
+	embeds ...discord.Embed) (*discord.Message, error) {
+
+	return FollowupRespondSimple(st, interaction, "", embeds...)
 }

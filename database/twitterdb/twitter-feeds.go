@@ -20,8 +20,7 @@ const (
 			replies		  BOOLEAN DEFAULT TRUE,
 			retweets      BOOLEAN DEFAULT TRUE,
 			PRIMARY KEY(channelID, twitterUserID),
-			FOREIGN KEY(twitterUserID)
-			REFERENCES TwitterUsers(ID)
+			FOREIGN KEY(twitterUserID) REFERENCES TwitterUsers(ID)
 		)`
 
 	addFeedQuery = `

@@ -9,7 +9,6 @@ import (
 
 	"github.com/diamondburned/arikawa/v3/api"
 	"github.com/diamondburned/arikawa/v3/discord"
-	"github.com/diamondburned/arikawa/v3/gateway"
 	"github.com/twoscott/haseul-bot-2/database/notifdb"
 	"github.com/twoscott/haseul-bot-2/router"
 	"github.com/twoscott/haseul-bot-2/utils/dctools"
@@ -21,7 +20,7 @@ type notificationMatch struct {
 	keyword string
 }
 
-func checkKeywords(rt *router.Router, msg *gateway.MessageCreateEvent) {
+func checkKeywords(rt *router.Router, msg *discord.Message) {
 	if len(msg.Content) < 1 {
 		return
 	}
@@ -36,7 +35,7 @@ func checkKeywords(rt *router.Router, msg *gateway.MessageCreateEvent) {
 
 	matchChan := make(chan notificationMatch)
 	go checkMatches(matchChan, notifs, msg.Content)
-	go sendNotifications(rt, matchChan, &msg.Message)
+	go sendNotifications(rt, matchChan, msg)
 }
 
 func checkMatches(
@@ -68,7 +67,8 @@ func checkMatch(
 	switch noti.Type {
 	case notifdb.NormalNotification:
 		plural := util.PluralSuffix(noti.Keyword)
-		rgxString = rgxString + `(?:'s?|` + plural + `)?`
+		possessive := util.PossessiveSuffix(noti.Keyword)
+		rgxString = rgxString + `(?:` + possessive + `|` + plural + `)?`
 		rgxString = `(?i)(^|\W)` + rgxString + `($|\W)`
 	case notifdb.LenientNotification:
 		rgxString = `(?i)` + rgxString
@@ -142,19 +142,19 @@ func sendNotification(
 	}
 
 	matchString := strings.Join(matches, "`, `")
-	chString := msg.ChannelID.Mention()
-	channel, err := rt.State.Channel(msg.ChannelID)
-	if err == nil {
-		chString = "#" + channel.Name
-	}
-
-	content := fmt.Sprintf("💬 **%s** mentioned `%s` in `%s`",
-		msg.Author.Username, matchString, chString,
+	content := fmt.Sprintf("💬 **%s** mentioned `%s`",
+		msg.Author.Username, matchString,
 	)
 
 	guild, err := rt.State.Guild(msg.GuildID)
 	if err == nil {
-		content += fmt.Sprintf(" on **%s**", guild.Name)
+		content += fmt.Sprintf(" in **%s**", guild.Name)
+	}
+
+	chString := msg.ChannelID.Mention()
+	channel, err := rt.State.Channel(msg.ChannelID)
+	if err == nil {
+		chString = "#" + channel.Name
 	}
 
 	colour, _ := rt.State.MemberColor(msg.GuildID, msg.Author.ID)

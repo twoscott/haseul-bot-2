@@ -4,16 +4,19 @@ import (
 	"errors"
 	"log"
 
+	"github.com/diamondburned/arikawa/v3/api"
 	"github.com/diamondburned/arikawa/v3/discord"
 	"github.com/diamondburned/arikawa/v3/gateway"
 	"github.com/diamondburned/arikawa/v3/state"
+	"github.com/twoscott/haseul-bot-2/utils/dctools"
 )
 
 type (
 	// Router handles the routing of events to receiving functions.
 	Router struct {
 		State                  *state.State
-		commands               CommandMap
+		commands               []*Command
+		commandHandlers        CommandHandlers
 		buttonPagers           ButtonPagerMap
 		guildJoinListeners     []GuildJoinListener
 		messageCreateListeners []MessageCreateListener
@@ -21,9 +24,9 @@ type (
 		startupListeners       []ReadyListener
 	}
 
-	CommandMap            map[string]*Command
-	ButtonPagerMap        map[discord.MessageID]*ButtonPager
-	MessageCreateListener func(*Router, *gateway.MessageCreateEvent)
+	CommandHandlers       map[string]*CommandHandler
+	ButtonPagerMap        map[discord.InteractionID]*ButtonPager
+	MessageCreateListener func(*Router, *discord.Message)
 	GuildJoinListener     func(*Router, *state.GuildJoinEvent)
 	ReadyListener         func(*Router, *gateway.ReadyEvent)
 )
@@ -32,76 +35,179 @@ type (
 func New(state *state.State) *Router {
 	return &Router{
 		State:                  state,
-		commands:               make(CommandMap),
+		commands:               make([]*Command, 0),
+		commandHandlers:        make(CommandHandlers),
 		buttonPagers:           make(ButtonPagerMap),
 		messageCreateListeners: make([]MessageCreateListener, 0),
 		mentionListeners:       make([]MessageCreateListener, 0),
 	}
 }
 
-// MustRegisterCommand adds a command object to the router.
-func (rt *Router) MustRegisterCommand(cmd *Command) {
-	registerCommandToDestination(rt.commands, cmd)
+// TODO: add command counter; count how many times each command has been used.
+
+// AddCommand adds a slash command to the router.
+func (rt *Router) AddCommand(cmd *Command) {
+	rt.commands = append(rt.commands, cmd)
 }
 
-// HandleCommand handles an incoming message that could potentially match with
-// a command.
+// HandleCommand handles an incoming slash command event.
 func (rt *Router) HandleCommand(
-	msg *gateway.MessageCreateEvent, args []string) {
+	interaction *discord.InteractionEvent,
+	command *discord.CommandInteraction) {
 
-	cmd, cmdLen := rt.findCommand(args)
-	if cmd == nil || cmd.Run == nil {
+	key := CommandInteractionKey(command)
+	handler, ok := rt.commandHandlers[key]
+	if !ok {
+		err := errors.New("No command registered for '" + key + "'")
+		log.Print(err)
 		return
 	}
 
+	userOptions := dctools.CommandOptions(command)
 	ctx := CommandCtx{
-		Router: rt,
-		Length: cmdLen,
-		Member: msg.Member,
-		Msg:    &msg.Message,
+		Router:      rt,
+		Interaction: interaction,
+		Command:     command,
+		Options:     userOptions,
+		Ephemeral:   handler.Ephemeral,
 	}
 
-	cmd.Execute(ctx, args[cmdLen:])
+	if handler.Defer {
+		ctx.Defer()
+	}
+
+	handler.Execute(ctx)
 }
 
-func (rt Router) findCommand(args []string) (*Command, int) {
-	var depth = 0
-	var result *Command
-	var lastCmd *Command
-	cmdsTracker := rt.commands
+// HandleAutocomplete handles an autocomplete interaction.
+func (rt *Router) HandleAutocomplete(
+	interaction *discord.InteractionEvent,
+	completion *discord.AutocompleteInteraction) {
 
-	for i, arg := range args {
-		depth = i
-		currCmd, ok := cmdsTracker[arg]
-		if !ok {
-			if lastCmd != nil {
-				result = lastCmd
-				depth = i
-			}
-			break
-		}
-
-		cmdsTracker = currCmd.SubCommands
-		if cmdsTracker == nil || len(cmdsTracker) < 1 {
-			result = currCmd
-			depth = i + 1
-			break
-		}
-
-		if i == len(args)-1 {
-			result = currCmd
-			depth = i + 1
-			break
-		}
-
-		lastCmd = currCmd
+	key := AutocompleteInteractionKey(interaction, completion)
+	handler, ok := rt.commandHandlers[key]
+	if !ok {
+		err := errors.New("No command registered for '" + key + "'")
+		log.Print(err)
+		return
 	}
 
-	return result, depth
+	completionOptions := dctools.AutocompleteOptions(completion)
+	focusedOption := dctools.FocusedOption(completion)
+	ctx := AutocompleteCtx{
+		Router:      rt,
+		Interaction: interaction,
+		Options:     completionOptions,
+		Focused:     *focusedOption,
+	}
+
+	handler.Autocomplete(ctx)
+}
+
+// AddButtonPager adds a button pager to the given message with the given pages.
+func (rt *Router) AddButtonPager(
+	interaction *discord.InteractionEvent, pages []MessagePage) error {
+
+	if !interaction.ID.IsValid() {
+		return errors.New(
+			"No interaction ID was provided to add a button pager to",
+		)
+	}
+	if len(pages) < 2 {
+		return nil
+	}
+
+	if _, ok := rt.buttonPagers[interaction.ID]; ok {
+		return errors.New(
+			"No more than one button pager can be assigned to a single message",
+		)
+	}
+
+	buttonPager := newButtonPager(interaction, pages)
+	rt.buttonPagers[interaction.ID] = buttonPager
+
+	go buttonPager.deleteAfterTimeout(rt)
+
+	return nil
+}
+
+// HandleButton routes a button press to the relevant button pager.
+func (rt *Router) HandleButtonPress(
+	button *discord.InteractionEvent, data *discord.ButtonInteraction) {
+
+	buttonPager, ok := rt.buttonPagers[button.Message.Interaction.ID]
+	if !ok {
+		return
+	}
+
+	buttonPager.handleButtonPress(rt, button, data)
+}
+
+// GetRawCreateCommandData converts all commands stored in the router to
+// Discord API create command data types.
+func (rt *Router) GetRawCreateCommandData() []api.CreateCommandData {
+	newCommandData := make([]api.CreateCommandData, len(rt.commands))
+
+	for i, cmd := range rt.commands {
+		newCommandData[i] = *cmd.CreateData()
+	}
+
+	return newCommandData
+}
+
+// AddCommandsToDiscord sends the defined commands to the Discord API,
+// converted to their Discord API slash command types so that users can
+// execute the commands.
+func (rt *Router) AddCommandsToDiscord() error {
+	createData := rt.GetRawCreateCommandData()
+
+	app, err := rt.State.CurrentApplication()
+	if err != nil {
+		return err
+	}
+
+	_, err = rt.State.BulkOverwriteCommands(app.ID, createData)
+
+	return err
+}
+
+// RegisterCommandHandlers maps command handler functions to their command
+// triggers.
+func (rt *Router) MustRegisterCommandHandlers() {
+	for _, cmd := range rt.commands {
+		for _, group := range cmd.SubCommandGroups {
+			prefix := cmd.Name + "/" + group.Name
+			rt.mustRegisterSubCommandHandlers(prefix, group.SubCommands)
+		}
+
+		prefix := cmd.Name
+		rt.mustRegisterSubCommandHandlers(prefix, cmd.SubCommands)
+
+		if len(cmd.SubCommandGroups) < 1 && len(cmd.SubCommands) < 1 {
+			rt.mustRegisterCommandHandler(cmd.Name, cmd.Handler)
+		}
+	}
+}
+
+func (rt *Router) mustRegisterSubCommandHandlers(
+	prefix string, subCommands []*SubCommand) {
+	for _, cmd := range subCommands {
+		trigger := prefix + "/" + cmd.Name
+		rt.mustRegisterCommandHandler(trigger, cmd.Handler)
+	}
+}
+
+func (rt *Router) mustRegisterCommandHandler(name string, handler *CommandHandler) {
+	nameCheck, ok := rt.commandHandlers[name]
+	if ok {
+		log.Panicf("'%v' is already registered to another command", nameCheck)
+	}
+
+	rt.commandHandlers[name] = handler
 }
 
 // RegisterMessageHandler adds a function to receive all messages.
-func (rt *Router) RegisterMessageHandler(
+func (rt *Router) AddMessageHandler(
 	messageCreateListener MessageCreateListener) {
 
 	rt.messageCreateListeners = append(
@@ -111,14 +217,16 @@ func (rt *Router) RegisterMessageHandler(
 
 // HandleMessage routes a message create event to all listener functions
 // registered to the router.
-func (rt *Router) HandleMessage(msg *gateway.MessageCreateEvent) {
+func (rt *Router) HandleMessage(
+	msg *discord.Message, member *discord.Member) {
+
 	for _, listener := range rt.messageCreateListeners {
 		go listener(rt, msg)
 	}
 }
 
 // RegisterGuildJoinHandler adds a function to receive all guild joins.
-func (rt *Router) RegisterGuildJoinHandler(
+func (rt *Router) AddGuildJoinHandler(
 	guildJoinListener GuildJoinListener) {
 
 	rt.guildJoinListeners = append(rt.guildJoinListeners, guildJoinListener)
@@ -132,8 +240,8 @@ func (rt *Router) HandleGuildJoin(guild *state.GuildJoinEvent) {
 	}
 }
 
-// RegisterReadyListener adds a function to receive all ready events.
-func (rt *Router) RegisterStartupListener(readyListener ReadyListener) {
+// AddStartupListener adds a function to receive all ready events.
+func (rt *Router) AddStartupListener(readyListener ReadyListener) {
 	rt.startupListeners = append(rt.startupListeners, readyListener)
 }
 
@@ -142,73 +250,5 @@ func (rt *Router) RegisterStartupListener(readyListener ReadyListener) {
 func (rt *Router) HandleStartupEvent(readyEvent *gateway.ReadyEvent) {
 	for _, listener := range rt.startupListeners {
 		go listener(rt, readyEvent)
-	}
-}
-
-// AddButtonPager adds a button pager to the given message with the given pages.
-func (rt *Router) AddButtonPager(options ButtonPagerOptions) error {
-	if !options.MessageID.IsValid() {
-		return errors.New(
-			"No message ID was provided to add a button pager to",
-		)
-	}
-	if len(options.Pages) < 2 {
-		return nil
-	}
-
-	if _, ok := rt.buttonPagers[options.MessageID]; ok {
-		return errors.New(
-			"No more than one button pager can be assigned to a single message",
-		)
-	}
-
-	buttonPager := newButtonPager(options)
-	rt.buttonPagers[options.MessageID] = buttonPager
-
-	go buttonPager.deleteAfterTimeout(rt)
-
-	return nil
-}
-
-// HandleButton routes a button press to the relevant button pager.
-func (rt *Router) HandleButtonPress(
-	button *gateway.InteractionCreateEvent, data *discord.ButtonInteraction) {
-	buttonPager, ok := rt.buttonPagers[button.Message.ID]
-	if !ok {
-		return
-	}
-
-	buttonPager.handleButton(rt, button, data)
-}
-
-func registerCommandToDestination(destination CommandMap, cmd *Command) {
-	for _, c := range destination {
-		if c == cmd {
-			panic("Command cannot be registered twice")
-		}
-	}
-
-	if cmd.Name == "" {
-		panic("Failed to add a command with no name")
-	}
-
-	if destination == nil {
-		panic("Command map must be initialised")
-	}
-
-	nameCheck, ok := destination[cmd.Name]
-	if ok {
-		log.Panicf("'%v is already registered to another command", nameCheck)
-	}
-	destination[cmd.Name] = cmd
-
-	for _, alias := range cmd.Aliases {
-		nameCheck, ok = destination[alias]
-		if ok {
-			log.Panicf(
-				"'%v' is already registered to another command", nameCheck,
-			)
-		}
-		destination[alias] = cmd
 	}
 }

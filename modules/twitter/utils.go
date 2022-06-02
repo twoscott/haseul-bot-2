@@ -1,16 +1,18 @@
 package twitter
 
 import (
-	"fmt"
 	"log"
 	"net/http"
 	"regexp"
 	"strings"
 
 	"github.com/dghubble/go-twitter/twitter"
+	"github.com/diamondburned/arikawa/v3/api"
 	"github.com/diamondburned/arikawa/v3/discord"
 	"github.com/twoscott/haseul-bot-2/router"
 	"github.com/twoscott/haseul-bot-2/utils/dctools"
+	"github.com/twoscott/haseul-bot-2/utils/util"
+	"golang.org/x/exp/slices"
 )
 
 const (
@@ -36,80 +38,107 @@ func parseUserIfURL(user string) string {
 	return match[1]
 }
 
-func fetchUser(ctx router.CommandCtx, screenName string) (*twitter.User, bool) {
+func fetchUser(screenName string) (*twitter.User, router.CmdResponse) {
 	user, resp, err := twt.Users.Show(&twitter.UserShowParams{
 		ScreenName: screenName,
 	})
 	switch err.(type) {
-	case nil:
-		break
 	case twitter.APIError:
 		switch resp.StatusCode {
 		case http.StatusNotFound:
-			dctools.ReplyWithWarning(ctx.State, ctx.Msg,
-				fmt.Sprintf("I could not find a user named @%s.", screenName),
+			return nil, router.Warningf(
+				"I could not find a user named @%s.", screenName,
 			)
 		case http.StatusForbidden:
-			dctools.ReplyWithWarning(ctx.State, ctx.Msg,
-				fmt.Sprintf("@%s is either private or suspended.", screenName),
+			return nil, router.Warningf(
+				"@%s is either private or suspended.", screenName,
 			)
 		default:
 			log.Println(err)
-			dctools.ReplyWithError(ctx.State, ctx.Msg,
-				fmt.Sprintf("Unknown error occurred while trying to find @%s.",
-					screenName,
-				),
+			return nil, router.Errorf(
+				"Unknown error occurred while trying to find @%s.",
+				screenName,
 			)
 		}
-		return nil, false
-	default:
-		dctools.ReplyWithError(ctx.State, ctx.Msg,
-			fmt.Sprintf("Unknown error occurred while trying to find @%s.",
-				screenName,
-			),
+	}
+	if err != nil {
+		return nil, router.Errorf(
+			"Unknown error occurred while trying to find @%s.", screenName,
 		)
-		return nil, false
 	}
 
-	return user, true
+	return user, nil
 }
 
 func parseChannelArg(
-	ctx router.CommandCtx, channelArg string) (*discord.Channel, bool) {
+	ctx router.CommandCtx,
+	channelID discord.ChannelID) (*discord.Channel, router.CmdResponse) {
 
-	channelID := dctools.ParseChannelID(channelArg)
 	if !channelID.IsValid() {
-		dctools.ReplyWithWarning(ctx.State, ctx.Msg,
-			"Malformed Discord channel provided.",
-		)
-		return nil, false
+		return nil, router.Warningf("Malformed Discord channel provided.")
 	}
 
 	channel, err := ctx.State.Channel(channelID)
 	if dctools.ErrMissingAccess(err) {
-		dctools.ReplyWithWarning(ctx.State, ctx.Msg,
-			"I cannot access this channel.",
-		)
-		return nil, false
+		return nil, router.Warningf("I cannot access this channel.")
 	}
 	if err != nil {
-		dctools.ReplyWithWarning(ctx.State, ctx.Msg,
-			"Invalid Discord channel provided.",
-		)
-		return nil, false
+		return nil, router.Warningf("Invalid Discord channel provided.")
 	}
-	if channel.GuildID != ctx.Msg.GuildID {
-		dctools.ReplyWithWarning(ctx.State, ctx.Msg,
+	if channel.GuildID != ctx.Interaction.GuildID {
+		return nil, router.Warningf(
 			"Channel provided must belong to this server.",
 		)
-		return nil, false
 	}
 	if !dctools.IsTextChannel(channel.Type) {
-		dctools.ReplyWithWarning(ctx.State, ctx.Msg,
-			"Channel provided must be a text channel.",
-		)
-		return nil, false
+		return nil, router.Warningf("Channel provided must be a text channel.")
 	}
 
-	return channel, true
+	return channel, nil
+}
+
+func dbTwitterCompleter(ctx router.AutocompleteCtx) {
+	username := ctx.Options.Find("twitter").String()
+
+	dbUsers, err := db.Twitter.GetUsersByGuild(ctx.Interaction.GuildID)
+	if err != nil {
+		log.Println(err)
+		return
+	}
+
+	userIDs := make([]int64, 0, len(dbUsers))
+	for _, u := range dbUsers {
+		userIDs = append(userIDs, u.ID)
+	}
+
+	users, resp, err := twt.Users.Lookup(&twitter.UserLookupParams{
+		UserID: userIDs,
+	})
+	if err != nil || resp.StatusCode != http.StatusOK {
+		log.Println(err)
+		return
+	}
+
+	usernames := make([]string, 0, len(users))
+	for _, u := range users {
+		usernames = append(usernames, u.ScreenName)
+	}
+
+	var choices []api.AutocompleteChoice
+	if username == "" {
+		usernames := slices.Compact(usernames)
+		choices = dctools.MakeStringChoices(usernames)
+	} else {
+		matches := util.SearchSort(usernames, username)
+		choices = dctools.MakeStringChoices(matches)
+	}
+
+	ctx.State.RespondInteraction(ctx.Interaction.ID, ctx.Interaction.Token,
+		api.InteractionResponse{
+			Type: api.AutocompleteResult,
+			Data: &api.InteractionResponseData{
+				Choices: &choices,
+			},
+		},
+	)
 }

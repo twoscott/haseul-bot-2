@@ -14,6 +14,7 @@ const (
 		DELETE FROM NotiDnD WHERE userID = $1`
 )
 
+// ToggleDnD toggles whether a user has do not disturb turned on or off.
 func (db *DB) ToggleDnD(userID discord.UserID) (bool, error) {
 	res, err := db.Exec(addDnD, userID)
 	if err != nil {

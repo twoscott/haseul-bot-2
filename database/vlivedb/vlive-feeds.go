@@ -16,8 +16,7 @@ const (
 			channelID          INT8    NOT NULL,
 			VLIVEchannelCode   TEXT    NOT NULL,
 			PRIMARY KEY(channelID, VLIVEchannelCode),
-			FOREIGN KEY(VLIVEchannelCode)
-			REFERENCES VLIVEChannels(code)
+			FOREIGN KEY(VLIVEchannelCode) REFERENCES VLIVEChannels(code)
 		)`
 	addFeedQuery = `
 		INSERT INTO VLIVEFeeds VALUES($1, $2, $3) ON CONFLICT DO NOTHING`

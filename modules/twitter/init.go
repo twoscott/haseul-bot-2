@@ -1,26 +1,25 @@
 package twitter
 
 import (
-	"golang.org/x/oauth2"
-	"golang.org/x/oauth2/clientcredentials"
-
 	"github.com/dghubble/go-twitter/twitter"
 	"github.com/diamondburned/arikawa/v3/gateway"
 	"github.com/twoscott/haseul-bot-2/config"
 	"github.com/twoscott/haseul-bot-2/database"
 	"github.com/twoscott/haseul-bot-2/router"
-	putil "github.com/twoscott/haseul-bot-2/utils/patreonutil"
+	ptutil "github.com/twoscott/haseul-bot-2/utils/patreonutil"
+	"golang.org/x/oauth2"
+	"golang.org/x/oauth2/clientcredentials"
 )
 
 var (
 	db  *database.DB
 	twt *twitter.Client
-	pat *putil.PatreonHelper
+	pat *ptutil.PatreonHelper
 )
 
 func Init(rt *router.Router) {
 	db = database.GetInstance()
-	pat = putil.GetPatreonHelper()
+	pat = ptutil.GetPatreonHelper()
 
 	cfg := config.GetInstance()
 	consumerKey := cfg.Twitter.ConsumerKey
@@ -34,24 +33,24 @@ func Init(rt *router.Router) {
 	httpClient := httpConfig.Client(oauth2.NoContext)
 	twt = twitter.NewClient(httpClient)
 
-	rt.MustRegisterCommand(twtCommand)
-	twtCommand.MustRegisterSubCommand(twtFeedCommand)
-	twtFeedCommand.MustRegisterSubCommand(twtFeedAddCommand)
-	twtFeedCommand.MustRegisterSubCommand(twtFeedClearCommand)
-	twtFeedCommand.MustRegisterSubCommand(twtFeedListCommand)
-	twtFeedCommand.MustRegisterSubCommand(twtFeedRemoveCommand)
+	rt.AddStartupListener(onStartup)
 
-	twtCommand.MustRegisterSubCommand(twtRoleCommand)
-	twtRoleCommand.MustRegisterSubCommand(twtRoleAddCommand)
-	twtRoleCommand.MustRegisterSubCommand(twtRoleClearCommand)
-	twtRoleCommand.MustRegisterSubCommand(twtRoleListCommand)
-	twtRoleCommand.MustRegisterSubCommand(twtRoleRemoveCommand)
+	rt.AddCommand(twtCommand)
+	twtCommand.AddSubCommandGroup(twtFeedsCommand)
+	twtFeedsCommand.AddSubCommand(twtFeedsAddCommand)
+	twtFeedsCommand.AddSubCommand(twtFeedsRemoveCommand)
+	twtFeedsCommand.AddSubCommand(twtFeedsListCommand)
 
-	twtCommand.MustRegisterSubCommand(twtToggleCommand)
-	twtToggleCommand.MustRegisterSubCommand(twtToggleRepliesCommand)
-	twtToggleCommand.MustRegisterSubCommand(twtToggleRetweetsCommand)
+	twtCommand.AddSubCommandGroup(twtRolesCommand)
+	twtRolesCommand.AddSubCommand(twtRolesAddCommand)
+	twtRolesCommand.AddSubCommand(twtRolesRemoveCommand)
+	twtRolesCommand.AddSubCommand(twtRolesListCommand)
+	twtRolesCommand.AddSubCommand(twtRolesClearCommand)
 
-	rt.RegisterStartupListener(onStartup)
+	twtCommand.AddSubCommandGroup(twtRepliesCommand)
+	twtRepliesCommand.AddSubCommand(twtRepliesToggleCommand)
+	twtCommand.AddSubCommandGroup(twtRetweetsCommand)
+	twtRetweetsCommand.AddSubCommand(twtRetweetsToggleCommand)
 }
 
 func onStartup(rt *router.Router, _ *gateway.ReadyEvent) {

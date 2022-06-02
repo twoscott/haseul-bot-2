@@ -38,12 +38,7 @@ func checkFeeds(st *state.State) {
 		}(user)
 	}
 
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-		checkRetries(st)
-	}()
-
+	checkRetries(st)
 	wg.Wait()
 
 	elapsed := time.Since(start)
@@ -74,6 +69,8 @@ func checkTweets(st *state.State, user twitterdb.User) {
 			case http.StatusForbidden, http.StatusNotFound:
 				db.Twitter.RemoveFeedsByUser(user.ID)
 				db.Twitter.RemoveUser(user.ID)
+			default:
+				log.Println(err)
 			}
 		}
 		return
@@ -153,22 +150,21 @@ func postTweet(st *state.State, feed twitterdb.Feed, tweet twitter.Tweet) bool {
 	content := url + roles
 
 	_, err := st.SendMessage(feed.ChannelID, content)
-	if err == nil {
-		return false
+	if err != nil {
+		switch {
+		case dctools.ErrUnknownChannel(err),
+			dctools.ErrMissingAccess(err),
+			dctools.ErrLackPermission(err):
+
+			log.Println(err)
+			db.Twitter.RemoveFeedsByChannel(feed.ChannelID)
+			return false
+		default:
+			return true
+		}
 	}
 
-	switch {
-	case dctools.ErrUnknownChannel(err):
-		fallthrough
-	case dctools.ErrMissingAccess(err):
-		fallthrough
-	case dctools.ErrLackPermission(err):
-		log.Println(err)
-		db.Twitter.RemoveFeedsByChannel(feed.ChannelID)
-		return false
-	}
-
-	return true
+	return false
 }
 
 func calcWaitTime(elapsed time.Duration, userCount int) time.Duration {

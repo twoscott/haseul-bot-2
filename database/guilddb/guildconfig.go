@@ -9,7 +9,6 @@ import (
 // GuildConfig represents a guild config database entry.
 type GuildConfig struct {
 	GuildID           discord.GuildID `db:"guildid"`
-	Prefix            string          `db:"prefix"`
 	WelcomeMsg        string          `db:"welcomemsg"`
 	AutoroleOn        bool            `db:"autoroleon"`
 	CommandsOn        bool            `db:"commandson"`
@@ -29,22 +28,21 @@ type GuildConfig struct {
 const (
 	createGuildConfigsTableQuery = `
 		CREATE TABLE IF NOT EXISTS GuildConfig(
-			guildID           INT8       NOT NULL,
-			prefix            VARCHAR(3) DEFAULT '.',
-			welcomeMsg        TEXT       DEFAULT 'Welcome!',
-			autoroleOn        BOOLEAN    DEFAULT FALSE,
-			commandsOn        BOOLEAN    DEFAULT TRUE, 
-			joinLogsOn        BOOLEAN    DEFAULT FALSE, 
-			msgLogsOn         BOOLEAN    DEFAULT FALSE,
-			pollOn            BOOLEAN    DEFAULT FALSE,
-			rolesOn           BOOLEAN    DEFAULT FALSE,
-			welcomeOn         BOOLEAN    DEFAULT FALSE,
-			autoroleID        INT8  ,
-			joinLogsChannelID INT8  ,
-			msgLogsChannelID  INT8  ,
-			muteroleID        INT8  ,
-			rolesChannelID    INT8  ,
-			welcomeChannelID  INT8  ,
+			guildID           INT8          NOT NULL,
+			welcomeMsg        VARCHAR(1024) DEFAULT 'Welcome!',
+			autoroleOn        BOOLEAN       DEFAULT FALSE,
+			commandsOn        BOOLEAN       DEFAULT TRUE, 
+			joinLogsOn        BOOLEAN       DEFAULT FALSE, 
+			msgLogsOn         BOOLEAN       DEFAULT FALSE,
+			pollOn            BOOLEAN       DEFAULT FALSE,
+			rolesOn           BOOLEAN       DEFAULT FALSE,
+			welcomeOn         BOOLEAN       DEFAULT FALSE,
+			autoroleID        INT8,
+			joinLogsChannelID INT8,
+			msgLogsChannelID  INT8,
+			muteroleID        INT8,
+			rolesChannelID    INT8,
+			welcomeChannelID  INT8,
 			PRIMARY KEY(guildID)
 		)`
 

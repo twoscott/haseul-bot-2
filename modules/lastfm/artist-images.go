@@ -1,11 +1,11 @@
 package lastfm
 
 import (
-	"net/http"
 	"net/url"
 	"strings"
 
 	"github.com/PuerkitoBio/goquery"
+	"github.com/twoscott/haseul-bot-2/utils/httputil"
 )
 
 func scrapeArtistImage(artist string) (string, error) {
@@ -16,7 +16,8 @@ func scrapeArtistImage(artist string) (string, error) {
 
 	artistNamePath := url.PathEscape(artist)
 	artistImagesURL.Path = "music/" + artistNamePath + "/+images"
-	res, err := http.Get(artistImagesURL.String())
+
+	res, err := httputil.Get(artistImagesURL.String())
 	if err != nil {
 		return "", err
 	}

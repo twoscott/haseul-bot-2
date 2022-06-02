@@ -11,7 +11,8 @@ var db *database.DB
 func Init(rt *router.Router) {
 	db = database.GetInstance()
 
-	rt.RegisterStartupListener(onStartup)
+	rt.AddStartupListener(onStartup)
+
 }
 
 func onStartup(rt *router.Router, _ *gateway.ReadyEvent) {

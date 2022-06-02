@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"net/url"
 	"strconv"
 )
@@ -127,6 +128,9 @@ func GetStarPosts(channelCode string, limit int) ([]StarPost, error) {
 	var body Body
 	json.Unmarshal(bytes, &body)
 
+	b, _ := json.MarshalIndent(body, "", "    ")
+	log.Println(string(b))
+
 	return body.Data, nil
 }
 
@@ -159,6 +163,8 @@ func BuildStarPostsURL(channelCode string, limit int) (*url.URL, error) {
 			"url,"+
 			"writtenIn",
 	)
+
+	queryBuilder.Set("sortType", "OLDEST")
 
 	postsURL, err := url.Parse(endpoint)
 	if err != nil {

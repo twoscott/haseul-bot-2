@@ -8,6 +8,7 @@ import (
 	"github.com/twoscott/haseul-bot-2/database/notifdb"
 	"github.com/twoscott/haseul-bot-2/database/twitterdb"
 	"github.com/twoscott/haseul-bot-2/database/vlivedb"
+	"github.com/twoscott/haseul-bot-2/database/youtubedb"
 )
 
 type DB struct {
@@ -16,6 +17,7 @@ type DB struct {
 	Guilds        *guilddb.DB
 	Notifications *notifdb.DB
 	VLIVE         *vlivedb.DB
+	YouTube       *youtubedb.DB
 }
 
 var (
@@ -33,6 +35,7 @@ func GetInstance() *DB {
 			Twitter:       twitterdb.New(dbConn),
 			Notifications: notifdb.New(dbConn),
 			VLIVE:         vlivedb.New(dbConn),
+			YouTube:       youtubedb.New(dbConn),
 		}
 	})
 

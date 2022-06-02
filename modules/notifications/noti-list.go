@@ -6,51 +6,62 @@ import (
 
 	"github.com/diamondburned/arikawa/v3/discord"
 	"github.com/twoscott/haseul-bot-2/router"
-	"github.com/twoscott/haseul-bot-2/utils/cmdutil"
 	"github.com/twoscott/haseul-bot-2/utils/dctools"
 	"github.com/twoscott/haseul-bot-2/utils/util"
+	"golang.org/x/exp/slices"
 )
 
-var notiListCommand = &router.Command{
-	Name:      "list",
-	UseTyping: true,
-	Run:       notiListRun,
+var notiListCommand = &router.SubCommand{
+	Name:        "list",
+	Description: "Lists all notifications",
+	Handler: &router.CommandHandler{
+		Executor:  notiListExec,
+		Ephemeral: true,
+	},
 }
 
-func notiListRun(ctx router.CommandCtx, _ []string) {
-	notifications, err := db.Notifications.GetByUser(ctx.Msg.Author.ID)
+func notiListExec(ctx router.CommandCtx) {
+	notifications, err := db.Notifications.GetByUser(ctx.Interaction.SenderID())
 	if err != nil {
 		log.Println(err)
-		dctools.ReplyWithError(ctx.State, ctx.Msg,
+		ctx.RespondError(
 			"Error occurred while fetching Notifications from the database.",
 		)
 		return
 	}
 	if len(notifications) < 1 {
-		dctools.ReplyWithWarning(ctx.State, ctx.Msg,
+		ctx.RespondWarning(
 			"You have no notifications set up with Haseul Bot.",
 		)
 		return
 	}
 
-	notiList := make([]string, len(notifications))
-	for i, noti := range notifications {
+	notiList := make([]string, 0, len(notifications))
+	for _, noti := range notifications {
 		scope := "Global"
 		if noti.GuildID.IsValid() {
-			scope = "Server"
 			g, err := ctx.State.Guild(noti.GuildID)
-			if err == nil {
+			if err != nil {
+				scope = "Server"
+			} else {
 				scope = g.Name + " Server"
 			}
 		}
 
-		entry := fmt.Sprintf("'%s' - %s (%s)", noti.Keyword, noti.Type, scope)
-
-		notiList[i] = entry
+		entry := fmt.Sprintf("**%s** - %s (%s)", noti.Keyword, noti.Type, scope)
+		notiList = append(notiList, entry)
 	}
+
+	slices.Sort(notiList)
 
 	descriptionPages := util.PagedLines(notiList, 2048, 10)
 	pages := make([]router.MessagePage, len(descriptionPages))
+	numOfNotis := len(notifications)
+	numOfNotisFooter := fmt.Sprintf(
+		"%d %s",
+		numOfNotis,
+		util.Pluralise("Notification", numOfNotis),
+	)
 	for i, description := range descriptionPages {
 		pageID := fmt.Sprintf("Page %d/%d", i+1, len(descriptionPages))
 		pages[i] = router.MessagePage{
@@ -59,39 +70,16 @@ func notiListRun(ctx router.CommandCtx, _ []string) {
 					Title:       "Notification List",
 					Description: description,
 					Color:       dctools.EmbedBackColour,
-					Footer:      &discord.EmbedFooter{Text: pageID},
+					Footer: &discord.EmbedFooter{
+						Text: dctools.SeparateEmbedFooter(
+							pageID,
+							numOfNotisFooter,
+						),
+					},
 				},
 			},
 		}
 	}
 
-	dmChannel, err := ctx.State.CreatePrivateChannel(ctx.Msg.Author.ID)
-	if err != nil {
-		log.Println(err)
-		dctools.SendError(ctx.State, ctx.Msg.ChannelID,
-			"Error occurred while trying to DM you.",
-		)
-		return
-	}
-
-	_, err = cmdutil.SendWithPaging(ctx, dmChannel.ID, pages)
-	if err == nil {
-		dctools.ReplyWithSuccess(ctx.State, ctx.Msg,
-			"I sent a list of your notifications to your DMs.",
-		)
-		return
-	}
-
-	if dctools.ErrCannotDM(err) {
-		dctools.SendWarning(ctx.State, ctx.Msg.ChannelID,
-			"I am unable to DM you. "+
-				"Please open your DMs to server members in your settings.",
-		)
-		return
-	}
-
-	dctools.ReplyWithError(ctx.State, ctx.Msg,
-		"Error occurred while sending your list of notifications "+
-			"to your DMs.",
-	)
+	ctx.RespondPaging(pages)
 }

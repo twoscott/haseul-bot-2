@@ -6,27 +6,6 @@ import (
 	"github.com/diamondburned/arikawa/v3/utils/httputil"
 )
 
-const (
-	successSymbol = "✅"
-	errorSymbol   = "❌"
-	warningSymbol = "⚠️"
-)
-
-// Error prepends a cross symbol and a space to the provided content.
-func Error(content string) string {
-	return errorSymbol + " " + content
-}
-
-// Success prepends a check symbol and a space to the provided content.
-func Success(content string) string {
-	return successSymbol + " " + content
-}
-
-// Warning prepends a warning symbol and a space to the provided content.
-func Warning(content string) string {
-	return warningSymbol + " " + content
-}
-
 // UnwrapHTTPError unwraps an error and retrieves the HTTP error if present.
 func UnwrapHTTPError(err error) *httputil.HTTPError {
 	var httpErr *httputil.HTTPError

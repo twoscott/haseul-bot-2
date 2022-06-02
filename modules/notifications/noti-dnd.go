@@ -4,21 +4,23 @@ import (
 	"log"
 
 	"github.com/twoscott/haseul-bot-2/router"
-	"github.com/twoscott/haseul-bot-2/utils/dctools"
 )
 
-var notiDndCommand = &router.Command{
-	Name:      "dnd",
-	Aliases:   []string{"donotdisturb", "sleep"},
-	UseTyping: true,
-	Run:       notiDndRun,
+var notiDndCommand = &router.SubCommand{
+	Name: "dnd",
+	Description: "Toggles whether Do Not Disturb is turned on " +
+		"for notifications",
+	Handler: &router.CommandHandler{
+		Executor:  notiDndExec,
+		Ephemeral: true,
+	},
 }
 
-func notiDndRun(ctx router.CommandCtx, _ []string) {
-	dndOn, err := db.Notifications.ToggleDnD(ctx.Msg.Author.ID)
+func notiDndExec(ctx router.CommandCtx) {
+	dndOn, err := db.Notifications.ToggleDnD(ctx.Interaction.SenderID())
 	if err != nil {
 		log.Println(err)
-		dctools.SendError(ctx.State, ctx.Msg.ChannelID,
+		ctx.RespondError(
 			"Error occurred while toggling your do not disturb status.",
 		)
 		return
@@ -31,7 +33,7 @@ func notiDndRun(ctx router.CommandCtx, _ []string) {
 		status = "off"
 	}
 
-	dctools.SendSuccess(ctx.State, ctx.Msg.ChannelID,
-		"Your do not disturb status was turned "+status+".",
+	ctx.RespondSuccess(
+		"Your do not disturb status was turned " + status + ".",
 	)
 }

@@ -6,7 +6,7 @@ import "github.com/twoscott/haseul-bot-2/router"
 // Handler wraps router and handles events from the API, and passes them on
 // to the router.
 type Handler struct {
-	*router.Router
+	Router *router.Router
 }
 
 // New returns a new instance of Handler.

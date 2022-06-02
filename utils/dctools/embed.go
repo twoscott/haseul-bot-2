@@ -1,6 +1,7 @@
 package dctools
 
 import (
+	"strings"
 	"time"
 
 	"github.com/diamondburned/arikawa/v3/discord"
@@ -22,12 +23,16 @@ func EmbedTime(t time.Time) string {
 	return t.UTC().Format(EmbedTimeFormat)
 }
 
+func ColourInvalid(colour discord.Color) bool {
+	return colour == 0x000000 ||
+		colour == discord.DefaultEmbedColor ||
+		colour == discord.NullColor
+}
+
 // EmbedColour returns a Discord colour where default black colours are
 // replaced with the default embed background colour.
 func EmbedColour(colour discord.Color) discord.Color {
-	if colour == 0x000000 ||
-		colour == discord.DefaultEmbedColor ||
-		colour == discord.NullColor {
+	if ColourInvalid(colour) {
 		colour = EmbedBackColour
 	}
 	return colour
@@ -40,4 +45,10 @@ func EmptyEmbedField() discord.EmbedField {
 		Value:  "\u200b",
 		Inline: true,
 	}
+}
+
+// SeparateFooter takes multiple strings as sections to an embed footer, and
+// joins them, separated by an embed footer separator.
+func SeparateEmbedFooter(sections ...string) string {
+	return strings.Join(sections, EmbedFooterSep)
 }
