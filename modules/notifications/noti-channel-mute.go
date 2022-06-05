@@ -5,7 +5,6 @@ import (
 
 	"github.com/diamondburned/arikawa/v3/discord"
 	"github.com/twoscott/haseul-bot-2/router"
-	"github.com/twoscott/haseul-bot-2/utils/dctools"
 )
 
 var notiChannelMuteCommand = &router.SubCommand{
@@ -38,20 +37,15 @@ func notiChannelMuteExec(ctx router.CommandCtx) {
 
 	channel, err := ctx.State.Channel(channelID)
 	if err != nil {
+		log.Println(err)
 		ctx.RespondWarning(
 			"Invalid Discord channel provided.",
 		)
 		return
 	}
-	if channel.GuildID != channel.GuildID {
+	if channel.GuildID != ctx.Interaction.GuildID {
 		ctx.RespondWarning(
 			"Channel provided must belong to this server.",
-		)
-		return
-	}
-	if !dctools.IsTextChannel(channel.Type) {
-		ctx.RespondWarning(
-			"Channel provided must be a text channel.",
 		)
 		return
 	}
