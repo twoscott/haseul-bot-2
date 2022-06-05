@@ -110,10 +110,10 @@ func findFocusedOption(
 
 // MakeStringChoices takes a slice of strings and turns them into a slice of
 // autocomplete choices with matching names and string values.
-func MakeStringChoices(choiceStrings []string) []api.AutocompleteChoice {
-	choices := make([]api.AutocompleteChoice, 0, len(choiceStrings))
+func MakeStringChoices(choiceStrings []string) api.AutocompleteStringChoices {
+	choices := make(api.AutocompleteStringChoices, 0, len(choiceStrings))
 	for _, c := range choiceStrings {
-		choice := api.AutocompleteChoice{Name: c, Value: c}
+		choice := discord.StringChoice{Name: c, Value: c}
 		choices = append(choices, choice)
 	}
 

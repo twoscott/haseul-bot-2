@@ -268,9 +268,9 @@ func twtFeedAddCompleter(ctx router.AutocompleteCtx) {
 		return
 	}
 
-	choices := make([]api.AutocompleteChoice, 0, len(users))
+	choices := make(api.AutocompleteStringChoices, 0, len(users))
 	for _, u := range users {
-		choice := api.AutocompleteChoice{
+		choice := discord.StringChoice{
 			Name: u.ScreenName, Value: u.ScreenName,
 		}
 		choices = append(choices, choice)

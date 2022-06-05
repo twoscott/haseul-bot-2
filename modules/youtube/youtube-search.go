@@ -95,9 +95,9 @@ func youTubeSearchCompleter(ctx router.AutocompleteCtx) {
 		suggestions = append(suggestions, query)
 	}
 
-	choices := make([]api.AutocompleteChoice, 0, len(suggestions))
+	choices := make(api.AutocompleteStringChoices, 0, len(suggestions))
 	for _, s := range suggestions {
-		choice := api.AutocompleteChoice{Name: s, Value: s}
+		choice := discord.StringChoice{Name: s, Value: s}
 		choices = append(choices, choice)
 	}
 

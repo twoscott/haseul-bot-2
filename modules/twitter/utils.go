@@ -124,7 +124,7 @@ func dbTwitterCompleter(ctx router.AutocompleteCtx) {
 		usernames = append(usernames, u.ScreenName)
 	}
 
-	var choices []api.AutocompleteChoice
+	var choices api.AutocompleteStringChoices
 	if username == "" {
 		usernames := slices.Compact(usernames)
 		choices = dctools.MakeStringChoices(usernames)
