@@ -3,6 +3,7 @@ package notifications
 import (
 	"fmt"
 	"log"
+	"strconv"
 	"strings"
 
 	"github.com/diamondburned/arikawa/v3/discord"
@@ -92,9 +93,10 @@ func addServerNoti(
 		)
 		return
 	}
-	if len(notifications) >= 25 {
+	if len(notifications) >= notificationLimit {
 		ctx.RespondWarning(
-			"You cannot have more than 25 notifications set up in a server. " +
+			"You cannot have more than " + strconv.Itoa(notificationLimit) +
+				" notifications set up in a server. " +
 				"You may remove server notifications and re-add them " +
 				"as global notifications.",
 		)
@@ -174,9 +176,10 @@ func addGlobalNoti(
 		)
 		return
 	}
-	if len(notifications) >= 25 {
+	if len(notifications) >= notificationLimit {
 		ctx.RespondWarning(
-			"You cannot have more than 25 global notifications set up.",
+			"You cannot have more than " + strconv.Itoa(notificationLimit) +
+				" global notifications set up.",
 		)
 		return
 	}
