@@ -25,6 +25,5 @@ patreon:
 
 # Twitter API credentials
 twitter:
-  bearerToken: "<TWITTER BEARER TOKEN HERE>"
   consumerKey: "<TWITTER CONSUMER KEY HERE>"
   consumerSecret: "<TWITTER CONSUMER SECRET HERE>"

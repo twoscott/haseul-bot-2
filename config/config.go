@@ -31,7 +31,6 @@ type BotConfig struct {
 		Secret       string `yaml:"secret"`
 	} `yaml:"patreon"`
 	Twitter struct {
-		BearerToken    string `yaml:"bearerToken"`
 		ConsumerKey    string `yaml:"consumerKey"`
 		ConsumerSecret string `yaml:"consumerSecret"`
 	} `yaml:"twitter"`
