@@ -55,10 +55,10 @@ func GetInstance() *BotConfig {
 		path.WriteString(fileName)
 
 		file, err := os.Open(path.String())
-		defer file.Close()
 		if err != nil {
 			panic(err)
 		}
+		defer file.Close()
 
 		decoder := yaml.NewDecoder(file)
 
