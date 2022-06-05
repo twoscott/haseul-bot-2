@@ -1,6 +1,8 @@
 package lastfm
 
 import (
+	"log"
+
 	"github.com/shkh/lastfm-go/lastfm"
 	"github.com/twoscott/haseul-bot-2/config"
 	"github.com/twoscott/haseul-bot-2/database"
@@ -18,6 +20,10 @@ func Init(rt *router.Router) {
 	cfg := config.GetInstance()
 	key := cfg.LastFm.Key
 	secret := cfg.LastFm.Secret
+	if key == "" || secret == "" {
+		log.Fatalln("No Last.fm API key or secret provided in config file")
+	}
+
 	lf = lastfm.New(key, secret)
 
 	rt.AddCommand(fmCommand)

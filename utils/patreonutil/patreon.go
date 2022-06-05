@@ -1,6 +1,7 @@
 package patreonutil
 
 import (
+	"log"
 	"strconv"
 	"sync"
 
@@ -33,6 +34,9 @@ func GetPatreonHelper() *PatreonHelper {
 		cfg := config.GetInstance()
 		accessToken := cfg.Patreon.AccessToken
 		campaignID := cfg.Patreon.CampaignID
+		if accessToken == "" || campaignID == "" {
+			log.Fatalln("Invalid Patreon access token or campaign ID")
+		}
 
 		token := &oauth2.Token{AccessToken: accessToken}
 		tokenSource := oauth2.StaticTokenSource(token)

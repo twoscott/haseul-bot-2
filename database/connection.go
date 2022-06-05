@@ -2,6 +2,7 @@ package database
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
@@ -13,6 +14,9 @@ func mustGetConnection() *sqlx.DB {
 	dbName := cfg.PostgreSQL.Database
 	user := cfg.PostgreSQL.Username
 	password := cfg.PostgreSQL.Password
+	if dbName == "" || user == "" || password == "" {
+		log.Fatalln("Invalid database config variables provided")
+	}
 
 	connStr := fmt.Sprintf(
 		"dbname=%s user=%s password=%s sslmode=disable",

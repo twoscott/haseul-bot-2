@@ -1,6 +1,8 @@
 package twitter
 
 import (
+	"log"
+
 	"github.com/dghubble/go-twitter/twitter"
 	"github.com/diamondburned/arikawa/v3/gateway"
 	"github.com/twoscott/haseul-bot-2/config"
@@ -24,6 +26,10 @@ func Init(rt *router.Router) {
 	cfg := config.GetInstance()
 	consumerKey := cfg.Twitter.ConsumerKey
 	consumerSecret := cfg.Twitter.ConsumerSecret
+	if consumerKey == "" || consumerSecret == "" {
+		log.Fatalln("No Twitter API consumer key or secret provided in config")
+	}
+
 	httpConfig := &clientcredentials.Config{
 		ClientID:     consumerKey,
 		ClientSecret: consumerSecret,
