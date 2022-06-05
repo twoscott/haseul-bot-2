@@ -1,6 +1,7 @@
 package patreonutil
 
 import (
+	"context"
 	"log"
 	"strconv"
 	"sync"
@@ -40,7 +41,7 @@ func GetPatreonHelper() *PatreonHelper {
 
 		token := &oauth2.Token{AccessToken: accessToken}
 		tokenSource := oauth2.StaticTokenSource(token)
-		httpClient := oauth2.NewClient(oauth2.NoContext, tokenSource)
+		httpClient := oauth2.NewClient(context.Background(), tokenSource)
 		patreonClient := patreon.NewClient(httpClient)
 
 		p = &PatreonHelper{
