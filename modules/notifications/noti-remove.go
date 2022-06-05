@@ -157,7 +157,7 @@ func notiKeywordCompleter(ctx router.AutocompleteCtx) {
 		keywords = append(keywords, n.Keyword)
 	}
 
-	var choices []api.AutocompleteChoice
+	var choices api.AutocompleteStringChoices
 	if keyword == "" {
 		keywords := slices.Compact(keywords)
 		choices = dctools.MakeStringChoices(keywords)
@@ -174,18 +174,4 @@ func notiKeywordCompleter(ctx router.AutocompleteCtx) {
 			},
 		},
 	)
-}
-
-func getNotiChoices(keywords []string) []api.AutocompleteChoice {
-	slices.Sort(keywords)
-	keywords = slices.Compact(keywords)
-
-	return dctools.MakeStringChoices(keywords)
-}
-
-func filterNotiChoices(
-	keywords []string, keyword string) []api.AutocompleteChoice {
-
-	matches := util.SearchSort(keywords, keyword)
-	return dctools.MakeStringChoices(matches)
 }
