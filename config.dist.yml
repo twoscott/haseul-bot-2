@@ -3,7 +3,8 @@
 # Discord credentials
 discord:
   token: "<DISCORD TOKEN HERE>"
-  logChannelID: "<DISCORD LOG CHANNEL ID HERE>"
+  logChannelID: <DISCORD LOG CHANNEL ID HERE>
+  rootGuildID: <ROOT DISCORD SERVER ID HERE>
 
 # PostgreSQL database config
 postgresql:
