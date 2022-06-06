@@ -5,7 +5,7 @@ go 1.18
 require (
 	github.com/PuerkitoBio/goquery v1.8.0
 	github.com/dghubble/go-twitter v0.0.0-20220428155120-ee736133298b
-	github.com/diamondburned/arikawa/v3 v3.0.0-rc.6
+	github.com/diamondburned/arikawa/v3 v3.0.0-rc.6.0.20220606005652-ea5251df0ffb
 	github.com/dustin/go-humanize v1.0.0
 	github.com/jmoiron/sqlx v1.3.5
 	github.com/lib/pq v1.10.6
@@ -31,5 +31,3 @@ require (
 	google.golang.org/appengine v1.6.7 // indirect
 	google.golang.org/protobuf v1.28.0 // indirect
 )
-
-replace github.com/diamondburned/arikawa/v3 v3.0.0-rc.6 => ../arikawa
