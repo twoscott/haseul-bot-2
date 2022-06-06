@@ -32,7 +32,7 @@ func main() {
 	cfg := config.GetInstance()
 	token := cfg.Discord.Token
 	if token == "" {
-		log.Panic("No token found in config file")
+		log.Fatalln("No token found in config file")
 	}
 
 	botToken := dctools.BotToken(token)
@@ -47,17 +47,17 @@ func main() {
 
 	err := st.Open(context.Background())
 	if err != nil {
-		log.Panic("Failed to connect to Discord: ", err)
+		log.Fatalf("Failed to connect to Discord: %s\n", err)
 	}
 
 	_, err = st.Me()
 	if err != nil {
-		log.Panic("Failed to fetch myself: ", err)
+		log.Fatalf("Failed to fetch myself: %s\n", err)
 	}
 
 	err = rt.AddCommandsToDiscord()
 	if err != nil {
-		log.Panic(err)
+		log.Fatalf("Failed to add commands to Discord: %s\n", err)
 	}
 
 	rt.MustRegisterCommandHandlers()

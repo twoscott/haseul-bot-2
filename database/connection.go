@@ -24,12 +24,12 @@ func mustGetConnection() *sqlx.DB {
 	)
 	dbConn, err := sqlx.Open("postgres", connStr)
 	if err != nil {
-		panic(err)
+		log.Fatalf("Failed to connect to database: %s\n", err)
 	}
 
 	err = dbConn.Ping()
 	if err != nil {
-		panic(err)
+		log.Fatalf("Failed to ping database: %s\n", err)
 	}
 
 	return dbConn

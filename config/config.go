@@ -1,6 +1,7 @@
 package config
 
 import (
+	"log"
 	"os"
 	"strings"
 	"sync"
@@ -56,7 +57,7 @@ func GetInstance() *BotConfig {
 
 		file, err := os.Open(path.String())
 		if err != nil {
-			panic(err)
+			log.Fatalf("Failed to open config file: %s\n", err)
 		}
 		defer file.Close()
 
@@ -65,7 +66,7 @@ func GetInstance() *BotConfig {
 		config = new(BotConfig)
 		err = decoder.Decode(config)
 		if err != nil {
-			panic(err)
+			log.Fatalf("Failed to decode config yaml: %s\n", err)
 		}
 	})
 
