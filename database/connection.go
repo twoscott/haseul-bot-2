@@ -11,25 +11,23 @@ import (
 
 func mustGetConnection() *sqlx.DB {
 	cfg := config.GetInstance()
-	dbName := cfg.PostgreSQL.Database
-	user := cfg.PostgreSQL.Username
-	password := cfg.PostgreSQL.Password
-	if dbName == "" || user == "" || password == "" {
-		log.Fatalln("Invalid database config variables provided")
-	}
 
 	connStr := fmt.Sprintf(
-		"dbname=%s user=%s password=%s sslmode=disable",
-		dbName, user, password,
+		"host=%s "+
+			"port=%s "+
+			"dbname=%s "+
+			"user=%s "+
+			"password=%s "+
+			"sslmode=disable",
+		cfg.PostgreSQL.Host,
+		cfg.PostgreSQL.Port,
+		cfg.PostgreSQL.Database,
+		cfg.PostgreSQL.Username,
+		cfg.PostgreSQL.Password,
 	)
-	dbConn, err := sqlx.Open("postgres", connStr)
+	dbConn, err := sqlx.Connect("postgres", connStr)
 	if err != nil {
 		log.Fatalf("Failed to connect to database: %s\n", err)
-	}
-
-	err = dbConn.Ping()
-	if err != nil {
-		log.Fatalf("Failed to ping database: %s\n", err)
 	}
 
 	return dbConn

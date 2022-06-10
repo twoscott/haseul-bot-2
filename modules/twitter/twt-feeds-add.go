@@ -188,7 +188,7 @@ func checkGuildTwitterCount(
 	ctx *router.CommandCtx, twitterUserID int64) router.CmdResponse {
 
 	cfg := config.GetInstance()
-	if ctx.Interaction.GuildID == cfg.Discord.RootGuildID {
+	if ctx.Interaction.GuildID == cfg.Bot.RootGuildID {
 		return nil
 	}
 

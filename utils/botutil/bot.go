@@ -26,7 +26,7 @@ func Uptime() *util.TimePeriod {
 }
 
 func Log(st *state.State, messageData api.SendMessageData) (*discord.Message, error) {
-	logChannelID := config.GetInstance().Discord.LogChannelID
+	logChannelID := config.GetInstance().Bot.LogChannelID
 	if !logChannelID.IsValid() {
 		return nil, errors.New("invalid log channel to log to")
 	}
@@ -35,7 +35,7 @@ func Log(st *state.State, messageData api.SendMessageData) (*discord.Message, er
 }
 
 func LogText(st *state.State, content string) (*discord.Message, error) {
-	logChannelID := config.GetInstance().Discord.LogChannelID
+	logChannelID := config.GetInstance().Bot.LogChannelID
 	if !logChannelID.IsValid() {
 		return nil, errors.New("invalid log channel to log to")
 	}

@@ -1,7 +1,7 @@
 .vscode/
 
-# Config file
-config.yml
+# Environment files
+*.env
 
 # Binaries for programs and plugins
 *.exe

@@ -1,72 +1,61 @@
 package config
 
 import (
+	"context"
 	"log"
-	"os"
-	"strings"
 	"sync"
 
 	"github.com/diamondburned/arikawa/v3/discord"
-	"gopkg.in/yaml.v3"
+	"github.com/joho/godotenv"
+	"github.com/sethvargo/go-envconfig"
 )
 
-type BotConfig struct {
+type Config struct {
 	Discord struct {
-		Token        string            `yaml:"token"`
-		LogChannelID discord.ChannelID `yaml:"logChannelID"`
-		RootGuildID  discord.GuildID   `yaml:"rootGuildID"`
-	} `yaml:"discord"`
+		Token string `env:"TOKEN,required"`
+	} `env:",prefix=DISCORD_"`
+	Bot struct {
+		LogChannelID discord.ChannelID `env:"LOG_CHANNEL_ID"`
+		RootGuildID  discord.GuildID   `env:"HOME_GUILD_ID,required"`
+	} `env:",prefix=BOT_"`
 	PostgreSQL struct {
-		Database string `yaml:"database"`
-		Username string `yaml:"username"`
-		Password string `yaml:"password"`
-	} `yaml:"postgresql"`
+		Host     string `env:"HOST"`
+		Port     string `env:"PORT"`
+		Database string `env:"DB"`
+		Username string `env:"USER"`
+		Password string `env:"PASSWORD,required"`
+	} `env:",prefix=POSTGRES_"`
 	LastFm struct {
-		Key    string `yaml:"key"`
-		Secret string `yaml:"secret"`
-	} `yaml:"lastFm"`
-	Patreon struct {
-		CampaignID   string `yaml:"campaignID"`
-		AccessToken  string `yaml:"accessToken"`
-		RefreshToken string `yaml:"refreshToken"`
-		Secret       string `yaml:"secret"`
-	} `yaml:"patreon"`
+		Key    string `env:"KEY"`
+		Secret string `env:"SECRET"`
+	} `env:",prefix=LASTFM_"`
 	Twitter struct {
-		ConsumerKey    string `yaml:"consumerKey"`
-		ConsumerSecret string `yaml:"consumerSecret"`
-	} `yaml:"twitter"`
+		ConsumerKey    string `env:"CONSUMER_KEY"`
+		ConsumerSecret string `env:"CONSUMER_SECRET"`
+	} `env:",prefix=TWITTER_"`
+	Patreon struct {
+		CampaignID  string `env:"CAMPAIGN_ID"`
+		AccessToken string `env:"ACCESS_TOKEN"`
+	} `env:",prefix=PATREON_"`
 }
 
-const fileName = "config.yml"
-
 var (
-	config *BotConfig
+	config *Config
 	once   sync.Once
 )
 
 // GetInstance returns the instance of Config.
-func GetInstance() *BotConfig {
+func GetInstance() *Config {
 	once.Do(func() {
-		cwd, _ := os.Getwd()
-		sep := os.PathSeparator
+		// ignore any errors since the .env file won't be passed to the docker
+		// context and instead the environment variables will be passed from
+		// the file.
+		godotenv.Load("local.env")
 
-		var path strings.Builder
-		path.WriteString(cwd)
-		path.WriteRune(sep)
-		path.WriteString(fileName)
-
-		file, err := os.Open(path.String())
+		config = new(Config)
+		err := envconfig.Process(context.Background(), config)
 		if err != nil {
-			log.Fatalf("Failed to open config file: %s\n", err)
-		}
-		defer file.Close()
-
-		decoder := yaml.NewDecoder(file)
-
-		config = new(BotConfig)
-		err = decoder.Decode(config)
-		if err != nil {
-			log.Fatalf("Failed to decode config yaml: %s\n", err)
+			log.Fatalf("Failed to process environment variables: %s\n", err)
 		}
 	})
 

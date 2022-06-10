@@ -8,13 +8,14 @@ require (
 	github.com/diamondburned/arikawa/v3 v3.0.0-rc.6.0.20220606005652-ea5251df0ffb
 	github.com/dustin/go-humanize v1.0.0
 	github.com/jmoiron/sqlx v1.3.5
+	github.com/joho/godotenv v1.4.0
 	github.com/lib/pq v1.10.6
+	github.com/sethvargo/go-envconfig v0.7.0
 	github.com/shkh/lastfm-go v0.0.0-20191215035245-89a801c244e0
 	github.com/twoscott/patreon-go v0.0.0-20210516030041-c0b59ebddeb4
 	golang.org/x/exp v0.0.0-20220518171630-0b5c67f07fdf
 	golang.org/x/net v0.0.0-20220517181318-183a9ca12b87
 	golang.org/x/oauth2 v0.0.0-20220411215720-9780585627b5
-	gopkg.in/yaml.v3 v3.0.0-20220512140231-539c8e751b99
 )
 
 require (
@@ -30,4 +31,5 @@ require (
 	golang.org/x/time v0.0.0-20220411224347-583f2d630306 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
 	google.golang.org/protobuf v1.28.0 // indirect
+	gopkg.in/yaml.v3 v3.0.0-20220512140231-539c8e751b99 // indirect
 )
