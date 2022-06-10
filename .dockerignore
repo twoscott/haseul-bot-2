@@ -1,0 +1,11 @@
+Dockerfile
+docker-compose.yml
+
+.vscode/
+
+.git
+.github
+.gitignore
+*.env
+*.env.dist
+*.md
