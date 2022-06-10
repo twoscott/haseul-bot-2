@@ -1,0 +1,30 @@
+version: "3.8"
+
+networks:
+  haseul_bot:
+volumes:
+  pg_data:
+
+services:
+  postgres:
+    image: postgres:14.3
+    container_name: postgres
+    command: postgres -c shared_buffers=512MB
+    restart: unless-stopped
+    shm_size: 512mb
+    volumes:
+      - pg_data:/var/lib/postgresql/data:r,w
+    env_file:
+      - .env
+    networks:
+      - haseul_bot
+  haseul-bot:
+    image: haseul-bot:latest
+    container_name: haseul-bot
+    restart: unless-stopped
+    depends_on:
+      - postgres
+    env_file:
+      - .env
+    networks:
+      - haseul_bot
