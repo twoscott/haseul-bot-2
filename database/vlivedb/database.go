@@ -17,4 +17,5 @@ func New(dbConn *sqlx.DB) *DB {
 func (db *DB) createTables() {
 	db.MustExec(createVLIVEBoardsTableQuery)
 	db.MustExec(createVLIVEFeedsTableQuery)
+	db.MustExec(createVLIVEMentionsTableQuery)
 }
