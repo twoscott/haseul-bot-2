@@ -4,32 +4,32 @@ import "github.com/diamondburned/arikawa/v3/discord"
 
 // Feed represents a VLIVE feed database entry.
 type Feed struct {
-	GuildID          discord.GuildID   `db:"guildid"`
-	ChannelID        discord.ChannelID `db:"channelid"`
-	VLIVEChannelCode string            `db:"vlivechannelcode"`
+	GuildID   discord.GuildID   `db:"guildid"`
+	ChannelID discord.ChannelID `db:"channelid"`
+	BoardID   int64             `db:"vliveboardid"`
 }
 
 const (
 	createVLIVEFeedsTableQuery = `
 		CREATE TABLE IF NOT EXISTS VLIVEFeeds(
-			guildID            INT8    NOT NULL,
-			channelID          INT8    NOT NULL,
-			VLIVEchannelCode   TEXT    NOT NULL,
-			PRIMARY KEY(channelID, VLIVEchannelCode),
-			FOREIGN KEY(VLIVEchannelCode) REFERENCES VLIVEChannels(code)
+			guildID      INT8 NOT NULL,
+			channelID    INT8 NOT NULL,
+			boardID INT8 NOT NULL,
+			PRIMARY KEY(channelID, boardID),
+			FOREIGN KEY(boardID) REFERENCES VLIVEBoards(id)
 		)`
 	addFeedQuery = `
 		INSERT INTO VLIVEFeeds VALUES($1, $2, $3) ON CONFLICT DO NOTHING`
 	getFeedsByUserQuery = `
-		SELECT * FROM VLIVEFeeds WHERE VLIVEchannelCode = $1`
+		SELECT * FROM VLIVEFeeds WHERE boardID = $1`
 	getFeedsByGuildQuery = `
 		SELECT * FROM VLIVEFeeds WHERE guildID = $1`
 	getFeedQuery = `
-		SELECT * FROM VLIVEFeeds WHERE channelID = $1 AND VLIVEchannelCode = $2`
+		SELECT * FROM VLIVEFeeds WHERE channelID = $1 AND boardID = $2`
 	removeFeedQuery = `
-		DELETE FROM VLIVEFeeds WHERE channelID = $1 AND VLIVEchannelCode = $2`
+		DELETE FROM VLIVEFeeds WHERE channelID = $1 AND boardID = $2`
 	removeFeedsByUserQuery = `
-		DELETE FROM VLIVEFeeds WHERE VLIVEchannelCode = $1`
+		DELETE FROM VLIVEFeeds WHERE boardID = $1`
 	removeFeedsByChannelQuery = `
 		DELETE FROM VLIVEFeeds WHERE channelID = $1`
 	clearGuildFeedsQuery = `
@@ -40,9 +40,9 @@ const (
 func (db *DB) AddFeed(
 	guildID discord.GuildID,
 	channelID discord.ChannelID,
-	vliveChannelCode string) (bool, error) {
+	boardID int64) (bool, error) {
 
-	res, err := db.Exec(addFeedQuery, guildID, channelID, vliveChannelCode)
+	res, err := db.Exec(addFeedQuery, guildID, channelID, boardID)
 	if err != nil {
 		return false, err
 	}
@@ -53,9 +53,9 @@ func (db *DB) AddFeed(
 
 // GetFeedsByUser returns all Twitter feeds set up with
 // the given Twitter user ID.
-func (db *DB) GetFeedsByUser(vliveChannelCode string) ([]Feed, error) {
+func (db *DB) GetFeedsByUser(boardID int64) ([]Feed, error) {
 	var feeds []Feed
-	err := db.Select(&feeds, getFeedsByUserQuery, vliveChannelCode)
+	err := db.Select(&feeds, getFeedsByUserQuery, boardID)
 
 	return feeds, err
 }
@@ -70,19 +70,19 @@ func (db *DB) GetFeedsByGuild(guildID discord.GuildID) ([]Feed, error) {
 
 // GetFeed returns a Twitter feed from the database.
 func (db *DB) GetFeed(
-	channelID discord.ChannelID, vliveChannelCode string) (*Feed, error) {
+	channelID discord.ChannelID, boardID int64) (*Feed, error) {
 
 	var feed Feed
-	err := db.Get(&feed, getFeedQuery, channelID, vliveChannelCode)
+	err := db.Get(&feed, getFeedQuery, channelID, boardID)
 
 	return &feed, err
 }
 
 // RemoveFeed removes a Twitter feed from the database.
 func (db *DB) RemoveFeed(
-	channelID discord.ChannelID, vliveChannelCode string) (bool, error) {
+	channelID discord.ChannelID, boardID int64) (bool, error) {
 
-	res, err := db.Exec(removeFeedQuery, channelID, vliveChannelCode)
+	res, err := db.Exec(removeFeedQuery, channelID, boardID)
 	if err != nil {
 		return false, err
 	}
@@ -92,8 +92,8 @@ func (db *DB) RemoveFeed(
 }
 
 // RemoveFeedsByUser removes all Twitter feeds for a given Twitter user ID.
-func (db *DB) RemoveFeedsByUser(vliveChannelCode string) (int64, error) {
-	res, err := db.Exec(removeFeedsByUserQuery, vliveChannelCode)
+func (db *DB) RemoveFeedsByUser(boardID int64) (int64, error) {
+	res, err := db.Exec(removeFeedsByUserQuery, boardID)
 	if err != nil {
 		return 0, err
 	}
