@@ -1,6 +1,9 @@
 package router
 
-import "github.com/diamondburned/arikawa/v3/discord"
+import (
+	"github.com/diamondburned/arikawa/v3/api"
+	"github.com/diamondburned/arikawa/v3/discord"
+)
 
 // AutocompleteCtx wraps router and includes data about the autocomplete
 // interaction to be passed to the receiving completion handler.
@@ -34,4 +37,19 @@ func autocompleteString(option *discord.AutocompleteOption) string {
 	default:
 		return ""
 	}
+}
+
+func (ctx AutocompleteCtx) RespondChoices(
+	choices api.AutocompleteChoices) error {
+
+	return ctx.State.RespondInteraction(
+		ctx.Interaction.ID,
+		ctx.Interaction.Token,
+		api.InteractionResponse{
+			Type: api.AutocompleteResult,
+			Data: &api.InteractionResponseData{
+				Choices: choices,
+			},
+		},
+	)
 }

@@ -166,12 +166,5 @@ func notiKeywordCompleter(ctx router.AutocompleteCtx) {
 		choices = dctools.MakeStringChoices(matches)
 	}
 
-	ctx.State.RespondInteraction(ctx.Interaction.ID, ctx.Interaction.Token,
-		api.InteractionResponse{
-			Type: api.AutocompleteResult,
-			Data: &api.InteractionResponseData{
-				Choices: &choices,
-			},
-		},
-	)
+	ctx.RespondChoices(choices)
 }

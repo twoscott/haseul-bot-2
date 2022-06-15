@@ -101,12 +101,5 @@ func youTubeSearchCompleter(ctx router.AutocompleteCtx) {
 		choices = append(choices, choice)
 	}
 
-	ctx.State.RespondInteraction(ctx.Interaction.ID, ctx.Interaction.Token,
-		api.InteractionResponse{
-			Type: api.AutocompleteResult,
-			Data: &api.InteractionResponseData{
-				Choices: &choices,
-			},
-		},
-	)
+	ctx.RespondChoices(choices)
 }

@@ -10,6 +10,7 @@ import (
 	"github.com/diamondburned/arikawa/v3/discord"
 	"github.com/twoscott/haseul-bot-2/config"
 	"github.com/twoscott/haseul-bot-2/router"
+	"github.com/twoscott/haseul-bot-2/utils/cmdutil"
 	"github.com/twoscott/haseul-bot-2/utils/dctools"
 )
 
@@ -19,6 +20,7 @@ var twtFeedsAddCommand = &router.SubCommand{
 	Handler: &router.CommandHandler{
 		Executor:      twtFeedAddExec,
 		Autocompleter: twtFeedAddCompleter,
+		Defer:         true,
 	},
 	Options: []discord.CommandOptionValue{
 		&discord.StringOption{
@@ -56,7 +58,7 @@ func twtFeedAddExec(ctx router.CommandCtx) {
 		return
 	}
 
-	channel, cerr := parseChannelArg(ctx, channelID)
+	channel, cerr := cmdutil.ParseAccessibleChannel(ctx, channelID)
 	if cerr != nil {
 		ctx.RespondCmdMessage(cerr)
 		return
@@ -107,10 +109,7 @@ func twtFeedAddExec(ctx router.CommandCtx) {
 		return
 	}
 
-	_, err = db.Twitter.GetUserByGuild(channel.GuildID, user.ID)
-	if err != nil {
-		cerr = checkGuildTwitterCount(&ctx, user.ID)
-	}
+	cerr = checkGuildTwitterCount(&ctx, user.ID)
 	if cerr != nil {
 		ctx.RespondCmdMessage(cerr)
 		return
@@ -166,9 +165,7 @@ func addUser(ctx router.CommandCtx, user *twitter.User) router.CmdResponse {
 	}
 
 	var lastTweetID int64
-	if len(tweets) < 1 {
-		lastTweetID = 0
-	} else {
+	if len(tweets) > 0 {
 		lastTweetID = tweets[0].ID
 	}
 
@@ -214,19 +211,23 @@ func checkGuildTwitterCount(
 	patron, err := pat.GetActiveDiscordPatron(guild.OwnerID)
 	if err != nil {
 		log.Println(err)
-		return router.Error(
-			"Error occurred while checking server owner's patron status.",
-		)
 	}
 
+	tier := twitterTier(memberCount, twitterCount)
 	if patron == nil || patron.CurrentlyEntitledAmountCents < 300 {
-		if memberCount < 100 && twitterCount > 0 {
-			return router.Error(
+		if err != nil && tier > 0 {
+			return router.Warning(
+				"Error occurred while checking server owner's patron status.",
+			)
+		}
+		switch tier {
+		case 1:
+			return router.Warning(
 				"Your server must have at least 100 members " +
 					"to add feeds for more than 1 Twitter account.",
 			)
-		} else if memberCount < 250 && twitterCount > 1 {
-			return router.Error(
+		case 2:
+			return router.Warning(
 				"Your server must have at least 250 members " +
 					"to add feeds for more than 2 Twitter accounts.",
 			)
@@ -234,7 +235,7 @@ func checkGuildTwitterCount(
 	}
 	if patron == nil || patron.CurrentlyEntitledAmountCents < 1000 {
 		if twitterCount > 2 {
-			return router.Error(
+			return router.Warning(
 				"Your server cannot have feeds for more than " +
 					"3 Twitter accounts at once.",
 			)
@@ -242,7 +243,7 @@ func checkGuildTwitterCount(
 	}
 	if patron != nil && patron.CurrentlyEntitledAmountCents >= 1000 {
 		if twitterCount > 9 {
-			return router.Error(
+			return router.Warning(
 				"Your server cannot have feeds for more than " +
 					"10 Twitter accounts at once.",
 			)
@@ -276,12 +277,15 @@ func twtFeedAddCompleter(ctx router.AutocompleteCtx) {
 		choices = append(choices, choice)
 	}
 
-	ctx.State.RespondInteraction(ctx.Interaction.ID, ctx.Interaction.Token,
-		api.InteractionResponse{
-			Type: api.AutocompleteResult,
-			Data: &api.InteractionResponseData{
-				Choices: &choices,
-			},
-		},
-	)
+	ctx.RespondChoices(choices)
+}
+
+func twitterTier(memberCount, twitterCount uint64) int {
+	if memberCount < 100 && twitterCount > 0 {
+		return 1
+	} else if memberCount < 250 && twitterCount > 1 {
+		return 2
+	} else {
+		return 0
+	}
 }
