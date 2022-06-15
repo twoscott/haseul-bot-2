@@ -90,8 +90,8 @@ func (db *DB) GetUsersByGuild(guildID discord.GuildID) ([]User, error) {
 
 // GetGuildUserCount returns how many unique Twitter users a guild has
 // Twitter feeds set up for.
-func (db *DB) GetGuildUserCount(guildID discord.GuildID) (int, error) {
-	var twitterCount int
+func (db *DB) GetGuildUserCount(guildID discord.GuildID) (uint64, error) {
+	var twitterCount uint64
 	err := db.Get(&twitterCount, getGuildUserCountQuery, guildID)
 
 	return twitterCount, err
