@@ -12,8 +12,8 @@ type Mention struct {
 const (
 	createTwitterMentionsTableQuery = `
 		CREATE TABLE IF NOT EXISTS TwitterMentions(
-			channelID     INT8 NOT NULL,
 			twitterUserID INT8 NOT NULL,
+			channelID     INT8 NOT NULL,
 			roleID        INT8 NOT NULL,
 			PRIMARY KEY(channelID, twitterUserID, roleID),
 			FOREIGN KEY(channelID, twitterUserID) 
@@ -45,7 +45,7 @@ const (
 
 // AddMention adds a Twitter mention to the database.
 func (db *DB) AddMention(channelID discord.ChannelID, twitterUserID int64, roleID discord.RoleID) (bool, error) {
-	res, err := db.Exec(addMentionQuery, channelID, twitterUserID, roleID)
+	res, err := db.Exec(addMentionQuery, twitterUserID, channelID, roleID)
 	if err != nil {
 		return false, err
 	}
