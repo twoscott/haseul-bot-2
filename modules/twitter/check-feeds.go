@@ -97,11 +97,16 @@ func checkTweets(st *state.State, user twitterdb.User) {
 		return
 	}
 
-	last := len(tweets) - 1
-	for i := range tweets {
-		tweet := tweets[last-i]
-		postTweetToFeeds(st, feeds, tweet)
+	var wg sync.WaitGroup
+	for _, feed := range feeds {
+		wg.Add(1)
+		go func(feed twitterdb.Feed) {
+			defer wg.Done()
+			sendFeedPosts(st, feed, tweets)
+		}(feed)
 	}
+
+	wg.Wait()
 }
 
 func postTweetToFeeds(
@@ -126,6 +131,25 @@ func postTweetToFeeds(
 	}
 
 	wg.Wait()
+}
+
+func sendFeedPosts(
+	st *state.State, feed twitterdb.Feed, tweets []twitter.Tweet) {
+
+	last := len(tweets) - 1
+	for i := range tweets {
+		tweet := tweets[last-i]
+
+		retry := postTweet(st, feed, tweet)
+		if retry {
+			log.Printf(
+				"Failed to post tweet %d, adding to retry backlog.\n",
+				tweet.ID,
+			)
+
+			db.Twitter.AddRetry(tweet.ID)
+		}
+	}
 }
 
 func postTweet(st *state.State, feed twitterdb.Feed, tweet twitter.Tweet) bool {
