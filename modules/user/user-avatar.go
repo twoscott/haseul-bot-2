@@ -74,7 +74,6 @@ func userAvatarExec(ctx router.CommandCtx) {
 
 	var embed *discord.Embed
 	if member == nil || avatarType == globalAvatarType {
-		log.Println(4)
 		url := dctools.ResizeImage(user.AvatarURL(), 4096)
 		embed = cmdutil.ImageInfoEmbed(title, url, user.Accent)
 	} else {

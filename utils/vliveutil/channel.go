@@ -2,7 +2,6 @@ package vliveutil
 
 import (
 	"encoding/json"
-	"log"
 	"net/http"
 	"net/url"
 )
@@ -33,7 +32,6 @@ func ChannelExists(channelCode string) (bool, error) {
 // GetChannel returns the VLIVE channel with the provided channel code.
 func GetChannel(channelCode string) (*Channel, *http.Response, error) {
 	channelURL, err := buildChannelURL(channelCode)
-	log.Println(channelURL)
 	if err != nil {
 		return nil, nil, err
 	}
