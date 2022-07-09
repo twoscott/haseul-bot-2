@@ -2,7 +2,7 @@ package vliveutil
 
 import (
 	"encoding/json"
-	"io"
+	"log"
 	"net/http"
 	"net/url"
 )
@@ -14,14 +14,15 @@ type Channel struct {
 	Code          string `json:"channelCode"`
 }
 
+// ChannelExists returns whether or not a VLIVE channel with the provided
+// channel code exists.
 func ChannelExists(channelCode string) (bool, error) {
-	channelURL, err := BuildChannelURL(channelCode)
+	channelURL, err := buildChannelURL(channelCode)
 	if err != nil {
 		return false, err
 	}
 
-	req := NewGetRequest(channelURL)
-	res, err := vliveClient.Do(req)
+	res, err := headRequest(*channelURL)
 	if err != nil {
 		return false, err
 	}
@@ -29,37 +30,29 @@ func ChannelExists(channelCode string) (bool, error) {
 	return res.StatusCode == http.StatusOK, nil
 }
 
-func GetChannel(channelCode string) (*Channel, error) {
-	channelURL, err := BuildChannelURL(channelCode)
+// GetChannel returns the VLIVE channel with the provided channel code.
+func GetChannel(channelCode string) (*Channel, *http.Response, error) {
+	channelURL, err := buildChannelURL(channelCode)
+	log.Println(channelURL)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
-	req := NewGetRequest(channelURL)
-	res, err := vliveClient.Do(req)
+	bytes, res, err := getRequestBytes(*channelURL)
 	if err != nil {
-		return nil, err
-	}
-
-	defer res.Body.Close()
-
-	bytes, err := io.ReadAll(res.Body)
-	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	var channel Channel
 	json.Unmarshal(bytes, &channel)
 
-	return &channel, nil
+	return &channel, res, nil
 }
 
-func BuildChannelURL(channelCode string) (*url.URL, error) {
-	endpoint := ChannelEndpoint + "/" + channelCode
+func buildChannelURL(channelCode string) (*url.URL, error) {
+	endpoint := ChannelsEndpoint + "/" + channelCode
 
-	queryBuilder := url.Values{}
-	queryBuilder.Set("appId", AppID)
-	queryBuilder.Set("platformType", "PC")
+	queryBuilder := vliveQueryBuilder()
 
 	channelURL, err := url.Parse(endpoint)
 	if err != nil {
