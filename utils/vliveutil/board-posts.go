@@ -20,7 +20,7 @@ func NewBoardPostsPager(postTimestamp int64, postID string) *BoardPostsPager {
 }
 
 func (p BoardPostsPager) String() string {
-	return strconv.FormatInt(p.PostTimestamp, 10) + "," + p.PostID
+	return fmt.Sprintf("%d,%s", p.PostTimestamp, p.PostID)
 }
 
 // GetBoardPosts returns limit number of recent posts from a channel's VLIVE

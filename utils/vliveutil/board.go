@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
-	"strconv"
 )
 
 type Board struct {
@@ -67,6 +66,5 @@ func buildBoardURL(boardID int64) (*url.URL, error) {
 }
 
 func boardPath(boardID int64) string {
-	idStr := strconv.FormatInt(boardID, 10)
-	return BoardEndpoint + fmt.Sprintf("/board-%s", idStr)
+	return BoardEndpoint + fmt.Sprintf("/board-%d", boardID)
 }
