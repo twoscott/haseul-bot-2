@@ -53,11 +53,6 @@ func Init(rt *router.Router) {
 	twtRolesCommand.AddSubCommand(twtRolesRemoveCommand)
 	twtRolesCommand.AddSubCommand(twtRolesListCommand)
 	twtRolesCommand.AddSubCommand(twtRolesClearCommand)
-
-	twtCommand.AddSubCommandGroup(twtRepliesCommand)
-	twtRepliesCommand.AddSubCommand(twtRepliesToggleCommand)
-	twtCommand.AddSubCommandGroup(twtRetweetsCommand)
-	twtRetweetsCommand.AddSubCommand(twtRetweetsToggleCommand)
 }
 
 func onStartup(rt *router.Router, _ *gateway.ReadyEvent) {

@@ -99,9 +99,6 @@ func vliveFeedAddExec(ctx router.CommandCtx) {
 	postTypes := vlivedb.PostTypes(postTypesInt)
 
 	reposts, err := ctx.Options.Find("reposts").BoolValue()
-	if err != nil {
-		reposts = true
-	}
 
 	botUser, err := ctx.State.Me()
 	if err != nil {

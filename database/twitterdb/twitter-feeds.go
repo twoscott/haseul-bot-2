@@ -24,7 +24,7 @@ const (
 		)`
 
 	addFeedQuery = `
-		INSERT INTO TwitterFeeds VALUES($1, $2, $3) ON CONFLICT DO NOTHING`
+		INSERT INTO TwitterFeeds VALUES($1, $2, $3, $4, $5) ON CONFLICT DO NOTHING`
 	getFeedsByUserQuery = `
 		SELECT * FROM TwitterFeeds WHERE twitterUserID = $1`
 	getFeedsByGuildQuery = `
@@ -51,9 +51,13 @@ const (
 func (db *DB) AddFeed(
 	guildID discord.GuildID,
 	channelID discord.ChannelID,
-	twitterUserID int64) (bool, error) {
+	twitterUserID int64,
+	replies bool,
+	retweets bool) (bool, error) {
 
-	res, err := db.Exec(addFeedQuery, guildID, channelID, twitterUserID)
+	res, err := db.Exec(
+		addFeedQuery, guildID, channelID, twitterUserID, replies, retweets,
+	)
 	if err != nil {
 		return false, err
 	}

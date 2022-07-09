@@ -72,6 +72,9 @@ func twtFeedAddExec(ctx router.CommandCtx) {
 		return
 	}
 
+	replies, _ := ctx.Options.Find("replies").BoolValue()
+	retweets, _ := ctx.Options.Find("retweets").BoolValue()
+
 	botUser, err := ctx.State.Me()
 	if err != nil {
 		log.Println(err)
@@ -123,7 +126,9 @@ func twtFeedAddExec(ctx router.CommandCtx) {
 		return
 	}
 
-	ok, err := db.Twitter.AddFeed(ctx.Interaction.GuildID, channel.ID, user.ID)
+	ok, err := db.Twitter.AddFeed(
+		ctx.Interaction.GuildID, channel.ID, user.ID, replies, retweets,
+	)
 	if err != nil {
 		log.Println(err)
 		ctx.RespondError(
