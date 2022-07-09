@@ -6,7 +6,7 @@ import (
 	"github.com/twoscott/haseul-bot-2/router"
 )
 
-var twtFeedsClearCommand = &router.Command{
+var twtFeedsClearCommand = &router.SubCommand{
 	Name:        "clear",
 	Description: "Clears all Twitter feeds from the server",
 	Handler: &router.CommandHandler{

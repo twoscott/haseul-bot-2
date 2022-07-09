@@ -46,6 +46,7 @@ func Init(rt *router.Router) {
 	twtFeedsCommand.AddSubCommand(twtFeedsAddCommand)
 	twtFeedsCommand.AddSubCommand(twtFeedsRemoveCommand)
 	twtFeedsCommand.AddSubCommand(twtFeedsListCommand)
+	twtFeedsCommand.AddSubCommand(twtFeedsClearCommand)
 
 	twtCommand.AddSubCommandGroup(twtRolesCommand)
 	twtRolesCommand.AddSubCommand(twtRolesAddCommand)
@@ -60,5 +61,5 @@ func Init(rt *router.Router) {
 }
 
 func onStartup(rt *router.Router, _ *gateway.ReadyEvent) {
-	checkFeeds(rt.State)
+	startTwitterLoop(rt.State)
 }
