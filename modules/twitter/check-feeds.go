@@ -20,10 +20,24 @@ const (
 	minInterval       = time.Minute
 )
 
-func checkFeeds(st *state.State) {
-	start := time.Now()
-	log.Println("Started checking Twitter feeds")
+func startTwitterLoop(st *state.State) {
+	for {
+		start := time.Now()
+		log.Println("Started checking Twitter feeds")
 
+		userCount := checkFeeds(st)
+
+		elapsed := time.Since(start)
+		log.Printf(
+			"Finished checking Twitter feeds, took: %1.2fs\n", elapsed.Seconds(),
+		)
+
+		waitTime := calcWaitTime(elapsed, userCount)
+		<-time.After(waitTime)
+	}
+}
+
+func checkFeeds(st *state.State) int {
 	twitterUsers, err := db.Twitter.GetAllUsers()
 	if err != nil {
 		log.Println(err)
@@ -41,17 +55,7 @@ func checkFeeds(st *state.State) {
 	checkRetries(st)
 	wg.Wait()
 
-	elapsed := time.Since(start)
-	log.Printf(
-		"Finished checking Twitter feeds, took: %1.2fs\n", elapsed.Seconds(),
-	)
-
-	userCount := len(twitterUsers)
-	waitTime := calcWaitTime(elapsed, userCount)
-
-	<-time.After(waitTime)
-
-	go checkFeeds(st)
+	return len(twitterUsers)
 }
 
 func checkTweets(st *state.State, user twitterdb.User) {
@@ -76,6 +80,8 @@ func checkTweets(st *state.State, user twitterdb.User) {
 		return
 	}
 
+	// if tweets is empty, means no new tweets have been posted since
+	// the last check
 	if len(tweets) < 1 {
 		return
 	}
@@ -90,6 +96,8 @@ func checkTweets(st *state.State, user twitterdb.User) {
 		return
 	}
 
+	// tweet are sorted chronologically in descending order so the first
+	// tweet is the most recent one.
 	latestTweetID := tweets[0].ID
 	_, err = db.Twitter.SetLastTweet(user.ID, latestTweetID)
 	if err != nil {
@@ -136,6 +144,7 @@ func postTweetToFeeds(
 func sendFeedPosts(
 	st *state.State, feed twitterdb.Feed, tweets []twitter.Tweet) {
 
+	// loop through tweets from oldest to newest
 	last := len(tweets) - 1
 	for i := range tweets {
 		tweet := tweets[last-i]
@@ -184,6 +193,7 @@ func postTweet(st *state.State, feed twitterdb.Feed, tweet twitter.Tweet) bool {
 			db.Twitter.RemoveFeedsByChannel(feed.ChannelID)
 			return false
 		default:
+			log.Println(err)
 			return true
 		}
 	}
