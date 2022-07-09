@@ -1,8 +1,11 @@
 package dctools
 
 import (
+	"strings"
+
 	"github.com/diamondburned/arikawa/v3/api"
 	"github.com/diamondburned/arikawa/v3/discord"
+	"golang.org/x/exp/slices"
 )
 
 // MessageResponse returns a message interaction with source response object
@@ -118,4 +121,56 @@ func MakeStringChoices(choiceStrings []string) api.AutocompleteStringChoices {
 	}
 
 	return choices
+}
+
+// SearchSortStringChoices takes a slice of string choices and filters and
+// sorts them based on their names compared to the supplied query.
+func SearchSortStringChoices(
+	choices api.AutocompleteStringChoices,
+	query string) api.AutocompleteStringChoices {
+
+	matches := make(api.AutocompleteStringChoices, 0, len(choices))
+	for _, c := range choices {
+		if strings.Contains(c.Name, query) {
+			matches = append(matches, c)
+		}
+	}
+
+	slices.SortStableFunc(matches, func(a, b discord.StringChoice) bool {
+		return strings.Compare(a.Name, b.Name) < 0
+	})
+	slices.SortStableFunc(matches, func(a, b discord.StringChoice) bool {
+		return len(a.Name) < len(b.Name)
+	})
+	slices.SortStableFunc(matches, func(a, b discord.StringChoice) bool {
+		return strings.Index(a.Name, query) < strings.Index(b.Name, query)
+	})
+
+	return matches
+}
+
+// SearchSortIntChoices takes a slice of integer choices and filters and
+// sorts them based on their names compared to the supplied query.
+func SearchSortIntChoices(
+	choices api.AutocompleteIntegerChoices,
+	query string) api.AutocompleteIntegerChoices {
+
+	matches := make(api.AutocompleteIntegerChoices, 0, len(choices))
+	for _, c := range choices {
+		if strings.Contains(c.Name, query) {
+			matches = append(matches, c)
+		}
+	}
+
+	slices.SortStableFunc(matches, func(a, b discord.IntegerChoice) bool {
+		return strings.Compare(a.Name, b.Name) < 0
+	})
+	slices.SortStableFunc(matches, func(a, b discord.IntegerChoice) bool {
+		return len(a.Name) < len(b.Name)
+	})
+	slices.SortStableFunc(matches, func(a, b discord.IntegerChoice) bool {
+		return strings.Index(a.Name, query) < strings.Index(b.Name, query)
+	})
+
+	return matches
 }
