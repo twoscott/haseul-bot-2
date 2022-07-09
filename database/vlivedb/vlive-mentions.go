@@ -24,19 +24,19 @@ const (
 		INSERT INTO VLIVEMentions VALUES($1, $2, $3) ON CONFLICT DO NOTHING`
 	getMentionRolesQuery = `
 		SELECT roleID FROM VLIVEMentions 
-		WHERE channelID = $1 AND boardID = $2`
+		WHERE boardID = $1 AND channelID = $2`
 	getMentionsQuery = `
-			SELECT * FROM VLIVEMentions 
-			WHERE channelID = $1 AND boardID = $2`
+		SELECT * FROM VLIVEMentions 
+		WHERE boardID = $1 AND channelID = $2`
 	getMentionsByGuildQuery = `
 		SELECT * FROM VLIVEMentions WHERE channelID IN (
 			SELECT channelID FROM VLIVEFeeds WHERE guildID = $1
 		)`
 	removeMentionQuery = `
 		DELETE FROM VLIVEMentions 
-		WHERE channelID = $1 AND boardID = $2 AND roleID = $3`
+		WHERE boardID = $1 AND channelID = $2 AND roleID = $3`
 	removeMentionsQuery = `
-		DELETE FROM VLIVEMentions WHERE channelID = $1 AND boardID = $2`
+		DELETE FROM VLIVEMentions WHERE boardID = $1 AND channelID = $2`
 	clearGuildMentionsQuery = `
 		DELETE FROM VLIVEMentions WHERE channelID IN (
 			SELECT channelID FROM VLIVEFeeds WHERE guildID = $1
@@ -45,7 +45,7 @@ const (
 
 // AddMention adds a VLIVE mention to the database.
 func (db *DB) AddMention(channelID discord.ChannelID, boardID int64, roleID discord.RoleID) (bool, error) {
-	res, err := db.Exec(addMentionQuery, channelID, boardID, roleID)
+	res, err := db.Exec(addMentionQuery, boardID, channelID, roleID)
 	if err != nil {
 		return false, err
 	}
@@ -57,7 +57,7 @@ func (db *DB) AddMention(channelID discord.ChannelID, boardID int64, roleID disc
 // GetMentionRoles returns all VLIVE mentions for a VLIVE feed.
 func (db *DB) GetMentionRoles(channelID discord.ChannelID, boardID int64) ([]discord.RoleID, error) {
 	var roleIDs []discord.RoleID
-	err := db.Select(&roleIDs, getMentionRolesQuery, channelID, boardID)
+	err := db.Select(&roleIDs, getMentionRolesQuery, boardID, channelID)
 
 	return roleIDs, err
 }
@@ -65,7 +65,7 @@ func (db *DB) GetMentionRoles(channelID discord.ChannelID, boardID int64) ([]dis
 // GetMentionsByGuild returns all VLIVE mentions in a guild ID.
 func (db *DB) GetMentions(channelID discord.ChannelID, boardID int64) ([]Mention, error) {
 	var mentionRoles []Mention
-	err := db.Select(&mentionRoles, getMentionsQuery, channelID, boardID)
+	err := db.Select(&mentionRoles, getMentionsQuery, boardID, channelID)
 
 	return mentionRoles, err
 }
@@ -81,7 +81,7 @@ func (db *DB) GetMentionsByGuild(guildID discord.GuildID) ([]Mention, error) {
 // RemoveMention removes a VLIVE mention.
 func (db *DB) RemoveMention(
 	channelID discord.ChannelID, boardID int64, roleID discord.RoleID) (bool, error) {
-	res, err := db.Exec(removeMentionQuery, channelID, boardID, roleID)
+	res, err := db.Exec(removeMentionQuery, boardID, channelID, roleID)
 	if err != nil {
 		return false, err
 	}
@@ -93,7 +93,7 @@ func (db *DB) RemoveMention(
 // RemoveMentions removes all VLIVE mentions for a VLIVE feed.
 func (db *DB) RemoveMentions(
 	channelID discord.ChannelID, boardID int64) (bool, error) {
-	res, err := db.Exec(removeMentionsQuery, channelID, boardID)
+	res, err := db.Exec(removeMentionsQuery, boardID, channelID)
 	if err != nil {
 		return false, err
 	}
