@@ -4,23 +4,36 @@ import "github.com/diamondburned/arikawa/v3/discord"
 
 // Feed represents a VLIVE feed database entry.
 type Feed struct {
+	BoardID   int64             `db:"boardid"`
 	GuildID   discord.GuildID   `db:"guildid"`
 	ChannelID discord.ChannelID `db:"channelid"`
-	BoardID   int64             `db:"vliveboardid"`
+	PostTypes PostTypes         `db:"posttypes"`
+	Reposts   bool              `db:"reposts"`
 }
+
+type PostTypes int16
+
+const (
+	AllPosts PostTypes = iota
+	VideosOnly
+	PostsOnly
+)
 
 const (
 	createVLIVEFeedsTableQuery = `
 		CREATE TABLE IF NOT EXISTS VLIVEFeeds(
-			guildID      INT8 NOT NULL,
-			channelID    INT8 NOT NULL,
-			boardID INT8 NOT NULL,
-			PRIMARY KEY(channelID, boardID),
+			boardID   INT8    NOT NULL,
+			guildID   INT8    NOT NULL,
+			channelID INT8    NOT NULL,
+			postTypes INT2    DEFAULT 0,
+			reposts   BOOLEAN DEFAULT TRUE,
+			PRIMARY KEY(boardID, channelID),
 			FOREIGN KEY(boardID) REFERENCES VLIVEBoards(id)
 		)`
 	addFeedQuery = `
-		INSERT INTO VLIVEFeeds VALUES($1, $2, $3) ON CONFLICT DO NOTHING`
-	getFeedsByUserQuery = `
+		INSERT INTO VLIVEFeeds VALUES($1, $2, $3, $4, $5) 
+		ON CONFLICT DO NOTHING`
+	getFeedsByBoardQuery = `
 		SELECT * FROM VLIVEFeeds WHERE boardID = $1`
 	getFeedsByGuildQuery = `
 		SELECT * FROM VLIVEFeeds WHERE guildID = $1`
@@ -28,7 +41,7 @@ const (
 		SELECT * FROM VLIVEFeeds WHERE channelID = $1 AND boardID = $2`
 	removeFeedQuery = `
 		DELETE FROM VLIVEFeeds WHERE channelID = $1 AND boardID = $2`
-	removeFeedsByUserQuery = `
+	removeFeedsByBoardQuery = `
 		DELETE FROM VLIVEFeeds WHERE boardID = $1`
 	removeFeedsByChannelQuery = `
 		DELETE FROM VLIVEFeeds WHERE channelID = $1`
@@ -36,13 +49,17 @@ const (
 		DELETE FROM VLIVEFeeds WHERE guildID = $1`
 )
 
-// AddFeed adds a new Twitter feed to the database.
+// AddFeed adds a new VLIVE feed to the database.
 func (db *DB) AddFeed(
+	boardID int64,
 	guildID discord.GuildID,
 	channelID discord.ChannelID,
-	boardID int64) (bool, error) {
+	postTypes PostTypes,
+	reposts bool) (bool, error) {
 
-	res, err := db.Exec(addFeedQuery, guildID, channelID, boardID)
+	res, err := db.Exec(
+		addFeedQuery, boardID, guildID, channelID, postTypes, reposts,
+	)
 	if err != nil {
 		return false, err
 	}
@@ -51,16 +68,16 @@ func (db *DB) AddFeed(
 	return added > 0, err
 }
 
-// GetFeedsByUser returns all Twitter feeds set up with
-// the given Twitter user ID.
-func (db *DB) GetFeedsByUser(boardID int64) ([]Feed, error) {
+// GetFeedsByBoard returns all VLIVE feeds set up with
+// the given VLIVE board ID.
+func (db *DB) GetFeedsByBoard(boardID int64) ([]Feed, error) {
 	var feeds []Feed
-	err := db.Select(&feeds, getFeedsByUserQuery, boardID)
+	err := db.Select(&feeds, getFeedsByBoardQuery, boardID)
 
 	return feeds, err
 }
 
-// GetFeedsByGuild returns all Twitter feeds set up in the provided guild ID.
+// GetFeedsByGuild returns all VLIVE feeds set up in the provided guild ID.
 func (db *DB) GetFeedsByGuild(guildID discord.GuildID) ([]Feed, error) {
 	var feeds []Feed
 	err := db.Select(&feeds, getFeedsByGuildQuery, guildID)
@@ -68,7 +85,7 @@ func (db *DB) GetFeedsByGuild(guildID discord.GuildID) ([]Feed, error) {
 	return feeds, err
 }
 
-// GetFeed returns a Twitter feed from the database.
+// GetFeed returns a VLIVE feed from the database.
 func (db *DB) GetFeed(
 	channelID discord.ChannelID, boardID int64) (*Feed, error) {
 
@@ -78,7 +95,7 @@ func (db *DB) GetFeed(
 	return &feed, err
 }
 
-// RemoveFeed removes a Twitter feed from the database.
+// RemoveFeed removes a VLIVE feed from the database.
 func (db *DB) RemoveFeed(
 	channelID discord.ChannelID, boardID int64) (bool, error) {
 
@@ -91,9 +108,9 @@ func (db *DB) RemoveFeed(
 	return deleted > 0, err
 }
 
-// RemoveFeedsByUser removes all Twitter feeds for a given Twitter user ID.
-func (db *DB) RemoveFeedsByUser(boardID int64) (int64, error) {
-	res, err := db.Exec(removeFeedsByUserQuery, boardID)
+// RemoveFeedsByBoard removes all VLIVE feeds for a given VLIVE board ID.
+func (db *DB) RemoveFeedsByBoard(boardID int64) (int64, error) {
+	res, err := db.Exec(removeFeedsByBoardQuery, boardID)
 	if err != nil {
 		return 0, err
 	}
@@ -102,7 +119,7 @@ func (db *DB) RemoveFeedsByUser(boardID int64) (int64, error) {
 	return deleted, err
 }
 
-// RemoveFeedsByChannel removes all Twitter feeds for a given channel ID.
+// RemoveFeedsByChannel removes all VLIVE feeds for a given channel ID.
 func (db *DB) RemoveFeedsByChannel(channelID discord.ChannelID) (int64, error) {
 	res, err := db.Exec(removeFeedsByChannelQuery, channelID)
 	if err != nil {
@@ -113,7 +130,7 @@ func (db *DB) RemoveFeedsByChannel(channelID discord.ChannelID) (int64, error) {
 	return deleted, err
 }
 
-// ClearGuildFeeds removes all Twitter feeds in a given guild ID.
+// ClearGuildFeeds removes all VLIVE feeds in a given guild ID.
 func (db *DB) ClearGuildFeeds(guildID discord.GuildID) (int64, error) {
 	res, err := db.Exec(clearGuildFeedsQuery, guildID)
 	if err != nil {
