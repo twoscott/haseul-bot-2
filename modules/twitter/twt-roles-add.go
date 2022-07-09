@@ -42,7 +42,7 @@ var twtRolesAddCommand = &router.SubCommand{
 }
 
 func twtRoleAddExec(ctx router.CommandCtx) {
-	screenName := ctx.Options.Find("user").String()
+	screenName := ctx.Options.Find("twitter").String()
 	user, cerr := fetchUser(screenName)
 	if cerr != nil {
 		ctx.RespondCmdMessage(cerr)

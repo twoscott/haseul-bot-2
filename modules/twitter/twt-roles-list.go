@@ -21,7 +21,7 @@ var twtRolesListCommand = &router.SubCommand{
 	},
 	Options: []discord.CommandOptionValue{
 		&discord.StringOption{
-			OptionName:   "user",
+			OptionName:   "twitter",
 			Description:  "The Twitter user of the target feed",
 			Required:     true,
 			Autocomplete: true,
@@ -39,7 +39,7 @@ var twtRolesListCommand = &router.SubCommand{
 }
 
 func twtRoleListExec(ctx router.CommandCtx) {
-	screenName := ctx.Options.Find("user").String()
+	screenName := ctx.Options.Find("twitter").String()
 	user, cerr := fetchUser(screenName)
 	if cerr != nil {
 		ctx.RespondCmdMessage(cerr)

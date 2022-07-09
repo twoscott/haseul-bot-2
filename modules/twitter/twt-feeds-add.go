@@ -38,11 +38,19 @@ var twtFeedsAddCommand = &router.SubCommand{
 				discord.GuildNews,
 			},
 		},
+		&discord.BooleanOption{
+			OptionName:  "replies",
+			Description: "Whether or not to receive reply Tweets from the user",
+		},
+		&discord.BooleanOption{
+			OptionName:  "retweets",
+			Description: "Whether or not to receive retweets from the user",
+		},
 	},
 }
 
 func twtFeedAddExec(ctx router.CommandCtx) {
-	screenName := ctx.Options.Find("user").String()
+	screenName := ctx.Options.Find("twitter").String()
 	user, cerr := fetchUser(screenName)
 	if cerr != nil {
 		ctx.RespondCmdMessage(cerr)
