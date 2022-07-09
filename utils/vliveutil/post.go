@@ -58,6 +58,7 @@ func (p Post) IsVideo() bool {
 	return p.ContentType == VideoContent && p.Video != nil
 }
 
+// IsRepost returns whether a post is a repost or not.
 func (p Post) IsRepost() bool {
 	return p.OriginPost != nil
 }
