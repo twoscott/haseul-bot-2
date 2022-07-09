@@ -18,6 +18,7 @@ var twtFeedsListCommand = &router.SubCommand{
 	Description: "Lists all Twitter feeds added to the server",
 	Handler: &router.CommandHandler{
 		Executor: twtFeedListExec,
+		Defer:    true,
 	},
 }
 
