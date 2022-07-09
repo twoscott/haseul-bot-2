@@ -1,22 +1,38 @@
 package vlive
 
 import (
-	"github.com/dghubble/go-twitter/twitter"
+	"fmt"
+	"log"
+	"net/http"
+
+	"github.com/diamondburned/arikawa/v3/api"
 	"github.com/diamondburned/arikawa/v3/discord"
+	"github.com/twoscott/haseul-bot-2/config"
+	"github.com/twoscott/haseul-bot-2/database/vlivedb"
 	"github.com/twoscott/haseul-bot-2/router"
+	"github.com/twoscott/haseul-bot-2/utils/cmdutil"
+	"github.com/twoscott/haseul-bot-2/utils/dctools"
+	"github.com/twoscott/haseul-bot-2/utils/vliveutil"
 )
 
-var vlvFeedAddCommand = &router.SubCommand{
+var vliveFeedsAddCommand = &router.SubCommand{
 	Name:        "add",
 	Description: "Adds a VLIVE feed to a Discord channel",
 	Handler: &router.CommandHandler{
 		Executor:      vliveFeedAddExec,
 		Autocompleter: vliveFeedAddCompleter,
+		Defer:         true,
 	},
 	Options: []discord.CommandOptionValue{
 		&discord.StringOption{
-			OptionName:   "vlive",
-			Description:  "The VLIVE user to listen for posts from",
+			OptionName:   "vlive-channel",
+			Description:  "The VLIVE channel to search for VLIVE boards",
+			Required:     true,
+			Autocomplete: true,
+		},
+		&discord.IntegerOption{
+			OptionName:   "vlive-board",
+			Description:  "The VLIVE board to receive VLIVE posts from",
 			Required:     true,
 			Autocomplete: true,
 		},
@@ -29,156 +45,277 @@ var vlvFeedAddCommand = &router.SubCommand{
 				discord.GuildNews,
 			},
 		},
+		&discord.IntegerOption{
+			OptionName:  "types",
+			Description: "The types of VLIVE posts to receive",
+			Choices: []discord.IntegerChoice{
+				{Name: "All Posts", Value: int(vlivedb.AllPosts)},
+				{Name: "Videos Only", Value: int(vlivedb.VideosOnly)},
+				{Name: "Posts Only", Value: int(vlivedb.PostsOnly)},
+			},
+		},
+		&discord.BooleanOption{
+			OptionName:  "reposts",
+			Description: "Whether or not to receive reposts from the board",
+		},
 	},
 }
 
 func vliveFeedAddExec(ctx router.CommandCtx) {
-	// if len(args) < 1 {
-	// 	dctools.ReplyWithWarning(ctx.State, ctx.Msg,
-	// 		"Please provide a VLIVE user and Discord channel "+
-	// 			"to set up a VLIVE feed for.",
-	// 	)
-	// 	return
-	// }
-	// if len(args) < 2 {
-	// 	dctools.ReplyWithWarning(ctx.State, ctx.Msg,
-	// 		"Please provide a Discord channel to set up a VLIVE feed for.",
-	// 	)
-	// 	return
-	// }
+	channelCode := ctx.Options.Find("vlive-channel").String()
+	vChannel, cerr := fetchChannel(channelCode)
+	if cerr != nil {
+		ctx.RespondCmdMessage(cerr)
+		return
+	}
 
-	// screenName, isCode := parseCodeIfURL(args[0])
-	// user, ok := fetchUser(ctx, screenName)
-	// if !ok {
-	// 	return
-	// }
+	boardID, err := ctx.Options.Find("vlive-board").IntValue()
+	if err != nil {
+		ctx.RespondWarning("Provided VLIVE board ID must be a number")
+		return
+	}
+	board, cerr := fetchBoard(boardID)
+	if cerr != nil {
+		ctx.RespondCmdMessage(cerr)
+		return
+	}
 
-	// channel, ok := parseChannelArg(ctx, args[1])
-	// if !ok {
-	// 	return
-	// }
+	snowflake, _ := ctx.Options.Find("channel").SnowflakeValue()
+	channelID := discord.ChannelID(snowflake)
+	if !channelID.IsValid() {
+		ctx.RespondWarning(
+			"Malformed Discord channel provided.",
+		)
+		return
+	}
 
-	// botUser, err := ctx.State.Me()
-	// if err != nil {
-	// 	log.Println(err)
-	// 	dctools.ReplyWithError(ctx.State, ctx.Msg,
-	// 		fmt.Sprintf("Error occurred checking my permissions in %s.",
-	// 			channel.Mention(),
-	// 		),
-	// 	)
-	// 	return
-	// }
+	channel, cerr := cmdutil.ParseAccessibleChannel(ctx, channelID)
+	if cerr != nil {
+		ctx.RespondCmdMessage(cerr)
+		return
+	}
 
-	// botPermissions, err := ctx.State.Permissions(channel.ID, botUser.ID)
-	// if err != nil {
-	// 	log.Println(err)
-	// 	dctools.ReplyWithError(ctx.State, ctx.Msg,
-	// 		fmt.Sprintf("Error occurred checking my permissions in %s.",
-	// 			channel.Mention(),
-	// 		),
-	// 	)
-	// 	return
-	// }
+	postTypesInt, _ := ctx.Options.Find("types").IntValue()
+	postTypes := vlivedb.PostTypes(postTypesInt)
 
-	// neededPerms := 0 |
-	// 	discord.PermissionViewChannel |
-	// 	discord.PermissionSendMessages
+	reposts, err := ctx.Options.Find("reposts").BoolValue()
+	if err != nil {
+		reposts = true
+	}
 
-	// if !botPermissions.Has(neededPerms) {
-	// 	dctools.ReplyWithWarning(ctx.State, ctx.Msg,
-	// 		fmt.Sprintf("I do not have permission to send messages in %s!",
-	// 			channel.Mention(),
-	// 		),
-	// 	)
-	// 	return
-	// }
+	botUser, err := ctx.State.Me()
+	if err != nil {
+		log.Println(err)
+		ctx.RespondError(
+			fmt.Sprintf("Error occurred checking my permissions in %s.",
+				channel.Mention(),
+			),
+		)
+		return
+	}
 
-	// _, err = db.Twitter.GetUser(user.ID)
-	// if err != nil {
-	// 	ok := addUser(&ctx, user)
-	// 	if !ok {
-	// 		return
-	// 	}
-	// }
+	botPermissions, err := ctx.State.Permissions(channel.ID, botUser.ID)
+	if err != nil {
+		log.Println(err)
+		ctx.RespondError(
+			fmt.Sprintf("Error occurred checking my permissions in %s.",
+				channel.Mention(),
+			),
+		)
+		return
+	}
 
-	// _, err = db.Twitter.GetUserByGuild(ctx.Msg.GuildID, user.ID)
-	// if err != nil {
-	// 	ok := checkGuildTwitterCount(&ctx, user.ID)
-	// 	if !ok {
-	// 		return
-	// 	}
-	// }
+	neededPerms := dctools.PermissionsBitfield(
+		discord.PermissionViewChannel,
+		discord.PermissionSendMessages,
+	)
 
-	// ok, err = db.Twitter.AddFeed(ctx.Msg.GuildID, channel.ID, user.ID)
-	// if err != nil {
-	// 	log.Println(err)
-	// 	dctools.ReplyWithError(ctx.State, ctx.Msg,
-	// 		fmt.Sprintf(
-	// 			"Error occurred while adding @%s to the database.",
-	// 			user.ScreenName,
-	// 		),
-	// 	)
-	// 	return
-	// }
-	// if !ok {
-	// 	dctools.ReplyWithWarning(ctx.State, ctx.Msg,
-	// 		fmt.Sprintf(
-	// 			"%s is already set up to receive tweets from @%s.",
-	// 			channel.Mention(), user.ScreenName,
-	// 		),
-	// 	)
-	// 	return
-	// }
+	if !botPermissions.Has(neededPerms) {
+		ctx.RespondWarning(
+			fmt.Sprintf("I do not have permission to send messages in %s!",
+				channel.Mention(),
+			),
+		)
+		return
+	}
 
-	// dctools.ReplyWithSuccess(ctx.State, ctx.Msg,
-	// 	fmt.Sprintf(
-	// 		"You will now receive tweets from @%s in %s.",
-	// 		user.ScreenName, channel.Mention()),
-	// )
+	_, err = db.VLIVE.GetBoard(board.ID)
+	if err != nil {
+		cerr = addBoard(ctx, board)
+	}
+	if cerr != nil {
+		ctx.RespondCmdMessage(cerr)
+		return
+	}
+
+	cerr = checkGuildVLIVECount(&ctx, board.ID)
+	if cerr != nil {
+		ctx.RespondCmdMessage(cerr)
+		return
+	}
+
+	ok, err := db.VLIVE.AddFeed(
+		board.ID, ctx.Interaction.GuildID, channel.ID, postTypes, reposts,
+	)
+	if err != nil {
+		log.Println(err)
+		ctx.RespondError(
+			fmt.Sprintf(
+				"Error occurred while adding %s to the database.",
+				vChannel.Name,
+			),
+		)
+		return
+	}
+	if !ok {
+		ctx.RespondWarning(
+			fmt.Sprintf(
+				"%s is already set up to receive VLIVE posts from %s.",
+				channel.Mention(),
+				vChannel.Name,
+			),
+		)
+		return
+	}
+
+	ctx.RespondSuccess(
+		fmt.Sprintf(
+			"You will now receive VLIVE posts from %s in %s",
+			vChannel.Name,
+			channel.Mention(),
+		),
+	)
 }
 
-func addUser(ctx *router.CommandCtx, user *twitter.User) bool {
-	// tweets, resp, err := twt.Timelines.UserTimeline(&twitter.UserTimelineParams{
-	// 	UserID:          user.ID,
-	// 	Count:           1,
-	// 	ExcludeReplies:  twitter.Bool(false),
-	// 	IncludeRetweets: twitter.Bool(true),
-	// 	TrimUser:        twitter.Bool(true),
-	// })
-	// if err != nil {
-	// 	dctools.ReplyWithError(ctx.State, ctx.Msg,
-	// 		"Unknown error occurred while trying to fetch tweets.",
-	// 	)
-	// 	return false
-	// }
-	// if resp.StatusCode != http.StatusOK {
-	// 	log.Println(err)
-	// 	dctools.ReplyWithError(ctx.State, ctx.Msg,
-	// 		fmt.Sprintf(
-	// 			"Error occurred while fetching neccesary data from @%s.",
-	// 			user.ScreenName,
-	// 		),
-	// 	)
-	// 	return false
-	// }
+func addBoard(ctx router.CommandCtx, board *vliveutil.Board) router.CmdResponse {
+	posts, res, err := vliveutil.GetBoardPosts(board.ID, 1)
+	if err != nil {
+		return router.Error("Error occured fetching VLIVE board posts.")
+	}
+	if res.StatusCode != http.StatusOK {
+		return router.Errorf("Unable to fetch posts for %s.", board.Title)
+	}
 
-	// if len(tweets) < 1 {
-	// 	return true
-	// }
+	pager := vliveutil.BoardPostsPager{}
+	if len(posts) > 0 {
+		post := posts[0]
+		pager.PostID = post.ID
+		pager.PostTimestamp = post.CreatedAt
+	}
 
-	// _, err = db.Twitter.AddUser(user.ID, tweets[0].ID)
-	// if err != nil {
-	// 	log.Println(err)
-	// 	dctools.ReplyWithError(ctx.State, ctx.Msg,
-	// 		fmt.Sprintf(
-	// 			"Error occurred while adding @%s to the database.",
-	// 			user.ScreenName,
-	// 		),
-	// 	)
-	// 	return false
-	// }
+	_, err = db.VLIVE.AddBoard(
+		board.ID, board.ChannelCode, pager.PostTimestamp, pager.PostID,
+	)
+	if err != nil {
+		log.Println(err)
+		return router.Errorf(
+			"Error occurred while adding %s to the database.",
+			board.Title,
+		)
+	}
 
-	return true
+	return nil
 }
 
-func vliveFeedAddCompleter(ctx router.AutocompleteCtx) {}
+func checkGuildVLIVECount(
+	ctx *router.CommandCtx, boardID int64) router.CmdResponse {
+
+	cfg := config.GetInstance()
+	if ctx.Interaction.GuildID == cfg.Bot.RootGuildID {
+		return nil
+	}
+
+	vliveCount, err := db.VLIVE.GetGuildBoardCount(ctx.Interaction.GuildID)
+	if err != nil {
+		log.Println(err)
+		return router.Error(
+			"Error occurred while checking current VLIVE feeds.",
+		)
+	}
+
+	if vliveCount < 1 {
+		return nil
+	}
+
+	guild, err := ctx.State.Guild(ctx.Interaction.GuildID)
+	if err != nil {
+		log.Println(err)
+		return router.Error("Error occurred while fetching server.")
+	}
+
+	patron, err := pat.GetActiveDiscordPatron(guild.OwnerID)
+	if err != nil {
+		log.Println(err)
+	}
+
+	if patron == nil || patron.CurrentlyEntitledAmountCents < 300 {
+		if vliveCount >= 3 {
+			return router.Warning(
+				"You can only add VLIVE feeds for 3 VLIVE boards per server.",
+			)
+		}
+	} else if patron != nil && patron.CurrentlyEntitledAmountCents >= 300 {
+		if vliveCount >= 10 {
+			return router.Warning(
+				"You can only add VLIVE feeds for 10 VLIVE boards per server.",
+			)
+		}
+	}
+
+	return nil
+}
+
+func vliveFeedAddCompleter(ctx router.AutocompleteCtx) {
+	switch ctx.Focused.Name {
+	case "vlive-channel":
+		completeVliveChannel(ctx)
+	case "vlive-board":
+		completeVliveBoard(ctx)
+	}
+}
+
+func completeVliveChannel(ctx router.AutocompleteCtx) {
+	query := ctx.Focused.String()
+
+	channels, res, err := vliveutil.SearchChannels(query, 10)
+	if err != nil {
+		log.Println(err)
+		return
+	}
+	if res.StatusCode != http.StatusOK {
+		return
+	}
+
+	choices := make(api.AutocompleteStringChoices, 0, len(channels))
+	for _, c := range channels {
+		choices = append(choices, discord.StringChoice{
+			Name: c.Name, Value: c.Code,
+		})
+	}
+
+	ctx.RespondChoices(choices)
+}
+
+func completeVliveBoard(ctx router.AutocompleteCtx) {
+	channelCode := ctx.Options.Find("vlive-channel").String()
+	query := ctx.Focused.String()
+
+	boards, res, err := vliveutil.GetUnwrappedBoards(channelCode)
+	if err != nil {
+		log.Println(err)
+		return
+	}
+	if res.StatusCode != http.StatusOK {
+		return
+	}
+
+	choices := make(api.AutocompleteIntegerChoices, 0, len(boards))
+	for _, b := range boards {
+		choices = append(choices, discord.IntegerChoice{
+			Name: b.Title, Value: int(b.ID),
+		})
+	}
+
+	choices = dctools.SearchSortIntChoices(choices, query)
+	ctx.RespondChoices(choices)
+}

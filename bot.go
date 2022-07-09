@@ -18,11 +18,7 @@ import (
 
 /////
 //	TODO:
-//		slash commands integration
-//		twitter modules
-//		user info module
-//		notifications module
-//
+//		adopt vlive method for twitter retweets and replies
 //      STOP GUILDS FROM BEING AUTO WHITELISTED IN PRODUCTION ENV
 /////
 
