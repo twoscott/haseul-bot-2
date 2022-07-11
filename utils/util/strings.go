@@ -21,6 +21,10 @@ func Possessive(target string) string {
 
 // PossessiveSuffix return the possessive suffix for a word.
 func PossessiveSuffix(target string) (suffix string) {
+	if target == "" {
+		return ""
+	}
+
 	lastChar := target[len(target)-1]
 	if lastChar == 's' || lastChar == 'S' {
 		suffix = "'"
