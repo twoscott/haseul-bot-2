@@ -90,7 +90,7 @@ func twtFeedListExec(ctx router.CommandCtx) {
 	numOfFeedsFooter := fmt.Sprintf(
 		"%d %s",
 		numOfFeeds,
-		util.Pluralise("Feed", numOfFeeds),
+		util.Pluralise("Feed", int64(numOfFeeds)),
 	)
 
 	for i, description := range descriptionPages {

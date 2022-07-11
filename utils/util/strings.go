@@ -33,7 +33,7 @@ func PossessiveSuffix(target string) (suffix string) {
 
 // Pluralise adds the grammar-correct plural suffix to target if
 // amount is not singular
-func Pluralise(target string, amount int) string {
+func Pluralise(target string, amount int64) string {
 	if amount == 1 || target == "" {
 		return target
 	}

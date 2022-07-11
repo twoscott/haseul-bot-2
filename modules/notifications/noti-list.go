@@ -60,7 +60,7 @@ func notiListExec(ctx router.CommandCtx) {
 	numOfNotisFooter := fmt.Sprintf(
 		"%d %s",
 		numOfNotis,
-		util.Pluralise("Notification", numOfNotis),
+		util.Pluralise("Notification", int64(numOfNotis)),
 	)
 	for i, description := range descriptionPages {
 		pageID := fmt.Sprintf("Page %d/%d", i+1, len(descriptionPages))

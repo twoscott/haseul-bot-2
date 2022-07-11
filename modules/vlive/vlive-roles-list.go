@@ -122,7 +122,7 @@ func vliveRoleListExec(ctx router.CommandCtx) {
 	numOfMentionsFooter := fmt.Sprintf(
 		"%d %s",
 		numOfMentions,
-		util.Pluralise("Mention Role", numOfMentions),
+		util.Pluralise("Mention Role", int64(numOfMentions)),
 	)
 
 	for i, description := range descriptionPages {
