@@ -1,15 +1,34 @@
 package util
 
 import (
+	"log"
 	"regexp"
 	"strings"
 
 	"golang.org/x/exp/slices"
 )
 
-var endsInEsRegex = regexp.MustCompile(`\S+(s|sh|ch|x|z)$`)
+const vowelsRegexString = `[b-df-hj-np-tv-z]`
 
-// Possessive returns the target string appended with either ' or 's depending
+// The following regular expressions are used for pluralising words according
+// to the following rules:
+// - https://www.grammarly.com/blog/plural-nouns/
+// - https://preply.com/en/blog/simple-rules-for-the-formation-of-plural-nouns-in-english/
+var (
+	replaceWithIRegex   = regexp.MustCompile(`(?i)us$`)
+	replaceWithEsRegex  = regexp.MustCompile(`(?i)is$`)
+	replaceWithVesRegex = regexp.MustCompile(`(?i)[^f]fe?$`)
+	replaceWithOesRegex = regexp.MustCompile(
+		`(?i)(` + vowelsRegexString + `)o$`,
+	)
+	replaceWithIesRegex = regexp.MustCompile(
+		`(?i)(` + vowelsRegexString + `)y$`,
+	)
+
+	endsInEsRegex = regexp.MustCompile(`(?i)(s|sh|ch|x|z)$`)
+)
+
+// Possessive returns the target string appended with either 's or ' depending
 // on the string's postfix character.
 func Possessive(target string) string {
 	if target == "" {
@@ -36,16 +55,61 @@ func PossessiveSuffix(target string) (suffix string) {
 }
 
 // Pluralise adds the grammar-correct plural suffix to target if
-// amount is not singular
+// amount is not singular.
 func Pluralise(target string, amount int64) string {
 	if amount == 1 || target == "" {
 		return target
 	}
 
+	return getPlural(target)
+}
+
+// PluraliseSpecial returns the supplied singular string if amount is 1,
+// else the supplied plural string is returned.
+func PluraliseSpecial(singular, plural string, amount int64) string {
+	if amount == 1 {
+		return singular
+	}
+
+	return plural
+}
+
+func getPlural(target string) (plural string) {
+	plural = replaceWithIRegex.ReplaceAllString(target, "i")
+	if plural != target {
+		return plural
+	}
+
+	plural = replaceWithEsRegex.ReplaceAllString(target, "es")
+	log.Println(plural)
+	if plural != target {
+		return plural
+	}
+
+	plural = replaceWithVesRegex.ReplaceAllString(target, "ves")
+	log.Println(plural)
+	if plural != target {
+		return plural
+	}
+
+	plural = replaceWithOesRegex.ReplaceAllString(target, "${1}oes")
+	log.Println(plural)
+	if plural != target {
+		return plural
+	}
+
+	plural = replaceWithIesRegex.ReplaceAllString(target, "${1}ies")
+	log.Println(plural)
+	if plural != target {
+		return plural
+	}
+
 	return target + PluralSuffix(target)
 }
 
-// PluralSuffix returns the plural suffix for a word.
+// PluralSuffix returns the plural suffix for a word. This misses most of the
+// cases that Pluralise covers, as many cases require replace some ending
+// characters of the word and don't just append a suffix.
 func PluralSuffix(target string) (suffix string) {
 	if endsInEsRegex.MatchString(target) {
 		suffix = "es"
