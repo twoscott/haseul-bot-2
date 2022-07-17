@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/twoscott/haseul-bot-2/router"
+	"github.com/twoscott/haseul-bot-2/utils/util"
 )
 
 var youTubeHistoryClearCommand = &router.SubCommand{
@@ -24,6 +25,10 @@ func youTubeHistoryClearExec(ctx router.CommandCtx) {
 	}
 
 	ctx.RespondSuccess(
-		fmt.Sprintf("Cleared %d entries from YouTube search history.", cleared),
+		fmt.Sprintf(
+			"Cleared %d %s from YouTube search history.",
+			cleared,
+			util.Pluralise("entry", cleared),
+		),
 	)
 }

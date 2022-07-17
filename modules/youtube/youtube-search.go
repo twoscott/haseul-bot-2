@@ -9,6 +9,7 @@ import (
 	"github.com/diamondburned/arikawa/v3/utils/json/option"
 	"github.com/twoscott/haseul-bot-2/router"
 	"github.com/twoscott/haseul-bot-2/utils/ytutil"
+	"golang.org/x/exp/slices"
 )
 
 var youTubeSearchCommand = &router.SubCommand{
@@ -95,6 +96,7 @@ func youTubeSearchCompleter(ctx router.AutocompleteCtx) {
 		suggestions = append(suggestions, query)
 	}
 
+	slices.Compact(suggestions)
 	choices := make(api.AutocompleteStringChoices, 0, len(suggestions))
 	for _, s := range suggestions {
 		choice := discord.StringChoice{Name: s, Value: s}
