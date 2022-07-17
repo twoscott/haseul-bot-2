@@ -198,6 +198,10 @@ func (rt *Router) mustRegisterSubCommandHandlers(
 }
 
 func (rt *Router) mustRegisterCommandHandler(name string, handler *CommandHandler) {
+	if handler == nil {
+		log.Panicf("'%s' does not have a command handler", name)
+	}
+
 	nameCheck, ok := rt.commandHandlers[name]
 	if ok {
 		log.Panicf("'%v' is already registered to another command", nameCheck)
