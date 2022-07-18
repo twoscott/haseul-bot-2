@@ -55,7 +55,7 @@ const (
 			keyword VARCHAR(128) NOT NULL,
 			userID  INT8         NOT NULL,
 			type    INT2         DEFAULT 0,
-			guildID INT8         DEFAULT 0,
+			guildID INT8         DEFAULT 0 # 0,
 			PRIMARY KEY(keyword, userID, guildID)
 		)`
 

@@ -9,6 +9,7 @@ import (
 	"github.com/twoscott/haseul-bot-2/database/twitterdb"
 	"github.com/twoscott/haseul-bot-2/database/vlivedb"
 	"github.com/twoscott/haseul-bot-2/database/youtubedb"
+	"github.com/twoscott/haseul-bot-2/router"
 )
 
 type DB struct {
@@ -40,4 +41,9 @@ func GetInstance() *DB {
 	})
 
 	return db
+}
+
+func Init(rt *router.Router) {
+	db := GetInstance()
+	db.Guilds.Init(rt)
 }
