@@ -26,6 +26,68 @@ type ButtonPager struct {
 
 const listenTime = 5 * time.Minute
 
+const (
+	ButtonIDFirstPage = "FIRST_PAGE"
+	ButtonIDPrevPage  = "PREV_PAGE"
+	ButtonIDNextPage  = "NEXT_PAGE"
+	ButtonIDLastPage  = "LAST_PAGE"
+	ButtonIDConfirm   = "CONFIRM"
+	ButtonIDTimeout   = "TIMEOUT"
+)
+
+var (
+	// PagerActionRow is a set of buttons for use with button paging.
+	PagerActionRow = discord.ActionRowComponent{
+		&discord.ButtonComponent{
+			Label:    "First",
+			CustomID: ButtonIDFirstPage,
+			Style:    discord.SecondaryButtonStyle(),
+		},
+		&discord.ButtonComponent{
+			Label:    "Prev",
+			CustomID: ButtonIDPrevPage,
+			Style:    discord.PrimaryButtonStyle(),
+		},
+		&discord.ButtonComponent{
+			Label:    "Next",
+			CustomID: ButtonIDNextPage,
+			Style:    discord.PrimaryButtonStyle(),
+		},
+		&discord.ButtonComponent{
+			Label:    "Last",
+			CustomID: ButtonIDLastPage,
+			Style:    discord.SecondaryButtonStyle(),
+		},
+	}
+	// CheckButton is a button used for confirming the current page.
+	CheckButton = &discord.ButtonComponent{
+		Label:    "Select",
+		CustomID: ButtonIDConfirm,
+		Style:    discord.SuccessButtonStyle(),
+	}
+)
+
+func PagerComponents() *discord.ContainerComponents {
+	return getPagerComponents(false)
+}
+
+func ConfirmationComponents() *discord.ContainerComponents {
+	return getPagerComponents(true)
+}
+
+func getPagerComponents(confirm bool) *discord.ContainerComponents {
+	buttons := make(
+		discord.ActionRowComponent, len(PagerActionRow), len(PagerActionRow)+1,
+	)
+	copy(buttons, PagerActionRow)
+
+	if confirm {
+		buttons = append(buttons, CheckButton)
+	}
+
+	return discord.ComponentsPtr(&buttons)
+}
+
 func newButtonPager(
 	interaction *discord.InteractionEvent, pages []MessagePage) *ButtonPager {
 
@@ -58,7 +120,7 @@ func (b *ButtonPager) handleButtonPress(
 		return
 	}
 
-	if data.CustomID == dctools.ButtonIDConfirm {
+	if data.CustomID == ButtonIDConfirm {
 		b.confirmPage(rt, button)
 		return
 	}
@@ -74,17 +136,17 @@ func (b *ButtonPager) changePages(
 	startPage := b.PageNumber
 
 	switch data.CustomID {
-	case dctools.ButtonIDFirstPage:
+	case ButtonIDFirstPage:
 		b.PageNumber = 0
-	case dctools.ButtonIDLastPage:
+	case ButtonIDLastPage:
 		b.PageNumber = len(b.Pages) - 1
-	case dctools.ButtonIDPrevPage:
+	case ButtonIDPrevPage:
 		if b.PageNumber <= 0 {
 			b.PageNumber = len(b.Pages) - 1
 		} else {
 			b.PageNumber--
 		}
-	case dctools.ButtonIDNextPage:
+	case ButtonIDNextPage:
 		if b.PageNumber >= len(b.Pages)-1 {
 			b.PageNumber = 0
 		} else {
@@ -132,7 +194,7 @@ func (b ButtonPager) deleteAfterTimeout(rt *Router) {
 		return
 	}
 
-	disabledPagerButtons := dctools.DisabledButtons(dctools.PagerActionRow)
+	disabledPagerButtons := dctools.DisabledButtons(PagerActionRow)
 
 	rt.State.EditInteractionResponse(
 		b.Interaction.AppID,

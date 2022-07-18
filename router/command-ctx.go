@@ -16,8 +16,13 @@ type CommandCtx struct {
 	// Options contains options that were attached to the lowest level
 	// command or sub command, this means it excludes sub command groups
 	// or sub commands from the options.
-	Options   discord.CommandInteractionOptions
-	Deferred  bool
+	Options discord.CommandInteractionOptions
+	// Deferred signals whether a deferred message response has been sent to
+	// the interaction.
+	Deferred bool
+	// Ephemeral signals whether responses to the interacton should include
+	// the ephemeral flag. This flag dictates that the response should only
+	// be visiable to the initial interaction sender.
 	Ephemeral bool
 }
 
@@ -37,6 +42,9 @@ func (ctx *CommandCtx) Defer() error {
 // Respond responds to the supplied command with the supplied
 // response data.
 func (ctx CommandCtx) Respond(data api.InteractionResponseData) error {
+	if ctx.Ephemeral {
+		data.Flags |= api.EphemeralResponse
+	}
 	if ctx.Deferred {
 		_, err := dctools.FollowupRespond(ctx.State, ctx.Interaction, data)
 		return err
@@ -50,238 +58,47 @@ func (ctx CommandCtx) Respond(data api.InteractionResponseData) error {
 func (ctx CommandCtx) RespondSimple(
 	content string, embeds ...discord.Embed) error {
 
-	var flags api.InteractionResponseFlags = 0
-	if ctx.Ephemeral {
-		flags |= api.EphemeralResponse
-	}
-	if ctx.Deferred {
-		_, err := dctools.FollowupRespond(
-			ctx.State, ctx.Interaction, api.InteractionResponseData{
-				Content: option.NewNullableString(content),
-				Embeds:  &embeds,
-				Flags:   flags,
-			},
-		)
-		return err
-	}
-
-	return dctools.MessageRespond(
-		ctx.State, ctx.Interaction, api.InteractionResponseData{
-			Content: option.NewNullableString(content),
-			Embeds:  &embeds,
-			Flags:   flags,
-		},
-	)
+	return ctx.Respond(api.InteractionResponseData{
+		Content: option.NewNullableString(content),
+		Embeds:  &embeds,
+	})
 }
 
 // RespondText responds to the supplied command with the supplied
 // content.
 func (ctx CommandCtx) RespondText(content string) error {
-	var flags api.InteractionResponseFlags = 0
-	if ctx.Ephemeral {
-		flags |= api.EphemeralResponse
-	}
-	if ctx.Deferred {
-		_, err := dctools.FollowupRespond(
-			ctx.State, ctx.Interaction, api.InteractionResponseData{
-				Content: option.NewNullableString(content),
-				Flags:   flags,
-			},
-		)
-		return err
-	}
-
-	return dctools.MessageRespond(
-		ctx.State, ctx.Interaction, api.InteractionResponseData{
-			Content: option.NewNullableString(content),
-			Flags:   flags,
-		},
-	)
+	return ctx.RespondSimple(content)
 }
 
 // RespondEmbed responds to the supplied command with the
 // supplied embed(s).
 func (ctx CommandCtx) RespondEmbed(embeds ...discord.Embed) error {
-	var flags api.InteractionResponseFlags = 0
-	if ctx.Ephemeral {
-		flags |= api.EphemeralResponse
-	}
-	if ctx.Deferred {
-		_, err := dctools.FollowupRespond(
-			ctx.State, ctx.Interaction, api.InteractionResponseData{
-				Embeds: &embeds,
-				Flags:  flags,
-			},
-		)
-		return err
-	}
-
-	return dctools.MessageRespond(
-		ctx.State, ctx.Interaction, api.InteractionResponseData{
-			Embeds: &embeds,
-			Flags:  flags,
-		},
-	)
+	return ctx.RespondSimple("", embeds...)
 }
 
 // RespondSuccess responds to a command with the provided content,
 // prepended with a check emoji.
 func (ctx CommandCtx) RespondSuccess(content string) error {
-	var flags api.InteractionResponseFlags = 0
-	succMsg := Success(content).String()
-	if ctx.Ephemeral {
-		flags |= api.EphemeralResponse
-	}
-	if ctx.Deferred {
-		_, err := dctools.FollowupRespond(
-			ctx.State, ctx.Interaction, api.InteractionResponseData{
-				Content: option.NewNullableString(succMsg),
-				Flags:   flags,
-			},
-		)
-		return err
-	}
-
-	return dctools.MessageRespond(
-		ctx.State, ctx.Interaction, api.InteractionResponseData{
-			Content: option.NewNullableString(succMsg),
-			Flags:   flags,
-		},
-	)
+	return ctx.RespondText(Success(content).String())
 }
 
 // RespondWarning responds to a command with the provided content,
 // prepended with a warning emoji.
 func (ctx CommandCtx) RespondWarning(content string) error {
-	var flags api.InteractionResponseFlags = 0
-	warnMsg := Warning(content).String()
-	if ctx.Ephemeral {
-		flags |= api.EphemeralResponse
-	}
-	if ctx.Deferred {
-		_, err := dctools.FollowupRespond(
-			ctx.State, ctx.Interaction, api.InteractionResponseData{
-				Content: option.NewNullableString(warnMsg),
-				Flags:   flags,
-			},
-		)
-		return err
-	}
-
-	return dctools.MessageRespond(
-		ctx.State, ctx.Interaction, api.InteractionResponseData{
-			Content: option.NewNullableString(warnMsg),
-			Flags:   flags,
-		},
-	)
+	return ctx.RespondText(Warning(content).String())
 }
 
 // RespondError responds to a command with the provided content,
 // prepended with a cross emoji.
 func (ctx CommandCtx) RespondError(content string) error {
-	var flags api.InteractionResponseFlags = 0
-	errMsg := Error(content).String()
-	if ctx.Ephemeral {
-		flags |= api.EphemeralResponse
-	}
-	if ctx.Deferred {
-		_, err := dctools.FollowupRespond(
-			ctx.State, ctx.Interaction, api.InteractionResponseData{
-				Content: option.NewNullableString(errMsg),
-				Flags:   flags,
-			},
-		)
-		return err
-	}
-
-	return dctools.MessageRespond(
-		ctx.State, ctx.Interaction, api.InteractionResponseData{
-			Content: option.NewNullableString(errMsg),
-			Flags:   flags,
-		},
-	)
+	return ctx.RespondText(Error(content).String())
 }
 
 // RespondGenericError responds to a command with a
 // generic error message.
 func (ctx CommandCtx) RespondGenericError() error {
-	var flags api.InteractionResponseFlags = 0
 	errMsg := Error("Error occurred during command execution.").String()
-	if ctx.Ephemeral {
-		flags |= api.EphemeralResponse
-	}
-	if ctx.Deferred {
-		_, err := dctools.FollowupRespond(
-			ctx.State, ctx.Interaction, api.InteractionResponseData{
-				Content: option.NewNullableString(errMsg),
-				Flags:   flags,
-			},
-		)
-		return err
-	}
-
-	return dctools.MessageRespond(
-		ctx.State, ctx.Interaction, api.InteractionResponseData{
-			Content: option.NewNullableString(errMsg),
-			Flags:   flags,
-		},
-	)
-}
-
-// RespondConfirmationButtons responds to a command with a message, with
-// both pager buttons and a confirmation button attached
-func (ctx CommandCtx) RespondConfirmationButtons(
-	content string, embeds ...discord.Embed) error {
-
-	var flags api.InteractionResponseFlags = 0
-	if ctx.Ephemeral {
-		flags |= api.EphemeralResponse
-	}
-	if ctx.Deferred {
-		return dctools.FollowupRespondConfirmationButtons(
-			ctx.State, ctx.Interaction, api.InteractionResponseData{
-				Content: option.NewNullableString(content),
-				Embeds:  &embeds,
-				Flags:   flags,
-			},
-		)
-	}
-
-	return dctools.MessageRespondConfirmationButtons(
-		ctx.State, ctx.Interaction, api.InteractionResponseData{
-			Content: option.NewNullableString(content),
-			Embeds:  &embeds,
-			Flags:   flags,
-		},
-	)
-}
-
-// RespondConfirmationButtons responds to a command with a message, with
-// both pager buttons and a confirmation button attached
-func (ctx CommandCtx) RespondPagerButtons(
-	content string, embeds ...discord.Embed) error {
-
-	var flags api.InteractionResponseFlags = 0
-	if ctx.Ephemeral {
-		flags |= api.EphemeralResponse
-	}
-	if ctx.Deferred {
-		return dctools.FollowupRespondPagerButtons(
-			ctx.State, ctx.Interaction, api.InteractionResponseData{
-				Content: option.NewNullableString(content),
-				Embeds:  &embeds,
-				Flags:   flags,
-			},
-		)
-	}
-
-	return dctools.MessageRespondPagerButtons(
-		ctx.State, ctx.Interaction, api.InteractionResponseData{
-			Content: option.NewNullableString(content),
-			Embeds:  &embeds,
-			Flags:   flags,
-		},
-	)
+	return ctx.RespondText(errMsg)
 }
 
 // RespondCmdMessage responds with the pre-defined error, warning, or
@@ -290,14 +107,37 @@ func (ctx CommandCtx) RespondCmdMessage(response CmdResponse) error {
 	return ctx.RespondText(response.String())
 }
 
-// RespondWithPaging responds to a slash command with a message pager
-func (ctx CommandCtx) RespondPaging(messagePages []MessagePage) error {
+// RespondConfirmationButtons responds to a command with a message, with
+// both pager buttons and a confirmation button attached
+func (ctx CommandCtx) RespondConfirmationButtons(
+	content string, embeds ...discord.Embed) error {
 
+	return ctx.Respond(api.InteractionResponseData{
+		Content:    option.NewNullableString(content),
+		Embeds:     &embeds,
+		Components: ConfirmationComponents(),
+	})
+}
+
+// RespondConfirmationButtons responds to a command with a message, with
+// pager buttons attached.
+func (ctx CommandCtx) RespondPagerButtons(
+	content string, embeds ...discord.Embed) error {
+
+	return ctx.Respond(api.InteractionResponseData{
+		Content:    option.NewNullableString(content),
+		Embeds:     &embeds,
+		Components: PagerComponents(),
+	})
+}
+
+// RespondWithPaging responds to a slash command with a message pager.
+func (ctx CommandCtx) RespondPaging(messagePages []MessagePage) error {
 	return ctx.respondWithPaging(messagePages, false)
 }
 
 // RespondConfirmationPaging responds to a slash command with a message pager
-// and a confirmation button
+// and a confirmation button.
 func (ctx CommandCtx) RespondConfirmationPaging(
 	messagePages []MessagePage) error {
 
@@ -305,29 +145,23 @@ func (ctx CommandCtx) RespondConfirmationPaging(
 }
 
 func (ctx CommandCtx) respondWithPaging(
-	messagePages []MessagePage,
-	confirmation bool) error {
+	messagePages []MessagePage, confirmation bool) error {
+
+	var (
+		content = messagePages[0].Content
+		embeds  = messagePages[0].Embeds
+	)
 
 	if len(messagePages) < 2 {
-		return ctx.RespondSimple(
-			messagePages[0].Content,
-			messagePages[0].Embeds...,
-		)
+		return ctx.RespondSimple(content, embeds...)
 	}
 
 	var err error
 	if confirmation {
-		err = ctx.RespondConfirmationButtons(
-			messagePages[0].Content,
-			messagePages[0].Embeds...,
-		)
+		err = ctx.RespondConfirmationButtons(content, embeds...)
 	} else {
-		err = ctx.RespondPagerButtons(
-			messagePages[0].Content,
-			messagePages[0].Embeds...,
-		)
+		err = ctx.RespondPagerButtons(content, embeds...)
 	}
-
 	if err != nil {
 		return err
 	}
