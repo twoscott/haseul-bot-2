@@ -19,6 +19,7 @@ import (
 /////
 //	TODO:
 //		adopt vlive method for twitter retweets and replies
+//		unit testing for utils etc.
 //      STOP GUILDS FROM BEING AUTO WHITELISTED IN PRODUCTION ENV
 /////
 
@@ -41,6 +42,8 @@ func main() {
 	cache.Init(rt)
 	modules.Init(rt)
 
+	rt.MustRegisterCommandHandlers()
+
 	err := st.Open(context.Background())
 	if err != nil {
 		log.Fatalf("Failed to connect to Discord: %s\n", err)
@@ -55,8 +58,6 @@ func main() {
 	if err != nil {
 		log.Fatalf("Failed to add commands to Discord: %s\n", err)
 	}
-
-	rt.MustRegisterCommandHandlers()
 
 	log.Print("Haseul Bot is now running. Press Ctrl-C to exit. ")
 	sigs := make(chan os.Signal, 1)
