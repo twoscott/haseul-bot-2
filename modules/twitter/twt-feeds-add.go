@@ -11,7 +11,6 @@ import (
 	"github.com/twoscott/haseul-bot-2/config"
 	"github.com/twoscott/haseul-bot-2/router"
 	"github.com/twoscott/haseul-bot-2/utils/cmdutil"
-	"github.com/twoscott/haseul-bot-2/utils/dctools"
 )
 
 var twtFeedsAddCommand = &router.SubCommand{
@@ -66,7 +65,7 @@ func twtFeedAddExec(ctx router.CommandCtx) {
 		return
 	}
 
-	channel, cerr := cmdutil.ParseAccessibleChannel(ctx, channelID)
+	channel, cerr := cmdutil.ParseSendableChannel(ctx, channelID)
 	if cerr != nil {
 		ctx.RespondCmdMessage(cerr)
 		return
@@ -75,43 +74,7 @@ func twtFeedAddExec(ctx router.CommandCtx) {
 	replies, _ := ctx.Options.Find("replies").BoolValue()
 	retweets, _ := ctx.Options.Find("retweets").BoolValue()
 
-	botUser, err := ctx.State.Me()
-	if err != nil {
-		log.Println(err)
-		ctx.RespondError(
-			fmt.Sprintf("Error occurred checking my permissions in %s.",
-				channel.Mention(),
-			),
-		)
-		return
-	}
-
-	botPermissions, err := ctx.State.Permissions(channel.ID, botUser.ID)
-	if err != nil {
-		log.Println(err)
-		ctx.RespondError(
-			fmt.Sprintf("Error occurred checking my permissions in %s.",
-				channel.Mention(),
-			),
-		)
-		return
-	}
-
-	neededPerms := dctools.PermissionsBitfield(
-		discord.PermissionViewChannel,
-		discord.PermissionSendMessages,
-	)
-
-	if !botPermissions.Has(neededPerms) {
-		ctx.RespondWarning(
-			fmt.Sprintf("I do not have permission to send messages in %s!",
-				channel.Mention(),
-			),
-		)
-		return
-	}
-
-	_, err = db.Twitter.GetUser(user.ID)
+	_, err := db.Twitter.GetUser(user.ID)
 	if err != nil {
 		cerr = addUser(ctx, user)
 	}

@@ -6,6 +6,7 @@ import (
 
 	"github.com/diamondburned/arikawa/v3/discord"
 	"github.com/twoscott/haseul-bot-2/router"
+	"github.com/twoscott/haseul-bot-2/utils/cmdutil"
 )
 
 var twtFeedsRemoveCommand = &router.SubCommand{
@@ -51,13 +52,13 @@ func twtFeedRemoveExec(ctx router.CommandCtx) {
 		return
 	}
 
-	channel, err := ctx.State.Channel(channelID)
-	if err != nil {
-		ctx.RespondWarning("Invalid Discord channel provided.")
+	channel, cerr := cmdutil.ParseAccessibleChannel(ctx, channelID)
+	if cerr != nil {
+		ctx.RespondCmdMessage(cerr)
 		return
 	}
 
-	_, err = db.Twitter.RemoveMentions(channel.ID, user.ID)
+	_, err := db.Twitter.RemoveMentions(channel.ID, user.ID)
 	if err != nil {
 		log.Println(err)
 		ctx.RespondError(

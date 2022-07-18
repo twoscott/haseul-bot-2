@@ -4,11 +4,7 @@ import "github.com/diamondburned/arikawa/v3/discord"
 
 // IsTextChannel returns whether the channel is a text or news channel.
 func IsTextChannel(chType discord.ChannelType) bool {
-	return chType == discord.GuildText ||
-		chType == discord.GuildNews ||
-		chType == discord.GuildNewsThread ||
-		chType == discord.GuildPublicThread ||
-		chType == discord.GuildPrivateThread
+	return chType == discord.GuildText || chType == discord.GuildNews
 }
 
 // ChannelTypeString returns the channel type in string form.

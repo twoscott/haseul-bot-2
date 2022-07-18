@@ -89,7 +89,7 @@ func vliveFeedAddExec(ctx router.CommandCtx) {
 		return
 	}
 
-	channel, cerr := cmdutil.ParseAccessibleChannel(ctx, channelID)
+	channel, cerr := cmdutil.ParseSendableChannel(ctx, channelID)
 	if cerr != nil {
 		ctx.RespondCmdMessage(cerr)
 		return
@@ -99,42 +99,6 @@ func vliveFeedAddExec(ctx router.CommandCtx) {
 	postTypes := vlivedb.PostTypes(postTypesInt)
 
 	reposts, err := ctx.Options.Find("reposts").BoolValue()
-
-	botUser, err := ctx.State.Me()
-	if err != nil {
-		log.Println(err)
-		ctx.RespondError(
-			fmt.Sprintf("Error occurred checking my permissions in %s.",
-				channel.Mention(),
-			),
-		)
-		return
-	}
-
-	botPermissions, err := ctx.State.Permissions(channel.ID, botUser.ID)
-	if err != nil {
-		log.Println(err)
-		ctx.RespondError(
-			fmt.Sprintf("Error occurred checking my permissions in %s.",
-				channel.Mention(),
-			),
-		)
-		return
-	}
-
-	neededPerms := dctools.PermissionsBitfield(
-		discord.PermissionViewChannel,
-		discord.PermissionSendMessages,
-	)
-
-	if !botPermissions.Has(neededPerms) {
-		ctx.RespondWarning(
-			fmt.Sprintf("I do not have permission to send messages in %s!",
-				channel.Mention(),
-			),
-		)
-		return
-	}
 
 	_, err = db.VLIVE.GetBoard(board.ID)
 	if err != nil {
