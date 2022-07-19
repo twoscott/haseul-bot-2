@@ -20,7 +20,9 @@ type notificationMatch struct {
 	keyword string
 }
 
-func checkKeywords(rt *router.Router, msg *discord.Message) {
+func checkKeywords(
+	rt *router.Router, msg discord.Message, _ *discord.Member) {
+
 	if len(msg.Content) < 1 {
 		return
 	}
@@ -96,7 +98,7 @@ func checkMatch(
 func sendNotifications(
 	rt *router.Router,
 	matchChan <-chan notificationMatch,
-	msg *discord.Message) {
+	msg discord.Message) {
 
 	userMatchSets := make(map[discord.UserID]map[string]struct{})
 	exists := struct{}{}
@@ -123,7 +125,7 @@ func sendNotifications(
 
 func sendNotification(
 	rt *router.Router,
-	msg *discord.Message,
+	msg discord.Message,
 	userID discord.UserID,
 	matches []string) {
 
