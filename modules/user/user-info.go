@@ -40,13 +40,7 @@ func userInfoExec(ctx router.CommandCtx) {
 		member, _ = ctx.State.Member(ctx.Interaction.GuildID, userID)
 	}
 
-	var user *discord.User
-	var err error
-	if member == nil {
-		user, err = ctx.State.User(userID)
-	} else {
-		user = &member.User
-	}
+	user, err := ctx.State.User(userID)
 
 	if dctools.ErrUnknownUser(err) {
 		ctx.RespondWarning("User does not exist.")
@@ -62,12 +56,13 @@ func userInfoExec(ctx router.CommandCtx) {
 	if member == nil {
 		embed = userEmbed(user)
 	} else {
-		embed = memberEmbed(&ctx, member)
+		embed = memberEmbed(&ctx, member, user)
 	}
 
 	ctx.RespondEmbed(*embed)
 }
 
+// TODO: combine into single embed function to minimise repetition
 func userEmbed(user *discord.User) *discord.Embed {
 	embed := discord.Embed{
 		Title: user.Tag(),
@@ -124,17 +119,19 @@ func userEmbed(user *discord.User) *discord.Embed {
 }
 
 func memberEmbed(
-	ctx *router.CommandCtx, member *discord.Member) *discord.Embed {
+	ctx *router.CommandCtx,
+	member *discord.Member,
+	user *discord.User) *discord.Embed {
 
-	colour, _ := ctx.State.MemberColor(ctx.Interaction.GuildID, member.User.ID)
+	colour, _ := ctx.State.MemberColor(ctx.Interaction.GuildID, user.ID)
 	if dctools.ColourInvalid(colour) {
-		colour = member.User.Accent
+		colour = user.Accent
 	}
 
 	embed := discord.Embed{
-		Title: member.User.Tag(),
+		Title: user.Tag(),
 		Thumbnail: &discord.EmbedThumbnail{
-			URL: member.User.AvatarURL(),
+			URL: user.AvatarURL(),
 		},
 		Description: member.Mention(),
 		Fields:      []discord.EmbedField{},
@@ -142,8 +139,8 @@ func memberEmbed(
 	}
 
 	var badgeString string
-	if member.User.PublicFlags != discord.NoFlag {
-		badges := dctools.BadgeEmojiStrings(member.User.PublicFlags)
+	if user.PublicFlags != discord.NoFlag {
+		badges := dctools.BadgeEmojiStrings(user.PublicFlags)
 		badgeString = strings.Join(badges, util.ThinSpace)
 	}
 	if badgeString != "" {
@@ -169,7 +166,7 @@ func memberEmbed(
 
 	embed.Fields = append(embed.Fields, discord.EmbedField{
 		Name:   "Account Created",
-		Value:  dctools.EmbedTime(member.User.CreatedAt()),
+		Value:  dctools.EmbedTime(user.CreatedAt()),
 		Inline: true,
 	})
 
@@ -198,8 +195,8 @@ func memberEmbed(
 	}
 
 	var avatarUploaded time.Time
-	if member.User.Avatar != "" {
-		avatarUploaded, _ = httputil.ImgUploadTime(member.User.AvatarURL())
+	if user.Avatar != "" {
+		avatarUploaded, _ = httputil.ImgUploadTime(user.AvatarURL())
 	}
 	if !avatarUploaded.IsZero() {
 		embed.Fields = append(embed.Fields, discord.EmbedField{
@@ -211,12 +208,12 @@ func memberEmbed(
 
 	embed.Fields = append(embed.Fields, discord.EmbedField{
 		Name:   "User ID",
-		Value:  member.User.ID.String(),
+		Value:  user.ID.String(),
 		Inline: true,
 	})
 
-	if member.User.Banner != "" {
-		url := dctools.ResizeImage(member.User.BannerURL(), 4096)
+	if user.Banner != "" {
+		url := dctools.ResizeImage(user.BannerURL(), 4096)
 		embed.Image = &discord.EmbedImage{URL: url}
 	}
 
