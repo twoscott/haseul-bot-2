@@ -1,11 +1,9 @@
 package router
 
-import "fmt"
+import (
+	"fmt"
 
-const (
-	errorSymbol   = "❌"
-	warningSymbol = "⚠️"
-	successSymbol = "✅"
+	"github.com/twoscott/haseul-bot-2/utils/util"
 )
 
 // CmdResponse wraps all types of responses
@@ -19,7 +17,7 @@ type CmdError struct {
 }
 
 func (r CmdError) String() string {
-	return errorSymbol + " " + r.message
+	return util.ErrorSymbol + " " + r.message
 }
 
 // CmdSuccess represents a command warning response
@@ -28,7 +26,7 @@ type CmdWarning struct {
 }
 
 func (r CmdWarning) String() string {
-	return warningSymbol + " " + r.message
+	return util.WarningSymbol + " " + r.message
 }
 
 // CmdSuccess represents a command success response
@@ -37,7 +35,7 @@ type CmdSuccess struct {
 }
 
 func (r CmdSuccess) String() string {
-	return successSymbol + " " + r.message
+	return util.SuccessSymbol + " " + r.message
 }
 
 // Error prepends a cross symbol and a space to the provided content.
