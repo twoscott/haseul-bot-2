@@ -1,6 +1,7 @@
 package util
 
 import (
+	"fmt"
 	"log"
 	"regexp"
 	"strings"
@@ -131,7 +132,7 @@ func PagedLines(lines []string, limit int, lineLimit int) []string {
 	currentPage := ""
 	for _, line := range lines {
 		if len(currentPage)+len(line) < limit && linesAdded < lineLimit {
-			currentPage += line + "\n"
+			currentPage += fmt.Sprintln(line)
 			linesAdded++
 		} else {
 			pages = append(pages, currentPage)
