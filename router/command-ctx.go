@@ -1,6 +1,8 @@
 package router
 
 import (
+	"log"
+
 	"github.com/diamondburned/arikawa/v3/api"
 	"github.com/diamondburned/arikawa/v3/discord"
 	"github.com/diamondburned/arikawa/v3/utils/json/option"
@@ -167,4 +169,71 @@ func (ctx CommandCtx) respondWithPaging(
 	}
 
 	return ctx.AddButtonPager(ctx.Interaction, messagePages)
+}
+
+func (ctx CommandCtx) ParseAccessibleChannel(
+	channelID discord.ChannelID) (*discord.Channel, CmdResponse) {
+
+	if !channelID.IsValid() {
+		return nil, Warningf("Malformed Discord channel provided.")
+	}
+
+	channel, err := ctx.State.Channel(channelID)
+	if dctools.ErrMissingAccess(err) {
+		return nil, Warningf("I cannot access this channel.")
+	}
+	if err != nil {
+		return nil, Warningf("Invalid Discord channel provided.")
+	}
+	if channel.GuildID != ctx.Interaction.GuildID {
+		return nil, Warningf(
+			"Channel provided must belong to this server.",
+		)
+	}
+	if !dctools.IsTextChannel(channel.Type) {
+		return nil, Warningf("Channel provided must be a text channel.")
+	}
+
+	return channel, nil
+}
+
+func (ctx CommandCtx) ParseSendableChannel(
+	channelID discord.ChannelID) (*discord.Channel, CmdResponse) {
+
+	channel, cerr := ctx.ParseAccessibleChannel(channelID)
+	if cerr != nil {
+		return channel, cerr
+	}
+
+	botUser, err := ctx.State.Me()
+	if err != nil {
+		log.Println(err)
+		return nil, Errorf(
+			"Error occurred checking my permissions in %s.",
+			channel.Mention(),
+		)
+	}
+
+	botPermissions, err := ctx.State.Permissions(channel.ID, botUser.ID)
+	if err != nil {
+		log.Println(err)
+		return nil, Errorf(
+			"Error occurred checking my permissions in %s.",
+			channel.Mention(),
+		)
+	}
+
+	neededPerms := dctools.PermissionsBitfield(
+		discord.PermissionViewChannel,
+		discord.PermissionSendMessages,
+	)
+
+	if !botPermissions.Has(neededPerms) {
+		return nil, Errorf(
+			"I do not have permission to send messages in %s!",
+			channel.Mention(),
+		)
+	}
+
+	return channel, nil
 }

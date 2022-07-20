@@ -10,7 +10,6 @@ import (
 	"github.com/twoscott/haseul-bot-2/config"
 	"github.com/twoscott/haseul-bot-2/database/vlivedb"
 	"github.com/twoscott/haseul-bot-2/router"
-	"github.com/twoscott/haseul-bot-2/utils/cmdutil"
 	"github.com/twoscott/haseul-bot-2/utils/dctools"
 	"github.com/twoscott/haseul-bot-2/utils/vliveutil"
 )
@@ -89,7 +88,7 @@ func vliveFeedAddExec(ctx router.CommandCtx) {
 		return
 	}
 
-	channel, cerr := cmdutil.ParseSendableChannel(ctx, channelID)
+	channel, cerr := ctx.ParseSendableChannel(channelID)
 	if cerr != nil {
 		ctx.RespondCmdMessage(cerr)
 		return

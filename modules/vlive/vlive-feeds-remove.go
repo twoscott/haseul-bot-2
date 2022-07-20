@@ -6,7 +6,6 @@ import (
 
 	"github.com/diamondburned/arikawa/v3/discord"
 	"github.com/twoscott/haseul-bot-2/router"
-	"github.com/twoscott/haseul-bot-2/utils/cmdutil"
 )
 
 var vliveFeedsRemoveCommand = &router.SubCommand{
@@ -70,7 +69,7 @@ func vliveFeedRemoveExec(ctx router.CommandCtx) {
 		return
 	}
 
-	channel, cerr := cmdutil.ParseAccessibleChannel(ctx, channelID)
+	channel, cerr := ctx.ParseAccessibleChannel(channelID)
 	if cerr != nil {
 		ctx.RespondCmdMessage(cerr)
 		return
