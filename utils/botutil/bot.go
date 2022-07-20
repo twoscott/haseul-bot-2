@@ -35,10 +35,9 @@ func Log(st *state.State, messageData api.SendMessageData) (*discord.Message, er
 }
 
 func LogText(st *state.State, content string) (*discord.Message, error) {
-	logChannelID := config.GetInstance().Bot.LogChannelID
-	if !logChannelID.IsValid() {
-		return nil, errors.New("invalid log channel to log to")
+	data := api.SendMessageData{
+		Content: content,
 	}
 
-	return st.SendMessage(logChannelID, content)
+	return Log(st, data)
 }
