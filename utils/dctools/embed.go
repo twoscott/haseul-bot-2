@@ -15,8 +15,6 @@ const (
 	EmbedFooterSep = util.ThreePerEmSpace + "•" + util.ThreePerEmSpace
 	// EmbedTimeFormat is a format for representing times in embeds.
 	EmbedTimeFormat = "02 Jan 2006 15:04:05"
-	// EmbedBackColour is the default embed background colour Discord uses.
-	EmbedBackColour = 0x2f3136
 )
 
 // EmbedTime returns t converted to UTC and string formatted for embeds.
@@ -38,22 +36,6 @@ func HexToColour(hex string) (discord.Color, error) {
 	}
 
 	return discord.Color(colourInt64), nil
-}
-
-// ColourInvalid returns whether a colour is either null or a default colour.
-func ColourInvalid(colour discord.Color) bool {
-	return colour == 0x000000 ||
-		colour == discord.DefaultEmbedColor ||
-		colour == discord.NullColor
-}
-
-// EmbedColour returns a Discord colour where default black colours are
-// replaced with the default embed background colour.
-func EmbedColour(colour discord.Color) discord.Color {
-	if ColourInvalid(colour) {
-		colour = EmbedBackColour
-	}
-	return colour
 }
 
 // EmptyEmbedField returns an embed field filled with zero-width spaces.
