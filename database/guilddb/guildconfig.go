@@ -1,57 +1,49 @@
 package guilddb
 
 import (
-	"database/sql"
-
 	"github.com/diamondburned/arikawa/v3/discord"
 )
 
 // GuildConfig represents a guild config database entry.
 type GuildConfig struct {
-	GuildID           discord.GuildID `db:"guildid"`
-	WelcomeMsg        string          `db:"welcomemsg"`
-	AutoroleOn        bool            `db:"autoroleon"`
-	CommandsOn        bool            `db:"commandson"`
-	JoinLogsOn        bool            `db:"joinlogson"`
-	MsgLogsOn         bool            `db:"msglogson"`
-	PollOn            bool            `db:"pollon"`
-	RolesOn           bool            `db:"roleson"`
-	WelcomeOn         bool            `db:"welcomeon"`
-	AutoroleID        sql.NullInt64   `db:"autoroleid"`
-	JoinLogsChannelID sql.NullInt64   `db:"joinlogschannelid"`
-	MsgLogsChannelID  sql.NullInt64   `db:"msglogschannelid"`
-	MuteroleID        sql.NullInt64   `db:"muteroleid"`
-	RolesChannelID    sql.NullInt64   `db:"roleschannelid"`
-	WelcomeChannelID  sql.NullInt64   `db:"welcomechannelid"`
+	GuildID              discord.GuildID   `db:"guildid"`
+	WelcomeMsg           string            `db:"welcomemsg"`
+	AutoroleID           discord.RoleID    `db:"autoroleid"`
+	MemberLogsChannelID  discord.ChannelID `db:"memberLogsChannelID"`
+	MessageLogsChannelID discord.ChannelID `db:"messageLogsChannelID"`
+	MuteroleID           discord.RoleID    `db:"muteroleid"`
+	RolesChannelID       discord.RoleID    `db:"roleschannelid"`
+	WelcomeChannelID     discord.ChannelID `db:"welcomechannelid"`
 }
 
 const (
 	createGuildConfigsTableQuery = `
-		CREATE TABLE IF NOT EXISTS GuildConfig(
-			guildID           INT8          NOT NULL,
-			welcomeMsg        VARCHAR(1024) DEFAULT 'Welcome!',
-			autoroleOn        BOOLEAN       DEFAULT FALSE,
-			commandsOn        BOOLEAN       DEFAULT TRUE, 
-			joinLogsOn        BOOLEAN       DEFAULT FALSE, 
-			msgLogsOn         BOOLEAN       DEFAULT FALSE,
-			pollOn            BOOLEAN       DEFAULT FALSE,
-			rolesOn           BOOLEAN       DEFAULT FALSE,
-			welcomeOn         BOOLEAN       DEFAULT FALSE,
-			autoroleID        INT8,
-			joinLogsChannelID INT8,
-			msgLogsChannelID  INT8,
-			muteroleID        INT8,
-			rolesChannelID    INT8,
-			welcomeChannelID  INT8,
+		CREATE TABLE IF NOT EXISTS GuildConfigs(
+			guildID              INT8          NOT NULL,
+			welcomeMsg           VARCHAR(1024) DEFAULT 'Welcome!',
+			autoroleID           INT8          DEFAULT 0 # 0,
+			memberLogsChannelID  INT8          DEFAULT 0 # 0,
+			messageLogsChannelID INT8          DEFAULT 0 # 0,
+			muteroleID           INT8          DEFAULT 0 # 0,
+			rolesChannelID       INT8          DEFAULT 0 # 0,
+			welcomeChannelID     INT8          DEFAULT 0 # 0,
 			PRIMARY KEY(guildID)
 		)`
 
-	getConfigsQuery = `SELECT * FROM GuildConfig`
-	getConfigQuery  = `SELECT * FROM GuildConfig WHERE guildID = $1`
+	getConfigsQuery = `SELECT * FROM GuildConfigs`
+	getConfigQuery  = `SELECT * FROM GuildConfigs WHERE guildID = $1`
 	addConfigQuery  = `
-		INSERT INTO GuildConfig(guildID) VALUES($1) ON CONFLICT DO NOTHING`
+		INSERT INTO GuildConfigs(guildID) VALUES($1) ON CONFLICT DO NOTHING`
 	getPrefixQuery = `
-		SELECT prefix FROM GuildConfig WHERE guildID = $1`
+		SELECT prefix FROM GuildConfigs WHERE guildID = $1`
+	setMemberLogsQuery = `
+		UPDATE GuildConfigs SET memberLogsChannelID = $1
+		WHERE guildID = $2`
+	setMemberLogsNullQuery = `
+		UPDATE GuildConfigs SET memberLogsChannelID = 0 # 0
+		WHERE guildID = $1`
+	getMemberLogsQuery = `
+		SELECT memberLogsChannelID FROM GuildConfigs WHERE guildID = $1`
 )
 
 // GetConfigs returns all guild configs from the database.
@@ -77,4 +69,41 @@ func (db *DB) Add(guildID discord.GuildID) (bool, error) {
 
 	added, err := res.RowsAffected()
 	return added > 1, err
+}
+
+// SetMemberLogs updates the guild config of the given guild ID and sets
+// the member logs channel ID to the provided channel ID.
+func (db *DB) SetMemberLogs(
+	guildID discord.GuildID, channelID discord.ChannelID) (bool, error) {
+
+	res, err := db.Exec(setMemberLogsQuery, channelID, guildID)
+	if err != nil {
+		return false, err
+	}
+
+	updated, err := res.RowsAffected()
+	return updated > 0, nil
+}
+
+// DisableMemberLogs updates the guild config of the given guild ID and sets
+// the member logs channel ID to a value that can be interpreted as null.
+func (db *DB) DisableMemberLogs(guildID discord.GuildID) (bool, error) {
+	res, err := db.Exec(setMemberLogsNullQuery, guildID)
+	if err != nil {
+		return false, err
+	}
+
+	updated, err := res.RowsAffected()
+	return updated > 0, err
+}
+
+// GetMemberLogs returns the member logs channelID of the guild config
+// corresponding to the provided guild ID.
+func (db *DB) GetMemberLogsChannelID(
+	guildID discord.GuildID) (discord.ChannelID, error) {
+
+	var id discord.ChannelID
+	err := db.Get(&id, getMemberLogsQuery, guildID)
+
+	return id, err
 }

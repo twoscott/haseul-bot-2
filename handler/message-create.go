@@ -8,8 +8,6 @@ import (
 	"github.com/twoscott/haseul-bot-2/utils/dctools"
 )
 
-const defaultPrefix = "."
-
 func (h *Handler) MessageCreate(msg *gateway.MessageCreateEvent) {
 	if msg.Author.Bot {
 		return
@@ -27,5 +25,5 @@ func (h *Handler) MessageCreate(msg *gateway.MessageCreateEvent) {
 		return
 	}
 
-	h.Router.HandleMessage(&msg.Message, msg.Member)
+	h.Router.HandleMessage(msg.Message, msg.Member)
 }

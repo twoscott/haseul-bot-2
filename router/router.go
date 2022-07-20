@@ -19,6 +19,8 @@ type (
 		commandHandlers        CommandHandlers
 		buttonPagers           ButtonPagerMap
 		guildJoinListeners     []GuildJoinListener
+		memberJoinListeners    []MemberJoinListener
+		memberLeaveListeners   []MemberLeaveListener
 		messageCreateListeners []MessageCreateListener
 		mentionListeners       []MessageCreateListener
 		startupListeners       []ReadyListener
@@ -26,8 +28,10 @@ type (
 
 	CommandHandlers       map[string]*CommandHandler
 	ButtonPagerMap        map[discord.InteractionID]*ButtonPager
-	MessageCreateListener func(*Router, *discord.Message)
+	MessageCreateListener func(*Router, discord.Message, *discord.Member)
 	GuildJoinListener     func(*Router, *state.GuildJoinEvent)
+	MemberJoinListener    func(*Router, discord.Member, discord.GuildID)
+	MemberLeaveListener   func(*Router, discord.User, discord.GuildID)
 	ReadyListener         func(*Router, *gateway.ReadyEvent)
 )
 
@@ -38,6 +42,8 @@ func New(state *state.State) *Router {
 		commands:               make([]*Command, 0),
 		commandHandlers:        make(CommandHandlers),
 		buttonPagers:           make(ButtonPagerMap),
+		memberJoinListeners:    make([]MemberJoinListener, 0),
+		memberLeaveListeners:   make([]MemberLeaveListener, 0),
 		messageCreateListeners: make([]MessageCreateListener, 0),
 		mentionListeners:       make([]MessageCreateListener, 0),
 	}
@@ -222,10 +228,10 @@ func (rt *Router) AddMessageHandler(
 // HandleMessage routes a message create event to all listener functions
 // registered to the router.
 func (rt *Router) HandleMessage(
-	msg *discord.Message, member *discord.Member) {
+	msg discord.Message, member *discord.Member) {
 
 	for _, listener := range rt.messageCreateListeners {
-		go listener(rt, msg)
+		go listener(rt, msg, member)
 	}
 }
 
@@ -241,6 +247,40 @@ func (rt *Router) AddGuildJoinHandler(
 func (rt *Router) HandleGuildJoin(guild *state.GuildJoinEvent) {
 	for _, listener := range rt.guildJoinListeners {
 		go listener(rt, guild)
+	}
+}
+
+// AddMemberJoinHandler adds a function to receive all member joins.
+func (rt *Router) AddMemberJoinHandler(
+	memberJoinListener MemberJoinListener) {
+
+	rt.memberJoinListeners = append(rt.memberJoinListeners, memberJoinListener)
+}
+
+// HandleMemberJoin routers a member join event to all listener functions
+// registered to the router.
+func (rt *Router) HandleMemberJoin(
+	member discord.Member, guildID discord.GuildID) {
+
+	for _, listener := range rt.memberJoinListeners {
+		go listener(rt, member, guildID)
+	}
+}
+
+// AddMemberLeaveHandler adds a function to receive all member leaves.
+func (rt *Router) AddMemberLeaveHandler(
+	memberLeaveListener MemberLeaveListener) {
+
+	rt.memberLeaveListeners = append(rt.memberLeaveListeners, memberLeaveListener)
+}
+
+// HandleMemberLeave routers a member leave event to all listener functions
+// registered to the router.
+func (rt *Router) HandleMemberLeave(
+	user discord.User, guildID discord.GuildID) {
+
+	for _, listener := range rt.memberLeaveListeners {
+		go listener(rt, user, guildID)
 	}
 }
 

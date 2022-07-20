@@ -6,10 +6,14 @@ import "github.com/twoscott/haseul-bot-2/router"
 // Handler wraps router and handles events from the API, and passes them on
 // to the router.
 type Handler struct {
-	Router *router.Router
+	Router  *router.Router
+	Started bool
 }
 
 // New returns a new instance of Handler.
 func New(router *router.Router) *Handler {
-	return &Handler{router}
+	return &Handler{
+		Router:  router,
+		Started: false,
+	}
 }

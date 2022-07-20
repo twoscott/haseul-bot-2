@@ -78,4 +78,6 @@ func setHandlers(st *state.State, h *handler.Handler) {
 	st.AddHandler(h.MessageCreate)
 	st.AddHandler(h.Ready)
 	st.AddHandler(h.InteractionCreate)
+	st.AddHandler(h.MemberJoin)
+	st.AddHandler(h.MemberLeave)
 }

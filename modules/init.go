@@ -4,6 +4,7 @@ import (
 	"github.com/twoscott/haseul-bot-2/modules/bot"
 	"github.com/twoscott/haseul-bot-2/modules/emoji"
 	"github.com/twoscott/haseul-bot-2/modules/lastfm"
+	"github.com/twoscott/haseul-bot-2/modules/logs"
 	"github.com/twoscott/haseul-bot-2/modules/misc"
 	"github.com/twoscott/haseul-bot-2/modules/notifications"
 	"github.com/twoscott/haseul-bot-2/modules/server"
@@ -18,6 +19,7 @@ func Init(rt *router.Router) {
 	bot.Init(rt)
 	emoji.Init(rt)
 	lastfm.Init(rt)
+	logs.Init(rt)
 	misc.Init(rt)
 	notifications.Init(rt)
 	server.Init(rt)

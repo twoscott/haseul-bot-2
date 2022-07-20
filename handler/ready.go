@@ -7,16 +7,14 @@ import (
 	"github.com/twoscott/haseul-bot-2/utils/botutil"
 )
 
-var started = false
-
 func (h *Handler) Ready(ev *gateway.ReadyEvent) {
 	_, err := botutil.LogText(h.Router.State, "Ready to *Go!~*")
 	if err != nil {
 		log.Println(err)
 	}
 
-	if !started {
+	if !h.Started {
 		h.Router.HandleStartupEvent(ev)
-		started = true
+		h.Started = true
 	}
 }
