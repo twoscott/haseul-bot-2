@@ -11,15 +11,15 @@ const (
 
 	setUpdateUserQuery = `
 		INSERT INTO LastFmUsers VALUES($1, $2) 
-		ON CONFLICT(userID) DO UPDATE SET lfUser = $3`
+		ON CONFLICT(userID) DO UPDATE SET lfUser = $2`
 	deleteUserQuery = `DELETE FROM LastFmUsers WHERE userID = $1`
 	getUserQuery    = `SELECT lfUser FROM LastFmUsers WHERE userID = $1`
 )
 
-// SetUpdateUser either adds a new entry to the database with the given
+// SetUser either adds a new entry to the database with the given
 // user ID and Last.fm username, or updates the user ID's Last.fm username.
-func (db *DB) SetUpdateUser(userID discord.UserID, lfUser string) error {
-	_, err := db.Exec(setUpdateUserQuery, userID, lfUser, lfUser)
+func (db *DB) SetUser(userID discord.UserID, lfUser string) error {
+	_, err := db.Exec(setUpdateUserQuery, userID, lfUser)
 	return err
 }
 

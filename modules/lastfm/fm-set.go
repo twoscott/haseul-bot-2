@@ -61,7 +61,7 @@ func fmSetExec(ctx router.CommandCtx) {
 		lfUser = res.Name
 	}
 
-	err = db.LastFM.SetUpdateUser(ctx.Interaction.SenderID(), lfUser)
+	err = db.LastFM.SetUser(ctx.Interaction.SenderID(), lfUser)
 	if err != nil {
 		log.Println(err)
 		ctx.RespondError(
