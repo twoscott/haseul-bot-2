@@ -22,6 +22,21 @@ func logMemberJoin(
 		return
 	}
 
+	usedInvite, err := inviteTracker.ResolveInvite(rt.State, guildID)
+	if err != nil {
+		log.Println(err)
+	}
+
+	inviteField := "Unknown"
+	if usedInvite != nil {
+		inviteField = fmt.Sprintf(
+			"%s (%d uses)\nCreated by %s",
+			usedInvite.URL(),
+			usedInvite.Uses,
+			usedInvite.Inviter.Tag(),
+		)
+	}
+
 	embed := discord.Embed{
 		Author: &discord.EmbedAuthor{
 			Name: "User Joined",
@@ -43,7 +58,11 @@ func logMemberJoin(
 				Value:  dctools.EmbedTime(member.User.CreatedAt()),
 				Inline: true,
 			},
-			dctools.EmptyEmbedField(),
+			{
+				Name:   "Invite Used",
+				Value:  inviteField,
+				Inline: false,
+			},
 			{
 				Name:   "User ID",
 				Value:  member.User.ID.String(),
