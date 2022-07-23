@@ -18,7 +18,7 @@ var serverIconCommand = &router.SubCommand{
 }
 
 func serverIconExec(ctx router.CommandCtx) {
-	guild, err := ctx.State.GuildWithCount(ctx.Interaction.GuildID)
+	guild, err := ctx.State.Guild(ctx.Interaction.GuildID)
 	if dctools.ErrMissingAccess(err) {
 		ctx.RespondWarning(
 			"I cannot access this server.")
