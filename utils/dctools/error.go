@@ -33,8 +33,7 @@ func ErrUnknownGuild(err error) bool {
 	return httpErr.Code == 10004
 }
 
-// ErrMissingAccess returns whether the error is
-// an missing access error.
+// ErrMissingAccess returns whether the error is a missing access error.
 func ErrMissingAccess(err error) bool {
 	httpErr := UnwrapHTTPError(err)
 	if httpErr == nil {
@@ -44,8 +43,7 @@ func ErrMissingAccess(err error) bool {
 	return httpErr.Code == 50001
 }
 
-// ErrLackPermission returns whether the error is
-// an lack permission error.
+// ErrLackPermission returns whether the error is a lack permission error.
 func ErrLackPermission(err error) bool {
 	httpErr := UnwrapHTTPError(err)
 	if httpErr == nil {
