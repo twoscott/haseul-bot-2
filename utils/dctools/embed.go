@@ -1,7 +1,6 @@
 package dctools
 
 import (
-	"strconv"
 	"strings"
 	"time"
 
@@ -20,22 +19,6 @@ const (
 // EmbedTime returns t converted to UTC and string formatted for embeds.
 func EmbedTime(t time.Time) string {
 	return t.UTC().Format(EmbedTimeFormat)
-}
-
-// HexToColour converts a string representing a hexadecimal colour value
-// to a Discord integer colour.
-// e.g: "#3251cf" > 0x3251cf
-//
-// String must either begin with a '#' or consist only of hexadecimal values.
-func HexToColour(hex string) (discord.Color, error) {
-	hex = strings.TrimPrefix(hex, "#")
-
-	colourInt64, err := strconv.ParseInt(hex, 16, 32)
-	if err != nil {
-		return discord.NullColor, err
-	}
-
-	return discord.Color(colourInt64), nil
 }
 
 // EmptyEmbedField returns an embed field filled with zero-width spaces.

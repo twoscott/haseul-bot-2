@@ -1,6 +1,11 @@
 package dctools
 
-import "github.com/diamondburned/arikawa/v3/discord"
+import (
+	"strconv"
+	"strings"
+
+	"github.com/diamondburned/arikawa/v3/discord"
+)
 
 const (
 	BlurpleColour = 0x5865f2
@@ -28,4 +33,20 @@ func EmbedColour(colour discord.Color) discord.Color {
 		colour = EmbedBackColour
 	}
 	return colour
+}
+
+// HexToColour converts a string representing a hexadecimal colour value
+// to a Discord integer colour.
+// e.g: "#3251cf" > 0x3251cf
+//
+// String must either begin with a '#' or consist only of hexadecimal values.
+func HexToColour(hex string) (discord.Color, error) {
+	hex = strings.TrimPrefix(hex, "#")
+
+	colourInt64, err := strconv.ParseInt(hex, 16, 32)
+	if err != nil {
+		return discord.NullColor, err
+	}
+
+	return discord.Color(colourInt64), nil
 }
