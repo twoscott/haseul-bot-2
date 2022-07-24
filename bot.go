@@ -18,8 +18,10 @@ import (
 
 /////
 //	TODO:
-//		adopt vlive method for twitter retweets and replies
-//		unit testing for utils etc.
+//      adopt vlive method for twitter retweets and replies
+//      unit testing for utils etc.
+//      use patreon-go and refactor patreonutil
+//      implement option checking; check if option was set to allow for defaults
 //      STOP GUILDS FROM BEING AUTO WHITELISTED IN PRODUCTION ENV
 /////
 

@@ -10,10 +10,25 @@ import (
 	"github.com/twoscott/haseul-bot-2/utils/util"
 )
 
-func logMemberJoin(
+func logNewMember(
 	rt *router.Router, member discord.Member, guildID discord.GuildID) {
 
-	logChannelID, err := db.Guilds.GetMemberLogsChannelID(guildID)
+	guild, err := rt.State.Session.GuildWithCount(guildID)
+	if err != nil {
+		guild, err = rt.State.Guild(guildID)
+	}
+	if err != nil {
+		*guild = discord.Guild{Name: "the server"}
+	}
+
+	logMemberJoin(rt, member, *guild)
+	welcomeMember(rt, member, *guild)
+}
+
+func logMemberJoin(
+	rt *router.Router, member discord.Member, guild discord.Guild) {
+
+	logChannelID, err := db.Guilds.MemberLogsChannel(guild.ID)
 	if err != nil {
 		log.Println(err)
 		return
@@ -22,7 +37,7 @@ func logMemberJoin(
 		return
 	}
 
-	usedInvite, err := inviteTracker.ResolveInvite(rt.State, guildID)
+	usedInvite, err := inviteTracker.ResolveInvite(rt.State, guild.ID)
 	if err != nil {
 		log.Println(err)
 	}
@@ -69,6 +84,9 @@ func logMemberJoin(
 				Inline: true,
 			},
 		},
+		Footer: &discord.EmbedFooter{
+			Text: fmt.Sprintf("Member #%d", guild.ApproximateMembers),
+		},
 	}
 
 	if discord.HasFlag(
@@ -82,4 +100,42 @@ func logMemberJoin(
 	}
 
 	rt.State.SendEmbeds(logChannelID, embed)
+}
+
+func welcomeMember(
+	rt *router.Router, member discord.Member, guild discord.Guild) {
+
+	welcome, err := db.Guilds.WelcomeConfig(guild.ID)
+	if err != nil {
+		log.Println(err)
+		return
+	}
+	if !welcome.ChannelID.IsValid() {
+		return
+	}
+
+	embed := discord.Embed{
+		Title:       welcome.Title(),
+		Description: welcome.Message(member, guild),
+		Thumbnail: &discord.EmbedThumbnail{
+			URL: member.User.AvatarURL(),
+		},
+		Color: welcome.Colour(),
+		Footer: &discord.EmbedFooter{
+			Text: fmt.Sprintf("Member #%d", guild.ApproximateMembers),
+		},
+		Timestamp: member.Joined,
+	}
+
+	if discord.HasFlag(
+		uint64(member.User.Flags), uint64(discord.LikelySpammer)) {
+
+		embed.Fields = append(embed.Fields, discord.EmbedField{
+			Name:   "Flags",
+			Value:  fmt.Sprint(util.WarningSymbol, "Likely Spammer"),
+			Inline: true,
+		})
+	}
+
+	rt.State.SendEmbeds(welcome.ChannelID, embed)
 }

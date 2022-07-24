@@ -8,6 +8,8 @@ import (
 
 // MemberNumber returns the position a member holds in the sequence of all guild
 // members ordered by their join times.
+//
+// TODO: should return an error instead of zeroes.
 func MemberNumber(
 	st *state.State, guildID discord.GuildID, member *discord.Member) int {
 

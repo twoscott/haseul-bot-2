@@ -19,7 +19,10 @@ func Init(rt *router.Router) {
 	logsCommand.AddSubCommandGroup(logsMemberCommand)
 	logsMemberCommand.AddSubCommand(logsMemberSetCommand)
 	logsMemberCommand.AddSubCommand(logsMemberDisableCommand)
+	logsCommand.AddSubCommandGroup(logsWelcomeCommand)
+	logsWelcomeCommand.AddSubCommand(logsWelcomeSetCommand)
+	logsWelcomeCommand.AddSubCommand(logsWelcomeDisableCommand)
 
-	rt.AddMemberJoinHandler(logMemberJoin)
+	rt.AddMemberJoinHandler(logNewMember)
 	rt.AddMemberLeaveHandler(logMemberLeave)
 }

@@ -52,8 +52,8 @@ github.com/dghubble/go-twitter v0.0.0-20220428155120-ee736133298b h1:jNYx4ME9CcT
 github.com/dghubble/go-twitter v0.0.0-20220428155120-ee736133298b/go.mod h1:rJg8kU8GQWeH9lutdlROcjIGIgLab0tZfn7jgZ6FeBU=
 github.com/dghubble/sling v1.4.0 h1:/n8MRosVTthvMbwlNZgLx579OGVjUOy3GNEv5BIqAWY=
 github.com/dghubble/sling v1.4.0/go.mod h1:0r40aNsU9EdDUVBNhfCstAtFgutjgJGYbO1oNzkMoM8=
-github.com/diamondburned/arikawa/v3 v3.0.0-rc.6.0.20220710213051-2c86cfe7a671 h1:X+PxDaKPNUwWwWQdxz2+2XrGEsezHO2x+V6HUcUiMTI=
-github.com/diamondburned/arikawa/v3 v3.0.0-rc.6.0.20220710213051-2c86cfe7a671/go.mod h1:5jBSNnp82Z/EhsKa6Wk9FsOqSxfVkNZDTDBPOj47LpY=
+github.com/diamondburned/arikawa/v3 v3.0.0-rc.6.0.20220722223549-2013da82555e h1:/0qFt4KDaTjiU9F9PixpxXpolXwl9cpRrNG6/rCNi2o=
+github.com/diamondburned/arikawa/v3 v3.0.0-rc.6.0.20220722223549-2013da82555e/go.mod h1:5jBSNnp82Z/EhsKa6Wk9FsOqSxfVkNZDTDBPOj47LpY=
 github.com/dustin/go-humanize v1.0.0 h1:VSnTsYCnlFHaM2/igO1h6X3HA71jcobQuxemgkq4zYo=
 github.com/dustin/go-humanize v1.0.0/go.mod h1:HtrtbFcZ19U5GC7JDqmcUSB87Iq5E25KnS6fMYU6eOk=
 github.com/envoyproxy/go-control-plane v0.9.0/go.mod h1:YTl/9mNaCwkRvm6d1a2C3ymFceY/DCBVvsKhRF0iEA4=

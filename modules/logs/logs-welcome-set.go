@@ -7,16 +7,16 @@ import (
 	"github.com/twoscott/haseul-bot-2/router"
 )
 
-var logsMemberSetCommand = &router.SubCommand{
+var logsWelcomeSetCommand = &router.SubCommand{
 	Name:        "set",
-	Description: "Sets the channel for member logs to be posted to",
+	Description: "Sets the channel for welcome messages to be posted to",
 	Handler: &router.CommandHandler{
-		Executor: logsMemberSetExec,
+		Executor: logsWelcomeSetExec,
 	},
 	Options: []discord.CommandOptionValue{
 		&discord.ChannelOption{
 			OptionName:  "channel",
-			Description: "The channel to log member joins & leaves in",
+			Description: "The channel to welcome new members in",
 			Required:    true,
 			ChannelTypes: []discord.ChannelType{
 				discord.GuildText,
@@ -26,7 +26,7 @@ var logsMemberSetCommand = &router.SubCommand{
 	},
 }
 
-func logsMemberSetExec(ctx router.CommandCtx) {
+func logsWelcomeSetExec(ctx router.CommandCtx) {
 	snowflake, _ := ctx.Options.Find("channel").SnowflakeValue()
 	channelID := discord.ChannelID(snowflake)
 	if !channelID.IsValid() {
@@ -42,12 +42,12 @@ func logsMemberSetExec(ctx router.CommandCtx) {
 		return
 	}
 
-	_, err := db.Guilds.SetMemberLogsChannel(ctx.Interaction.GuildID, channel.ID)
+	_, err := db.Guilds.SetWelcomeChannel(ctx.Interaction.GuildID, channel.ID)
 	if err != nil {
 		log.Println(err)
-		ctx.RespondError("Error occurred while setting member logs channel.")
+		ctx.RespondError("Error occurred while setting welcome channel.")
 		return
 	}
 
-	ctx.RespondSuccess("Member logs channel set to " + channel.Mention() + ".")
+	ctx.RespondSuccess("Welcome channel set to " + channel.Mention() + ".")
 }

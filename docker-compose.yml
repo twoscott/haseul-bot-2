@@ -5,6 +5,7 @@ networks:
 volumes:
   pg_data:
 
+
 services:
   postgres:
     image: postgres:14.3
