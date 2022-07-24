@@ -13,7 +13,7 @@ import (
 )
 
 var serverInfoCommand = &router.SubCommand{
-	Name:        "server",
+	Name:        "info",
 	Description: "Displays information about the Discord server",
 	Handler: &router.CommandHandler{
 		Executor: serverInfoExec,
