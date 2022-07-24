@@ -4,7 +4,9 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/diamondburned/arikawa/v3/api"
 	"github.com/diamondburned/arikawa/v3/discord"
+	"github.com/diamondburned/arikawa/v3/state"
 	"github.com/twoscott/haseul-bot-2/router"
 	"github.com/twoscott/haseul-bot-2/utils/dctools"
 	"github.com/twoscott/haseul-bot-2/utils/util"
@@ -21,12 +23,65 @@ func logNewMember(
 		*guild = discord.Guild{Name: "the server"}
 	}
 
-	logMemberJoin(rt, member, *guild)
-	welcomeMember(rt, member, *guild)
+	wch := make(chan *discord.Message)
+
+	go welcomeMember(rt.State, member, *guild, wch)
+	logMemberJoin(rt.State, member, *guild, wch)
+}
+
+func welcomeMember(
+	st *state.State,
+	member discord.Member,
+	guild discord.Guild,
+	welcomeChan chan<- *discord.Message) {
+
+	welcome, err := db.Guilds.WelcomeConfig(guild.ID)
+	if err != nil {
+		log.Println(err)
+		close(welcomeChan)
+		return
+	}
+	if !welcome.ChannelID.IsValid() {
+		close(welcomeChan)
+		return
+	}
+
+	embed := discord.Embed{
+		Title:       welcome.Title(),
+		Description: welcome.Message(member, guild),
+		Thumbnail: &discord.EmbedThumbnail{
+			URL: member.User.AvatarURL(),
+		},
+		Color: welcome.Colour(),
+		Footer: &discord.EmbedFooter{
+			Text: fmt.Sprintf("Member #%d", guild.ApproximateMembers),
+		},
+		Timestamp: member.Joined,
+	}
+
+	if discord.HasFlag(
+		uint64(member.User.Flags), uint64(discord.LikelySpammer)) {
+
+		embed.Fields = append(embed.Fields, discord.EmbedField{
+			Name:   "Flags",
+			Value:  fmt.Sprint(util.WarningSymbol, "Likely Spammer"),
+			Inline: true,
+		})
+	}
+
+	msg, err := st.SendEmbeds(welcome.ChannelID, embed)
+	if err != nil {
+		close(welcomeChan)
+	}
+
+	welcomeChan <- msg
 }
 
 func logMemberJoin(
-	rt *router.Router, member discord.Member, guild discord.Guild) {
+	st *state.State,
+	member discord.Member,
+	guild discord.Guild,
+	welcomeChan <-chan *discord.Message) {
 
 	logChannelID, err := db.Guilds.MemberLogsChannel(guild.ID)
 	if err != nil {
@@ -37,7 +92,7 @@ func logMemberJoin(
 		return
 	}
 
-	usedInvite, err := inviteTracker.ResolveInvite(rt.State, guild.ID)
+	usedInvite, err := inviteTracker.ResolveInvite(st, guild.ID)
 	if err != nil {
 		log.Println(err)
 	}
@@ -99,43 +154,22 @@ func logMemberJoin(
 		})
 	}
 
-	rt.State.SendEmbeds(logChannelID, embed)
-}
+	var components discord.ContainerComponents
 
-func welcomeMember(
-	rt *router.Router, member discord.Member, guild discord.Guild) {
-
-	welcome, err := db.Guilds.WelcomeConfig(guild.ID)
-	if err != nil {
-		log.Println(err)
-		return
-	}
-	if !welcome.ChannelID.IsValid() {
-		return
-	}
-
-	embed := discord.Embed{
-		Title:       welcome.Title(),
-		Description: welcome.Message(member, guild),
-		Thumbnail: &discord.EmbedThumbnail{
-			URL: member.User.AvatarURL(),
-		},
-		Color: welcome.Colour(),
-		Footer: &discord.EmbedFooter{
-			Text: fmt.Sprintf("Member #%d", guild.ApproximateMembers),
-		},
-		Timestamp: member.Joined,
+	welcomeMsg := <-welcomeChan
+	if welcomeMsg != nil {
+		components = discord.Components(
+			&discord.ActionRowComponent{
+				&discord.ButtonComponent{
+					Label: "Jump to Welcome Message",
+					Style: discord.LinkButtonStyle(welcomeMsg.URL()),
+				},
+			},
+		)
 	}
 
-	if discord.HasFlag(
-		uint64(member.User.Flags), uint64(discord.LikelySpammer)) {
-
-		embed.Fields = append(embed.Fields, discord.EmbedField{
-			Name:   "Flags",
-			Value:  fmt.Sprint(util.WarningSymbol, "Likely Spammer"),
-			Inline: true,
-		})
-	}
-
-	rt.State.SendEmbeds(welcome.ChannelID, embed)
+	st.SendMessageComplex(logChannelID, api.SendMessageData{
+		Embeds:     []discord.Embed{embed},
+		Components: components,
+	})
 }
