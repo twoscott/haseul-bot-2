@@ -19,8 +19,8 @@ type AutocompleteCtx struct {
 // subcommands of an autocomplete interaction as a single string,
 // for use in the commandHandlers hash map.
 func AutocompleteInteractionKey(
-	interaction *discord.InteractionEvent,
 	completion *discord.AutocompleteInteraction) string {
+
 	if len(completion.Options) < 1 {
 		return completion.Name
 	}

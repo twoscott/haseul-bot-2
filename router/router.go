@@ -90,7 +90,7 @@ func (rt *Router) HandleAutocomplete(
 	interaction *discord.InteractionEvent,
 	completion *discord.AutocompleteInteraction) {
 
-	key := AutocompleteInteractionKey(interaction, completion)
+	key := AutocompleteInteractionKey(completion)
 	handler, ok := rt.commandHandlers[key]
 	if !ok {
 		err := errors.New("No command registered for '" + key + "'")
