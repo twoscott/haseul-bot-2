@@ -17,6 +17,7 @@ type (
 		State                  *state.State
 		commands               []*Command
 		commandHandlers        CommandHandlers
+		modalHandlers          ModalHandlers
 		buttonPagers           ButtonPagerMap
 		guildJoinListeners     []GuildJoinListener
 		memberJoinListeners    []MemberJoinListener
@@ -27,6 +28,7 @@ type (
 	}
 
 	CommandHandlers       map[string]*CommandHandler
+	ModalHandlers         map[discord.ComponentID]*CommandHandler
 	ButtonPagerMap        map[discord.InteractionID]*ButtonPager
 	MessageCreateListener func(*Router, discord.Message, *discord.Member)
 	GuildJoinListener     func(*Router, *state.GuildJoinEvent)
@@ -41,6 +43,7 @@ func New(state *state.State) *Router {
 		State:                  state,
 		commands:               make([]*Command, 0),
 		commandHandlers:        make(CommandHandlers),
+		modalHandlers:          make(ModalHandlers),
 		buttonPagers:           make(ButtonPagerMap),
 		memberJoinListeners:    make([]MemberJoinListener, 0),
 		memberLeaveListeners:   make([]MemberLeaveListener, 0),
@@ -70,17 +73,25 @@ func (rt *Router) HandleCommand(
 	}
 
 	userOptions := dctools.CommandOptions(command)
-	ctx := CommandCtx{
+
+	itx := InteractionCtx{
 		Router:      rt,
 		Interaction: interaction,
-		Command:     command,
-		Options:     userOptions,
 		Ephemeral:   handler.Ephemeral,
 	}
 
-	if handler.Defer {
-		ctx.Defer()
+	ctx := CommandCtx{
+		InteractionCtx: &itx,
+		Handler:        handler,
+		Command:        command,
+		Options:        userOptions,
 	}
+
+	if handler.Defer {
+		itx.Defer()
+	}
+
+	log.Println("Command:", ctx.Interaction.ID)
 
 	handler.Execute(ctx)
 }
@@ -100,14 +111,55 @@ func (rt *Router) HandleAutocomplete(
 
 	completionOptions := dctools.AutocompleteOptions(completion)
 	focusedOption := dctools.FocusedOption(completion)
-	ctx := AutocompleteCtx{
+
+	itx := InteractionCtx{
 		Router:      rt,
 		Interaction: interaction,
-		Options:     completionOptions,
-		Focused:     *focusedOption,
+	}
+
+	ctx := AutocompleteCtx{
+		InteractionCtx: &itx,
+		Options:        completionOptions,
+		Focused:        *focusedOption,
 	}
 
 	handler.Autocomplete(ctx)
+}
+
+func (rt *Router) HandleModalSubmit(
+	interaction *discord.InteractionEvent,
+	modal *discord.ModalInteraction) {
+
+	key := modal.CustomID
+	handler, ok := rt.modalHandlers[key]
+	if !ok {
+		err := errors.New(
+			"No modal listener egistered for '" + string(key) + "'",
+		)
+		log.Print(err)
+		return
+	}
+
+	delete(rt.modalHandlers, key)
+
+	itx := InteractionCtx{
+		Router:      rt,
+		Interaction: interaction,
+		Ephemeral:   handler.Ephemeral,
+	}
+
+	ctx := ModalCtx{
+		InteractionCtx: &itx,
+		Components:     modal.Components,
+	}
+
+	if handler.Defer {
+		itx.Defer()
+	}
+
+	log.Println("Modal:", ctx.Interaction.ID)
+
+	handler.HandleModalSubmit(ctx)
 }
 
 // AddButtonPager adds a button pager to the given message with the given pages.
@@ -116,7 +168,7 @@ func (rt *Router) AddButtonPager(
 
 	if !interaction.ID.IsValid() {
 		return errors.New(
-			"No interaction ID was provided to add a button pager to",
+			"no interaction ID was provided to add a button pager to",
 		)
 	}
 	if len(pages) < 2 {
@@ -125,7 +177,7 @@ func (rt *Router) AddButtonPager(
 
 	if _, ok := rt.buttonPagers[interaction.ID]; ok {
 		return errors.New(
-			"No more than one button pager can be assigned to a single message",
+			"no more than one button pager can be assigned to a single message",
 		)
 	}
 

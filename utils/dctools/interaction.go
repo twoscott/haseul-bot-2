@@ -40,6 +40,16 @@ func DeferredMessageResponse(
 	}
 }
 
+// ModalResponse returns a modal interaction response object containing the
+// supplied data.
+func ModalResponse(
+	data api.InteractionResponseData) *api.InteractionResponse {
+	return &api.InteractionResponse{
+		Type: api.ModalResponse,
+		Data: &data,
+	}
+}
+
 // IsValueOption returns whether or not the option type is a value type or not
 // (if the type is neither a sub command group or sub command).
 func IsValueOption(optionType discord.CommandOptionType) bool {

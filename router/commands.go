@@ -135,14 +135,14 @@ func handleCommandPanic(ctx CommandCtx) {
 	}
 
 	errString := fmt.Errorf("%v", r).Error()
-	ctx.RespondError("Fatal Error Occurred during command execution.")
+	ctx.RespondError("Fatal error occurred during command execution.")
 	log.Println("Recovered from command panic:", errString)
 	debug.PrintStack()
 
 	logPanicStack(ctx.State, errString)
 }
 
-func handleAutocompletePanic(ctx AutocompleteCtx) {
+func handlePanic(st *state.State) {
 	r := recover()
 	if r == nil {
 		return
@@ -152,7 +152,7 @@ func handleAutocompletePanic(ctx AutocompleteCtx) {
 	log.Println("Recovered from autocomplete panic:", errString)
 	debug.PrintStack()
 
-	logPanicStack(ctx.State, errString)
+	logPanicStack(st, errString)
 }
 
 func logPanicStack(st *state.State, errString string) {

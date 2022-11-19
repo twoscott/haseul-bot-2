@@ -58,8 +58,7 @@ func EmbedReplyNoPing(
 	return ReplyNoPing(st, msg, "", embeds...)
 }
 
-// MessageRespond responds to an interaction with the supplied
-// response data.
+// MessageRespond responds to an interaction with the supplied response data.
 func MessageRespond(
 	st *state.State,
 	interaction *discord.InteractionEvent,
@@ -164,4 +163,14 @@ func FollowupRespondEmbed(
 	embeds ...discord.Embed) (*discord.Message, error) {
 
 	return FollowupRespondSimple(st, interaction, "", embeds...)
+}
+
+// ModalRespond responds to an interaction with the supplied response data.
+func ModalRespond(
+	st *state.State,
+	interaction *discord.InteractionEvent,
+	data api.InteractionResponseData) error {
+
+	response := ModalResponse(data)
+	return st.RespondInteraction(interaction.ID, interaction.Token, *response)
 }

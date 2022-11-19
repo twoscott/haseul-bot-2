@@ -8,9 +8,8 @@ import (
 // AutocompleteCtx wraps router and includes data about the autocomplete
 // interaction to be passed to the receiving completion handler.
 type AutocompleteCtx struct {
-	*Router
-	Interaction *discord.InteractionEvent
-	Options     discord.AutocompleteOptions
+	*InteractionCtx
+	Options discord.AutocompleteOptions
 	// Focused is the option that is currently being typed in by the user.
 	Focused discord.AutocompleteOption
 }

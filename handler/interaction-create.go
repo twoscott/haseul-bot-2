@@ -15,5 +15,7 @@ func (h *Handler) InteractionCreate(
 		h.Router.HandleButtonPress(&interaction.InteractionEvent, data)
 	case *discord.CommandInteraction:
 		h.Router.HandleCommand(&interaction.InteractionEvent, data)
+	case *discord.ModalInteraction:
+		h.Router.HandleModalSubmit(&interaction.InteractionEvent, data)
 	}
 }
