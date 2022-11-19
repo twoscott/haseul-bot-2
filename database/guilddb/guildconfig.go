@@ -26,9 +26,9 @@ const (
 			muteroleID           INT8          DEFAULT 0 # 0,
 			rolesChannelID       INT8          DEFAULT 0 # 0,
 			welcomeChannelID     INT8          DEFAULT 0 # 0,
-			welcomeTitle         VARCHAR(256)  DEFAULT '',
+			welcomeTitle         VARCHAR(32)   DEFAULT '',
 			welcomeMessage       VARCHAR(1024) DEFAULT '',
-			welcomeColour        INT4,
+			welcomeColour        INT4		   DEFAULT NULL,
 			PRIMARY KEY(guildID)
 		)`
 

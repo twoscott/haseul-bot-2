@@ -47,7 +47,7 @@ func (t welcomeText) Format(member discord.Member, guild discord.Guild) string {
 type welcomeConfig struct {
 	RawTitle   string        `db:"welcometitle"`
 	RawMessage welcomeText   `db:"welcomemessage"`
-	RawColour  sql.NullInt16 `db:"welcomecolour"`
+	RawColour  sql.NullInt32 `db:"welcomecolour"`
 }
 
 // Welcome represents the welcome configuration fields of the guild config.
@@ -65,9 +65,18 @@ func (w Welcome) Title() string {
 	return w.RawTitle
 }
 
-// Title returns a welcome config's message, formatted with the details of the
+// Message returns a welcome config's message.
+func (w Welcome) Message() string {
+	if w.RawMessage == "" {
+		return defaultWelcomeMessage.String()
+	}
+
+	return w.RawMessage.String()
+}
+
+// FormattedMessage returns a welcome config's message, formatted with the details of the
 // provided new member and the guild they joined.
-func (w Welcome) Message(member discord.Member, guild discord.Guild) string {
+func (w Welcome) FormattedMessage(member discord.Member, guild discord.Guild) string {
 	if w.RawMessage == "" {
 		return defaultWelcomeMessage.Format(member, guild)
 	}
@@ -82,7 +91,7 @@ func (w Welcome) Colour() discord.Color {
 		return dctools.BlurpleColour
 	}
 
-	return discord.Color(w.RawColour.Int16)
+	return discord.Color(w.RawColour.Int32)
 }
 
 const (
@@ -92,6 +101,15 @@ const (
 	setWelcomeChannelNullQuery = `
 		UPDATE GuildConfigs SET welcomeChannelID = 0 # 0
 		WHERE guildID = $1`
+	setWelcomeMessageQuery = `
+		UPDATE GuildConfigs SET	welcomeMessage = $1
+		WHERE guildID = $2`
+	setWelcomeTitleQuery = `
+		UPDATE GuildConfigs SET	welcomeTitle = $1
+		WHERE guildID = $2`
+	setWelcomeColourQuery = `
+		UPDATE GuildConfigs SET	welcomeColour = $1
+		WHERE guildID = $2`
 	getWelcomeConfigQuery = `
 		SELECT welcomeChannelID, welcomeTitle, welcomeMessage, welcomeColour 
 		FROM GuildConfigs WHERE guildID = $1`
@@ -108,13 +126,55 @@ func (db *DB) SetWelcomeChannel(
 	}
 
 	updated, err := res.RowsAffected()
-	return updated > 0, nil
+	return updated > 0, err
 }
 
 // DisableWelcomeLogs updates the guild config of the given guild ID and sets
 // the welcome logs channel ID to a value that can be interpreted as null.
 func (db *DB) DisableWelcomeLogs(guildID discord.GuildID) (bool, error) {
 	res, err := db.Exec(setWelcomeChannelNullQuery, guildID)
+	if err != nil {
+		return false, err
+	}
+
+	updated, err := res.RowsAffected()
+	return updated > 0, err
+}
+
+// SetWelcomeMessage updates the guild config of the given guild ID and sets
+// the welcome message.
+func (db *DB) SetWelcomeMessage(
+	guildID discord.GuildID, message string) (bool, error) {
+
+	res, err := db.Exec(setWelcomeMessageQuery, message, guildID)
+	if err != nil {
+		return false, err
+	}
+
+	updated, err := res.RowsAffected()
+	return updated > 0, err
+}
+
+// SetWelcomeTitle updates the guild config of the given guild ID and sets
+// the welcome title.
+func (db *DB) SetWelcomeTitle(
+	guildID discord.GuildID, title string) (bool, error) {
+
+	res, err := db.Exec(setWelcomeTitleQuery, title, guildID)
+	if err != nil {
+		return false, err
+	}
+
+	updated, err := res.RowsAffected()
+	return updated > 0, err
+}
+
+// SetWelcomeColour updates the guild config of the given guild ID and sets
+// the welcome colour.
+func (db *DB) SetWelcomeColour(
+	guildID discord.GuildID, colour discord.Color) (bool, error) {
+
+	res, err := db.Exec(setWelcomeColourQuery, colour, guildID)
 	if err != nil {
 		return false, err
 	}

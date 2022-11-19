@@ -27,8 +27,8 @@ var fmTopArtistsCommand = &router.SubCommand{
 		&discord.IntegerOption{
 			OptionName:  "artists",
 			Description: "The number of top artists to display for the user",
-			Min:         option.NewInt(1),
-			Max:         option.NewInt(1000),
+			MinValue:    option.NewInt(1),
+			MaxValue:    option.NewInt(1000),
 		},
 		&discord.IntegerOption{
 			OptionName:  "period",

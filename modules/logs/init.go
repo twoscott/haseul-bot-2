@@ -16,12 +16,17 @@ func Init(rt *router.Router) {
 	inviteTracker = inviteutil.GetTracker()
 
 	rt.AddCommand(logsCommand)
+
 	logsCommand.AddSubCommandGroup(logsMemberCommand)
-	logsMemberCommand.AddSubCommand(logsMemberSetCommand)
+	logsMemberCommand.AddSubCommand(logsMemberChannelCommand)
 	logsMemberCommand.AddSubCommand(logsMemberDisableCommand)
+
 	logsCommand.AddSubCommandGroup(logsWelcomeCommand)
-	logsWelcomeCommand.AddSubCommand(logsWelcomeSetCommand)
+	logsWelcomeCommand.AddSubCommand(logsWelcomeChannelCommand)
+	logsWelcomeCommand.AddSubCommand(logsWelcomeColourCommand)
 	logsWelcomeCommand.AddSubCommand(logsWelcomeDisableCommand)
+	logsWelcomeCommand.AddSubCommand(logsWelcomeMessageCommand)
+	logsWelcomeCommand.AddSubCommand(logsWelcomeTitleCommand)
 
 	rt.AddMemberJoinHandler(logNewMember)
 	rt.AddMemberLeaveHandler(logMemberLeave)

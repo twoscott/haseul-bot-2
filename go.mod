@@ -1,11 +1,11 @@
 module github.com/twoscott/haseul-bot-2
 
-go 1.18
+go 1.19
 
 require (
 	github.com/PuerkitoBio/goquery v1.8.0
 	github.com/dghubble/go-twitter v0.0.0-20220428155120-ee736133298b
-	github.com/diamondburned/arikawa/v3 v3.0.0-rc.6.0.20220722223549-2013da82555e
+	github.com/diamondburned/arikawa/v3 v3.0.1-0.20220823203710-0f0c9686348a
 	github.com/dustin/go-humanize v1.0.0
 	github.com/jmoiron/sqlx v1.3.5
 	github.com/joho/godotenv v1.4.0
@@ -28,8 +28,12 @@ require (
 	github.com/gorilla/schema v1.2.0 // indirect
 	github.com/gorilla/websocket v1.5.0 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
+	golang.org/x/crypto v0.0.0-20210921155107-089bfa567519 // indirect
+	golang.org/x/sys v0.0.0-20211216021012-1d35b9e2eb4e // indirect
 	golang.org/x/time v0.0.0-20220411224347-583f2d630306 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
 	google.golang.org/protobuf v1.28.0 // indirect
 	gopkg.in/yaml.v3 v3.0.0-20220512140231-539c8e751b99 // indirect
 )
+
+replace github.com/diamondburned/arikawa/v3 v3.0.1-0.20220823203710-0f0c9686348a => ../arikawa

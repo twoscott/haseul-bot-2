@@ -91,8 +91,6 @@ func (rt *Router) HandleCommand(
 		itx.Defer()
 	}
 
-	log.Println("Command:", ctx.Interaction.ID)
-
 	handler.Execute(ctx)
 }
 
@@ -134,7 +132,7 @@ func (rt *Router) HandleModalSubmit(
 	handler, ok := rt.modalHandlers[key]
 	if !ok {
 		err := errors.New(
-			"No modal listener egistered for '" + string(key) + "'",
+			"No modal listener registered for '" + string(key) + "'",
 		)
 		log.Print(err)
 		return
@@ -156,8 +154,6 @@ func (rt *Router) HandleModalSubmit(
 	if handler.Defer {
 		itx.Defer()
 	}
-
-	log.Println("Modal:", ctx.Interaction.ID)
 
 	handler.HandleModalSubmit(ctx)
 }

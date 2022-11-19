@@ -48,7 +48,7 @@ func welcomeMember(
 
 	embed := discord.Embed{
 		Title:       welcome.Title(),
-		Description: welcome.Message(member, guild),
+		Description: welcome.FormattedMessage(member, guild),
 		Thumbnail: &discord.EmbedThumbnail{
 			URL: member.User.AvatarURL(),
 		},
@@ -97,7 +97,7 @@ func logMemberJoin(
 		log.Println(err)
 	}
 
-	inviteField := "Unknown"
+	inviteField := "Currently Unavailable"
 	if usedInvite != nil {
 		inviteField = fmt.Sprintf(
 			"%s (%d uses)\nCreated by %s",

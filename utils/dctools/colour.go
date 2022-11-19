@@ -1,6 +1,7 @@
 package dctools
 
 import (
+	"errors"
 	"strconv"
 	"strings"
 
@@ -18,6 +19,8 @@ const (
 	// EmbedBackColour is the default embed background colour Discord uses.
 	EmbedBackColour = 0x2f3136
 )
+
+var ErrInvalidHexColour = errors.New("invalid hexadecimal RGB value provided")
 
 // ColourInvalid returns whether a colour is either null or a default colour.
 func ColourInvalid(colour discord.Color) bool {
@@ -42,6 +45,10 @@ func EmbedColour(colour discord.Color) discord.Color {
 // String must either begin with a '#' or consist only of hexadecimal values.
 func HexToColour(hex string) (discord.Color, error) {
 	hex = strings.TrimPrefix(hex, "#")
+
+	if len(hex) > 6 {
+		return discord.NullColor, ErrInvalidHexColour
+	}
 
 	colourInt64, err := strconv.ParseInt(hex, 16, 32)
 	if err != nil {
