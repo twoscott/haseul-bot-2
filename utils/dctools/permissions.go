@@ -17,8 +17,8 @@ func HasAnyPermOrAdmin(
 	targetPermissions discord.Permissions,
 	requiredPermissions discord.Permissions) bool {
 
-	requiredPermissions.Add(discord.PermissionAdministrator)
-	return HasAnyPerm(targetPermissions, requiredPermissions)
+	perms := requiredPermissions.Add(discord.PermissionAdministrator)
+	return HasAnyPerm(targetPermissions, perms)
 }
 
 // PermissionsBitfield combines (ORs) together the provided permissions into

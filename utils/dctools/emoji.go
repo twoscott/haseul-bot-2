@@ -15,12 +15,12 @@ var emojiRegex = regexp.MustCompile(`<(a?):(\S+?):(\d+)>`)
 // ParseEmoji parses and returns an emoji from an emoji string
 func ParseEmoji(emojiString string) (*discord.Emoji, error) {
 	if emojiString == "" {
-		return nil, errors.New("No emoji string provided")
+		return nil, errors.New("no emoji string provided")
 	}
 
 	match := emojiRegex.FindStringSubmatch(emojiString)
 	if match == nil {
-		return nil, errors.New("Invalid emoji provided")
+		return nil, errors.New("invalid emoji provided")
 	}
 
 	emojiID, err := strconv.ParseUint(match[3], 10, 64)

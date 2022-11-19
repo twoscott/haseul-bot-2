@@ -124,7 +124,7 @@ func FollowupRespond(
 	interaction *discord.InteractionEvent,
 	data api.InteractionResponseData) (*discord.Message, error) {
 
-	return st.CreateInteractionFollowup(
+	return st.FollowUpInteraction(
 		interaction.AppID, interaction.Token, data,
 	)
 }
