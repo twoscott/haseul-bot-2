@@ -180,7 +180,7 @@ func guildEmbed(ctx *router.CommandCtx, guild *discord.Guild) *discord.Embed {
 
 	embed.Fields = append(embed.Fields, discord.EmbedField{
 		Name:   "Server Created",
-		Value:  dctools.EmbedTime(guild.CreatedAt()),
+		Value:  dctools.UnixTimestamp(guild.CreatedAt()),
 		Inline: true,
 	})
 
@@ -191,7 +191,7 @@ func guildEmbed(ctx *router.CommandCtx, guild *discord.Guild) *discord.Embed {
 	if !iconUploaded.IsZero() {
 		embed.Fields = append(embed.Fields, discord.EmbedField{
 			Name:   "Icon Uploaded",
-			Value:  dctools.EmbedTime(iconUploaded),
+			Value:  dctools.UnixTimestamp(iconUploaded),
 			Inline: true,
 		})
 	}

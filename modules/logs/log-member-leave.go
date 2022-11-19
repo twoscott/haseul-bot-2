@@ -37,12 +37,12 @@ func logMemberLeave(
 		Fields: []discord.EmbedField{
 			{
 				Name:   "User Left On",
-				Value:  dctools.EmbedTime(leftAt),
+				Value:  dctools.UnixTimestamp(leftAt),
 				Inline: true,
 			},
 			{
 				Name:   "Account Created On",
-				Value:  dctools.EmbedTime(user.CreatedAt()),
+				Value:  dctools.UnixTimestamp(user.CreatedAt()),
 				Inline: true,
 			},
 			dctools.EmptyEmbedField(),

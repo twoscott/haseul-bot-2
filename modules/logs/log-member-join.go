@@ -120,12 +120,12 @@ func logMemberJoin(
 		Fields: []discord.EmbedField{
 			{
 				Name:   "User Joined On",
-				Value:  dctools.EmbedTime(member.Joined.Time()),
+				Value:  dctools.UnixTimestamp(member.Joined.Time()),
 				Inline: true,
 			},
 			{
 				Name:   "Account Created On",
-				Value:  dctools.EmbedTime(member.User.CreatedAt()),
+				Value:  dctools.UnixTimestamp(member.User.CreatedAt()),
 				Inline: true,
 			},
 			{

@@ -97,14 +97,14 @@ func botInfoExec(ctx router.CommandCtx) {
 
 	embed.Fields = append(embed.Fields, discord.EmbedField{
 		Name:  "Bot Created",
-		Value: dctools.EmbedTime(bot.CreatedAt()),
+		Value: dctools.UnixTimestamp(bot.CreatedAt()),
 	})
 
 	botMember, err := ctx.State.Member(ctx.Interaction.GuildID, bot.ID)
 	if botMember != nil && botMember.Joined.IsValid() {
 		embed.Fields = append(embed.Fields, discord.EmbedField{
 			Name:  "Bot Joined",
-			Value: dctools.EmbedTime(botMember.Joined.Time()),
+			Value: dctools.UnixTimestamp(botMember.Joined.Time()),
 		})
 	}
 
