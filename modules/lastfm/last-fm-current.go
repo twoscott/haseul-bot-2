@@ -15,15 +15,15 @@ import (
 	"github.com/twoscott/haseul-bot-2/utils/util"
 )
 
-var fmCurrentCommand = &router.SubCommand{
+var lastFmCurrentCommand = &router.SubCommand{
 	Name:        "current",
 	Description: "Displays your currently scrobbling track",
 	Handler: &router.CommandHandler{
-		Executor: fmCurrentExec,
+		Executor: lastFmCurrentExec,
 	},
 }
 
-func fmCurrentExec(ctx router.CommandCtx) {
+func lastFmCurrentExec(ctx router.CommandCtx) {
 	lfUser, err := db.LastFM.GetUser(ctx.Interaction.SenderID())
 	if errors.Is(err, sql.ErrNoRows) {
 		ctx.RespondWarning(

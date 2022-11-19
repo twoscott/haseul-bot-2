@@ -6,15 +6,15 @@ import (
 	"github.com/twoscott/haseul-bot-2/router"
 )
 
-var fmDeleteCommand = &router.SubCommand{
+var lastFmDeleteCommand = &router.SubCommand{
 	Name:        "delete",
 	Description: "Deletes your Last.fm username from the records",
 	Handler: &router.CommandHandler{
-		Executor: fmDeleteExec,
+		Executor: lastFmDeleteExec,
 	},
 }
 
-func fmDeleteExec(ctx router.CommandCtx) {
+func lastFmDeleteExec(ctx router.CommandCtx) {
 	del, err := db.LastFM.DeleteUser(ctx.Interaction.SenderID())
 	if err != nil {
 		log.Println(err)

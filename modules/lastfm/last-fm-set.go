@@ -9,11 +9,11 @@ import (
 	"github.com/twoscott/haseul-bot-2/router"
 )
 
-var fmSetCommand = &router.SubCommand{
+var lastFmSetCommand = &router.SubCommand{
 	Name:        "set",
 	Description: "Links a Last.fm username to your Discord account.",
 	Handler: &router.CommandHandler{
-		Executor: fmSetExec,
+		Executor: lastFmSetExec,
 	},
 	Options: []discord.CommandOptionValue{
 		&discord.StringOption{
@@ -24,7 +24,7 @@ var fmSetCommand = &router.SubCommand{
 	},
 }
 
-func fmSetExec(ctx router.CommandCtx) {
+func lastFmSetExec(ctx router.CommandCtx) {
 	lfUser := ctx.Options.Find("username").String()
 	if len(lfUser) < 1 {
 		ctx.RespondError(

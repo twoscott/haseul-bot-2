@@ -11,16 +11,16 @@ import (
 	"github.com/twoscott/haseul-bot-2/utils/ytutil"
 )
 
-var fmYouTubeCommand = &router.SubCommand{
+var lastFmYouTubeCommand = &router.SubCommand{
 	Name:        "youtube",
 	Description: "Searches YouTube for your currently scrobbling track",
 	Handler: &router.CommandHandler{
-		Executor: fmYouTubeExec,
+		Executor: lastFmYouTubeExec,
 		Defer:    true,
 	},
 }
 
-func fmYouTubeExec(ctx router.CommandCtx) {
+func lastFmYouTubeExec(ctx router.CommandCtx) {
 	lfUser, err := db.LastFM.GetUser(ctx.Interaction.SenderID())
 	if errors.Is(err, sql.ErrNoRows) {
 		ctx.RespondWarning(

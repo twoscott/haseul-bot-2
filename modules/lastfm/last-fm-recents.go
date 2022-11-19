@@ -17,11 +17,11 @@ import (
 	"github.com/twoscott/haseul-bot-2/utils/util"
 )
 
-var fmRecentCommand = &router.SubCommand{
+var lastFmRecentCommand = &router.SubCommand{
 	Name:        "recents",
 	Description: "Displays your recently scrobbled tracks",
 	Handler: &router.CommandHandler{
-		Executor: fmRecentExec,
+		Executor: lastFmRecentExec,
 		Defer:    true,
 	},
 	Options: []discord.CommandOptionValue{
@@ -34,7 +34,7 @@ var fmRecentCommand = &router.SubCommand{
 	},
 }
 
-func fmRecentExec(ctx router.CommandCtx) {
+func lastFmRecentExec(ctx router.CommandCtx) {
 	trackCount, _ := ctx.Options.Find("tracks").IntValue()
 	if trackCount < 1 {
 		trackCount = 10

@@ -16,32 +16,32 @@ import (
 	"github.com/twoscott/haseul-bot-2/utils/util"
 )
 
-var fmTopAlbumsCommand = &router.SubCommand{
-	Name:        "albums",
-	Description: "Displays your most scrobbled albums",
+var lastFmTopTracksCommand = &router.SubCommand{
+	Name:        "tracks",
+	Description: "Displays your most scrobbled tracks",
 	Handler: &router.CommandHandler{
-		Executor: fmTopAlbumsExec,
+		Executor: lastFmTopTracksExec,
 		Defer:    true,
 	},
 	Options: []discord.CommandOptionValue{
 		&discord.IntegerOption{
-			OptionName:  "albums",
-			Description: "The number of top albums to display for the user",
+			OptionName:  "tracks",
+			Description: "The number of top tracks to display for the user",
 			MinValue:    option.NewInt(1),
 			MaxValue:    option.NewInt(1000),
 		},
 		&discord.IntegerOption{
 			OptionName:  "period",
-			Description: "The period of time to search for top albums within",
+			Description: "The period of time to search for top tracks within",
 			Choices:     timePeriodChoices,
 		},
 	},
 }
 
-func fmTopAlbumsExec(ctx router.CommandCtx) {
-	albumCount, _ := ctx.Options.Find("albums").IntValue()
-	if albumCount == 0 {
-		albumCount = 10
+func lastFmTopTracksExec(ctx router.CommandCtx) {
+	trackCount, _ := ctx.Options.Find("tracks").IntValue()
+	if trackCount == 0 {
+		trackCount = 10
 	}
 
 	periodOption, _ := ctx.Options.Find("period").IntValue()
@@ -61,31 +61,34 @@ func fmTopAlbumsExec(ctx router.CommandCtx) {
 		return
 	}
 
-	res, err := getTopAlbums(timeframe, lfUser, albumCount)
+	res, err := getTopTracks(timeframe, lfUser, trackCount)
 	if err != nil {
 		errMsg := errorResponseMessage(err)
 		ctx.RespondError(errMsg)
 		return
 	}
 
-	if len(res.Albums) < 1 {
+	if len(res.Tracks) < 1 {
 		ctx.RespondWarning(
 			"You have not scrobbled any tracks on Last.fm",
 		)
 		return
 	}
 
-	messagePages := topAlbumsEmbeds(*res, *timeframe)
+	messagePages := topTracksEmbeds(*res, *timeframe)
 
-	ctx.RespondPaging(messagePages)
+	err = ctx.RespondPaging(messagePages)
+	if err != nil {
+		log.Println(err)
+	}
 }
 
-func getTopAlbums(
+func getTopTracks(
 	tf *timeframe,
 	lfUser string,
-	limit int64) (*lastfm.UserGetTopAlbums, error) {
+	limit int64) (*lastfm.UserGetTopTracks, error) {
 
-	res, err := lf.User.GetTopAlbums(
+	res, err := lf.User.GetTopTracks(
 		lastfm.P{"user": lfUser, "limit": limit, "period": tf.apiPeriod},
 	)
 	if err != nil {
@@ -96,61 +99,60 @@ func getTopAlbums(
 		res.User = lfUser
 	}
 
-	if int64(len(res.Albums)) > limit {
-		res.Albums = res.Albums[:limit]
+	if int64(len(res.Tracks)) > limit {
+		res.Tracks = res.Tracks[:limit]
 	}
 
 	return &res, nil
 }
 
-func topAlbumsEmbeds(
-	topAlbums lastfm.UserGetTopAlbums,
+func topTracksEmbeds(
+	topTracks lastfm.UserGetTopTracks,
 	tf timeframe) []router.MessagePage {
 
-	albums := topAlbums.Albums
-	images := albums[0].Images
-	lfUser := topAlbums.User
-	totalAlbums := humanize.Comma(int64(topAlbums.Total))
+	tracks := topTracks.Tracks
+	lfUser := topTracks.User
+	totalTracks := humanize.Comma(int64(topTracks.Total))
 
-	authorTitle := util.Possessive(lfUser) + " Top Albums"
-	authorURL := getAlbumLibraryURL(lfUser, tf)
+	authorTitle := util.Possessive(lfUser) + " Top Tracks"
+	authorURL := getTrackLibraryURL(lfUser, tf)
 	title := tf.displayPeriod
 
-	thumbnailURL := images[len(images)-1].Url
-	if thumbnailURL == "" {
-		thumbnailURL = getImageURL(noAlbumHash)
+	thumbnailURL, err := scrapeArtistImage(tracks[0].Artist.Name)
+	if err != nil {
+		thumbnailURL = getImageURL(noTrackHash)
 	} else {
 		thumbnailURL = toImage(thumbnailURL)
 	}
 
 	footerText := dctools.SeparateEmbedFooter(
-		fmt.Sprintf("Total Albums: %s", totalAlbums),
+		fmt.Sprintf("Total Tracks: %s", totalTracks),
 		"Powered by Last.fm",
 	)
 
-	albumList := make([]string, 0, len(albums))
-	for i, album := range albums {
+	trackList := make([]string, 0, len(tracks))
+	for i, track := range tracks {
 		var playCount string
 
-		int64Plays, err := strconv.ParseInt(album.PlayCount, 10, 64)
+		int64Plays, err := strconv.ParseInt(track.PlayCount, 10, 64)
 		if err != nil {
 			playCount = "N/A"
 		} else {
 			playCount = humanize.Comma(int64Plays)
 		}
 
-		albumElems := dctools.MultiEscapeMarkdown(album.Artist.Name, album.Name)
+		trackElems := dctools.MultiEscapeMarkdown(track.Artist.Name, track.Name)
 		line := fmt.Sprintf(
 			"%d. %s - %s (%s Scrobbles)",
-			i+1, albumElems[0],
-			dctools.Hyperlink(albumElems[1], album.Url),
+			i+1, trackElems[0],
+			dctools.Hyperlink(trackElems[1], track.Url),
 			playCount,
 		)
 
-		albumList = append(albumList, line)
+		trackList = append(trackList, line)
 	}
 
-	descriptionPages := util.PagedLines(albumList, 2048, 25)
+	descriptionPages := util.PagedLines(trackList, 2048, 25)
 	messagePages := make([]router.MessagePage, len(descriptionPages))
 	for i, description := range descriptionPages {
 		pageID := fmt.Sprintf("Page %d/%d", i+1, len(descriptionPages))
@@ -158,12 +160,12 @@ func topAlbumsEmbeds(
 			Embeds: []discord.Embed{
 				{
 					Author: &discord.EmbedAuthor{
-						Name: authorTitle, URL: authorURL, Icon: albumIcon,
+						Name: authorTitle, URL: authorURL, Icon: trackIcon,
 					},
 					Title:       title,
 					Description: description,
 					Thumbnail:   &discord.EmbedThumbnail{URL: thumbnailURL},
-					Color:       albumColour,
+					Color:       trackColour,
 					Footer: &discord.EmbedFooter{
 						Text: dctools.SeparateEmbedFooter(pageID, footerText),
 					},

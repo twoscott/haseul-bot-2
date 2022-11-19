@@ -2,7 +2,7 @@ package lastfm
 
 import "github.com/twoscott/haseul-bot-2/router"
 
-var fmCommand = &router.Command{
-	Name:        "fm",
+var lastFmCommand = &router.Command{
+	Name:        "last-fm",
 	Description: "Commands pertaining to Last.fm functionality",
 }

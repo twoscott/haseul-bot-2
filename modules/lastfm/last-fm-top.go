@@ -14,7 +14,7 @@ var timePeriodChoices = []discord.IntegerChoice{
 	{Name: "All Time", Value: int(allTimePeriod)},
 }
 
-var fmTopCommandGroup = &router.SubCommandGroup{
+var lastFmTopCommandGroup = &router.SubCommandGroup{
 	Name:        "top",
 	Description: "Commands for displaying top stats from your Last.fm library",
 }
