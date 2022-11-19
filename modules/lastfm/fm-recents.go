@@ -99,7 +99,7 @@ func recentsListEmbeds(
 
 		var line string
 		if i == 0 && nowPlaying {
-			line = fmt.Sprintf("\\▶ %s (Now)", lineTrack)
+			line = fmt.Sprintf("1. %s", lineTrack)
 		} else {
 			var timeAgoString string
 
@@ -109,10 +109,12 @@ func recentsListEmbeds(
 				timeAgoString = "N/A"
 			} else {
 				timestamp := time.Unix(unixTime, 0)
-				timeAgoString = util.MaxTimeAgoString(timestamp)
+				timeAgoString = dctools.UnixTimestampStyled(
+					timestamp, dctools.RelativeTime,
+				)
 			}
 
-			line = fmt.Sprintf("%d. %s (%s)", i+1, lineTrack, timeAgoString)
+			line = fmt.Sprintf("%d. %s %s", i+1, lineTrack, timeAgoString)
 		}
 
 		trackList = append(trackList, line)
