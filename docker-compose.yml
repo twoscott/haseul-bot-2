@@ -10,6 +10,7 @@ services:
   haseul-bot:
     image: haseul-bot:latest
     container_name: haseul-bot
+    build: .
     restart: unless-stopped
     depends_on:
       - postgres
@@ -19,7 +20,7 @@ services:
     networks:
       - haseul_bot
   postgres:
-    image: postgres:14.3
+    image: postgres:15.1
     container_name: postgres
     command: postgres -c shared_buffers=512MB
     restart: unless-stopped
@@ -31,8 +32,11 @@ services:
     networks:
       - haseul_bot
   sushii-image-server:
-    image: ghcr.io/sushiibot/sushii-image-server:latest
+    image: sushii-image-server:latest
     container_name: sushii-image-server
+    build:
+      context: .
+      dockerfile: ./build/sushii-image-server/Dockerfile
     restart: unless-stopped
     init: true
     cap_add:
@@ -43,6 +47,6 @@ services:
       - "$SUSHII_IMAGE_SERVER_PORT"
     volumes:
       # Handlebar template files
-      - ./templates:/app/templates:ro
+      - ./web/templates:/app/templates:ro
     networks:
       - haseul_bot
