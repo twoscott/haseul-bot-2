@@ -28,8 +28,8 @@ var lastFmRecentCommand = &router.SubCommand{
 		&discord.IntegerOption{
 			OptionName:  "tracks",
 			Description: "The number of recent tracks to display for the user",
-			MinValue:    option.NewInt(1),
-			MaxValue:    option.NewInt(1000),
+			Min:         option.NewInt(1),
+			Max:         option.NewInt(1000),
 		},
 	},
 }

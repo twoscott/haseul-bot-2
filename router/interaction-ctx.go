@@ -1,11 +1,13 @@
 package router
 
 import (
+	"io"
 	"log"
 
 	"github.com/diamondburned/arikawa/v3/api"
 	"github.com/diamondburned/arikawa/v3/discord"
 	"github.com/diamondburned/arikawa/v3/utils/json/option"
+	"github.com/diamondburned/arikawa/v3/utils/sendpart"
 	"github.com/twoscott/haseul-bot-2/utils/dctools"
 )
 
@@ -61,16 +63,26 @@ func (ctx InteractionCtx) RespondSimple(
 	})
 }
 
-// RespondText responds to the supplied command with the supplied
-// content.
+// RespondText responds to the supplied command with the supplied content.
 func (ctx InteractionCtx) RespondText(content string) error {
 	return ctx.RespondSimple(content)
 }
 
-// RespondEmbed responds to the supplied command with the
-// supplied embed(s).
+// RespondEmbed responds to the supplied command with the supplied embed(s).
 func (ctx InteractionCtx) RespondEmbed(embeds ...discord.Embed) error {
 	return ctx.RespondSimple("", embeds...)
+}
+
+// RespondFiles responds to the supplied command with the supplied file(s).
+func (ctx InteractionCtx) RespondFiles(files []sendpart.File) error {
+	return ctx.Respond(api.InteractionResponseData{Files: files})
+}
+
+// RespondFile responds to the supplied command with the supplied file.
+func (ctx InteractionCtx) RespondFile(fileName string, data io.Reader) error {
+	return ctx.RespondFiles([]sendpart.File{
+		{Name: fileName, Reader: data},
+	})
 }
 
 // RespondSuccess responds to a command with the provided content,

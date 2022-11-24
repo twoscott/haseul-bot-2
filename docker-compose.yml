@@ -7,25 +7,42 @@ volumes:
 
 
 services:
-  postgres:
-    image: postgres:14.3
-    container_name: postgres
-    command: postgres -c shared_buffers=512MB
-    restart: unless-stopped
-    shm_size: 512mb
-    volumes:
-      - pg_data:/var/lib/postgresql/data:r,w
-    env_file:
-      - .env
-    networks:
-      - haseul_bot
   haseul-bot:
     image: haseul-bot:latest
     container_name: haseul-bot
     restart: unless-stopped
     depends_on:
       - postgres
+      - sushii-image-server
     env_file:
       - .env
+    networks:
+      - haseul_bot
+  postgres:
+    image: postgres:14.3
+    container_name: postgres
+    command: postgres -c shared_buffers=512MB
+    restart: unless-stopped
+    shm_size: 512mb
+    env_file:
+      - .env
+    volumes:
+      - pg_data:/var/lib/postgresql/data:r,w
+    networks:
+      - haseul_bot
+  sushii-image-server:
+    image: ghcr.io/sushiibot/sushii-image-server:latest
+    container_name: sushii-image-server
+    restart: unless-stopped
+    init: true
+    cap_add:
+      - SYS_ADMIN
+    env_file:
+      - .env
+    expose:
+      - "$SUSHII_IMAGE_SERVER_PORT"
+    volumes:
+      # Handlebar template files
+      - ./templates:/app/templates:ro
     networks:
       - haseul_bot

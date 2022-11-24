@@ -27,6 +27,7 @@ func Init(rt *router.Router) {
 	lf = lastfm.New(key, secret)
 
 	rt.AddCommand(lastFmCommand)
+	lastFmCommand.AddSubCommand(lastFmCollageCommand)
 	lastFmCommand.AddSubCommand(lastFmCurrentCommand)
 	lastFmCommand.AddSubCommand(lastFmDeleteCommand)
 	lastFmCommand.AddSubCommand(lastFmRecentCommand)
@@ -37,7 +38,4 @@ func Init(rt *router.Router) {
 	lastFmTopCommandGroup.AddSubCommand(lastFmTopAlbumsCommand)
 	lastFmTopCommandGroup.AddSubCommand(lastFmTopArtistsCommand)
 	lastFmTopCommandGroup.AddSubCommand(lastFmTopTracksCommand)
-
-	// TODO:
-	//	/fm collage [type] [dimensions] [timeframe]
 }

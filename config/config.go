@@ -37,6 +37,10 @@ type Config struct {
 		CampaignID  string `env:"CAMPAIGN_ID"`
 		AccessToken string `env:"ACCESS_TOKEN"`
 	} `env:",prefix=PATREON_"`
+	SushiiImageServer struct {
+		Host string `env:"HOST"`
+		Port int    `env:"PORT"`
+	} `env:",prefix=SUSHII_IMAGE_SERVER_"`
 }
 
 var (

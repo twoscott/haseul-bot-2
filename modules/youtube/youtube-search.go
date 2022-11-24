@@ -30,8 +30,8 @@ var youTubeSearchCommand = &router.SubCommand{
 		&discord.IntegerOption{
 			OptionName:  "results",
 			Description: "The amount of results to return",
-			MinValue:    option.NewInt(1),
-			MaxValue:    option.NewInt(20),
+			Min:         option.NewInt(1),
+			Max:         option.NewInt(20),
 		},
 	},
 }

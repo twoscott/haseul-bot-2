@@ -15,7 +15,7 @@ import (
 const (
 	lastFmURL     = "https://www.last.fm"
 	thumbURLFrame = "https://lastfm.freetls.fastly.net/i/u/174s/%s"
-	imageURLFrame = "https://lastfm.freetls.fastly.net/i/u/%s"
+	imageURLFrame = "https://lastfm.freetls.fastly.net/i/u/300x300/%s"
 
 	noArtistHash = "2a96cbd8b46e442fc41c2b86b821562f"
 	noAlbumHash  = "c6f59c1e5e7240a4c0d427abd71f3dbb"
@@ -69,7 +69,7 @@ func getImageURL(hash string) string {
 
 func checkUserExists(user string) (bool, error) {
 	if user == "" {
-		err := errors.New("No Last.fm username provided")
+		err := errors.New("no Last.fm username provided")
 		return false, err
 	}
 
@@ -83,7 +83,7 @@ func checkUserExists(user string) (bool, error) {
 	}
 	if res.StatusCode != 200 {
 		err := errors.New(
-			"Status code from Last.fm user exists check was neither 404 or 200",
+			"status code from Last.fm user exists check was neither 404 or 200",
 		)
 		return false, err
 	}

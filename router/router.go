@@ -251,7 +251,9 @@ func (rt *Router) mustRegisterSubCommandHandlers(
 	}
 }
 
-func (rt *Router) mustRegisterCommandHandler(name string, handler *CommandHandler) {
+func (rt *Router) mustRegisterCommandHandler(
+	name string, handler *CommandHandler) {
+
 	if handler == nil {
 		log.Panicf("'%s' does not have a command handler", name)
 	}

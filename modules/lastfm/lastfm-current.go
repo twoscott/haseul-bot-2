@@ -46,7 +46,7 @@ func lastFmCurrentExec(ctx router.CommandCtx) {
 
 	if len(res.Tracks) < 1 {
 		ctx.RespondWarning(
-			"You have not scrobbled any tracks on Last.fm",
+			"You have not scrobbled any tracks on Last.fm.",
 		)
 		return
 	}

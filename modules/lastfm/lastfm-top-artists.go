@@ -27,8 +27,8 @@ var lastFmTopArtistsCommand = &router.SubCommand{
 		&discord.IntegerOption{
 			OptionName:  "artists",
 			Description: "The number of top artists to display for the user",
-			MinValue:    option.NewInt(1),
-			MaxValue:    option.NewInt(1000),
+			Min:         option.NewInt(1),
+			Max:         option.NewInt(1000),
 		},
 		&discord.IntegerOption{
 			OptionName:  "period",
@@ -45,8 +45,7 @@ func lastFmTopArtistsExec(ctx router.CommandCtx) {
 	}
 
 	periodOption, _ := ctx.Options.Find("period").IntValue()
-	period := lastFmPeriod(periodOption)
-	timeframe := period.Timeframe()
+	timeframe := lastFmPeriod(periodOption).Timeframe()
 
 	lfUser, err := db.LastFM.GetUser(ctx.Interaction.SenderID())
 	if errors.Is(err, sql.ErrNoRows) {
@@ -70,7 +69,7 @@ func lastFmTopArtistsExec(ctx router.CommandCtx) {
 
 	if len(res.Artists) < 1 {
 		ctx.RespondWarning(
-			"You have not scrobbled any tracks on Last.fm",
+			"You have not scrobbled any tracks on Last.fm.",
 		)
 		return
 	}

@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+
+<body>
+    <section class="chart">
+        {{#each entries}}
+            <div class="item">
+                <div class="item-image">
+                    <img src="{{imageUrl}}">
+                </div>
+                {{#unless ../noText}}
+                    <div class="details">
+                        <p class="text heading">{{albumName}}</p>
+                        <p class="text">{{artistName}}</p>
+                        <p class="text">{{playCount}} plays</p>
+                    </div>
+                {{/unless}}
+            </div>
+        {{/each}}
+    </section>
+</body>
+
+<style>
+    :root {
+        --size: {{size}};
+        --img-size: {{imageSize}}px;
+        --text-size: calc(var(--img-size) / 17);
+        --header-size: calc(var(--img-size) / 14);
+        --line-height: calc(var(--img-size) / 11);
+    }
+
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    .chart {
+        display: grid;
+        width: fit-content;
+        grid-template-columns: repeat(var(--size, 3), var(--img-size, 300px));
+        grid-template-rows: repeat(var(--size, 3), var(--img-size, 300px));
+        background-color: black;
+        list-style-type: none;
+        list-style-position: outside;
+        list-style-image: none;
+    }
+
+    .item {
+        width: var(--img-size, 300px);
+        height: var(--img-size, 300px);
+        position: relative;
+    }
+
+    .item-image {
+        height: 100%;
+        width: 100%;
+    }
+
+    .item-image img {
+        height: 100%;
+        width: 100%;
+        object-fit: cover;
+    }
+
+    {{#unless noText}}
+        .item-image::after {
+            background-image: linear-gradient(180deg,
+                    transparent 0,
+                    rgba(0, 0, 0, .35) 70%, rgba(0, 0, 0, .7));
+            position: absolute;
+            content: "";
+            left: 0;
+            top: 0;
+            height: 100%;
+            width: 100%;
+        }
+    {{/unless}}
+
+    .details {
+        position: absolute;
+        bottom: 8%;
+        right: 8%;
+        left: 8%;
+    }
+
+    .text {
+        font-family:
+            Barlow, Open Sans, Lucida Grande, Helvetica Neue, Helvetica, Arial,
+            sans-serif;
+        text-shadow: rgba(0, 0, 0, 0.7) 0px 0px 10px;
+        font-size: var(--text-size);
+        line-height: var(--line-height);
+        color: white;
+        word-wrap: break-word;
+    }
+
+    .heading {
+        font-size: var(--header-size);
+        font-weight: 700;
+        margin-bottom: 1px;
+    }
+</style>
+
+</html>
