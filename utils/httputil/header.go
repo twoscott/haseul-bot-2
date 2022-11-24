@@ -6,6 +6,10 @@ import (
 	"time"
 )
 
+const (
+	ContentTypeApplicationJSON = "application/json"
+)
+
 // HeaderModifiedTime returns a time object representing when the object of the
 // header was last modified.
 func HeaderModifiedTime(header http.Header) (time.Time, error) {

@@ -18,8 +18,8 @@ const (
 )
 
 var (
-	ErrNoResultsFound  = errors.New("No results found")
-	ErrUnknown         = errors.New("Unknown error occurred")
+	ErrNoResultsFound  = errors.New("no results found")
+	ErrUnknown         = errors.New("unknown error occurred")
 	ytInitialDataRegex = regexp.MustCompile(`var ytInitialData\s*=.+?;`)
 	ytContentRegex     = regexp.MustCompile(
 		`"videoRenderer":\{"videoId":"(.+?)"`,
@@ -47,7 +47,7 @@ func buildVideoURL(videoID string) string {
 
 func getResults(query string, resultLimit int) ([]string, error) {
 	if query == "" {
-		return nil, errors.New("No YouTube query provided")
+		return nil, errors.New("no YouTube query provided")
 	}
 
 	queryURL, err := url.Parse(youTubeURL)

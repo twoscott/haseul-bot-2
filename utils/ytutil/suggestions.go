@@ -30,7 +30,7 @@ var ytSuggestionsRegex = regexp.MustCompile(`\[\s*"(.+?)"`)
 func GetSuggestions(query string) ([]string, error) {
 	if query == "" {
 		return nil, errors.New(
-			"No YouTube query provided to get suggestions for",
+			"no YouTube query provided to get suggestions for",
 		)
 	}
 
@@ -76,7 +76,7 @@ func parseSuggestions(bytes []byte) ([]string, error) {
 		NumOfSuggestions+1,
 	)
 	if matches == nil {
-		return nil, errors.New("Unable to parse suggestions")
+		return nil, errors.New("unable to parse suggestions")
 	}
 
 	suggestions := make([]string, 0, len(matches))
