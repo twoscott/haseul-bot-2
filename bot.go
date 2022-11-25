@@ -48,17 +48,17 @@ func main() {
 
 	err := st.Open(context.Background())
 	if err != nil {
-		log.Fatalf("Failed to connect to Discord: %s\n", err)
+		log.Fatalln("Failed to connect to Discord:", err)
 	}
 
 	_, err = st.Me()
 	if err != nil {
-		log.Fatalf("Failed to fetch myself: %s\n", err)
+		log.Fatalln("Failed to fetch myself:", err)
 	}
 
 	err = rt.AddCommandsToDiscord()
 	if err != nil {
-		log.Fatalf("Failed to add commands to Discord: %s\n", err)
+		log.Fatalln("Failed to add commands to Discord:", err)
 	}
 
 	log.Print("Haseul Bot is now running. Press Ctrl-C to exit. ")
