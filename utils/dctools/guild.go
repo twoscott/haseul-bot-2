@@ -3,6 +3,7 @@ package dctools
 import (
 	"github.com/diamondburned/arikawa/v3/discord"
 	"github.com/diamondburned/arikawa/v3/state"
+	"github.com/enescakir/emoji"
 	"golang.org/x/exp/slices"
 )
 
@@ -105,56 +106,56 @@ func GuildStreamQuality(level discord.NitroBoost) string {
 func GuildRegionText(region string) string {
 	switch region {
 	case "us-west":
-		return "🇺🇸 US West"
+		return emoji.Sprintln(emoji.FlagForUnitedStates, "US West")
 	case "vip-us-west":
-		return "🇺🇸 VIP US West"
+		return emoji.Sprintln(emoji.FlagForUnitedStates, "VIP US West")
 	case "us-east":
-		return "🇺🇸 US East"
+		return emoji.Sprintln(emoji.FlagForUnitedStates, "US East")
 	case "vip-us-east":
-		return "🇺🇸 VIP US East"
+		return emoji.Sprintln(emoji.FlagForUnitedStates, "VIP US East")
 	case "us-south":
-		return "🇺🇸 US South"
+		return emoji.Sprintln(emoji.FlagForUnitedStates, "US South")
 	case "us-central":
-		return "🇺🇸 US Central"
+		return emoji.Sprintln(emoji.FlagForUnitedStates, "US Central")
 
 	case "eu-west":
-		return "🇪🇺 EU West"
+		return emoji.Sprintln(emoji.FlagForEuropeanUnion, "EU West")
 	case "eu-central":
-		return "🇪🇺 EU Central"
+		return emoji.Sprintln(emoji.FlagForEuropeanUnion, "EU Central")
 	case "europe":
-		return "🇪🇺 Europe"
+		return emoji.Sprintln(emoji.FlagForEuropeanUnion, "Europe")
 
 	case "amsterdam":
-		return "🇳🇱 Amsterdam"
+		return emoji.Sprintln(emoji.FlagForNetherlands, "Amsterdam")
 	case "vip-amsterdam":
-		return "🇳🇱 VIP Amsterdam"
+		return emoji.Sprintln(emoji.FlagForNetherlands, "VIP Amsterdam")
 
 	case "singapore":
-		return "🇸🇬 Singapore"
+		return emoji.Sprintln(emoji.FlagForSingapore, "Singapore")
 	case "london":
-		return "🇬🇧 London"
+		return emoji.Sprintln(emoji.FlagForUnitedKingdom, "London")
 	case "sydney":
-		return "🇦🇺 Sydney"
+		return emoji.Sprintln(emoji.FlagForAustralia, "Sydney")
 	case "frankfurt":
-		return "🇩🇪 Frankfurt"
+		return emoji.Sprintln(emoji.FlagForGermany, "Frankfurt")
 	case "brazil":
-		return "🇧🇷 Brazil"
+		return emoji.Sprintln(emoji.FlagForBrazil, "Brazil")
 	case "hongkong":
-		return "🇭🇰 Hong Kong"
+		return emoji.Sprintln(emoji.FlagForHongKongSarChina, "Hong Kong")
 	case "russia":
-		return "🇷🇺 Russia"
+		return emoji.Sprintln(emoji.FlagForRussia, "Russia")
 	case "japan":
-		return "🇯🇵 Japan"
+		return emoji.Sprintln(emoji.FlagForJapan, "Japan")
 	case "southafrica":
-		return "🇿🇦 South Africa"
+		return emoji.Sprintln(emoji.FlagForSouthAfrica, "South Africa")
 	case "south-korea":
-		return "🇰🇷 South Korea"
+		return emoji.Sprintln(emoji.FlagForSouthKorea, "South Korea")
 	case "india":
-		return "🇮🇳 India"
+		return emoji.Sprintln(emoji.FlagForIndia, "India")
 	case "dubai":
-		return "🇦🇪 Dubai"
+		return emoji.Sprintln(emoji.FlagForUnitedArabEmirates, "Dubai")
 	default:
-		return "🌍❓"
+		return emoji.Sprintln(emoji.GlobeShowingEuropeAfrica, emoji.QuestionMark)
 	}
 }
 

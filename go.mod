@@ -7,6 +7,7 @@ require (
 	github.com/dghubble/go-twitter v0.0.0-20220428155120-ee736133298b
 	github.com/diamondburned/arikawa/v3 v3.1.1-0.20221121041744-1b31249626ff
 	github.com/dustin/go-humanize v1.0.0
+	github.com/enescakir/emoji v1.0.0
 	github.com/jmoiron/sqlx v1.3.5
 	github.com/joho/godotenv v1.4.0
 	github.com/lib/pq v1.10.6
