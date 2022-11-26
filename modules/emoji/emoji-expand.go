@@ -16,14 +16,14 @@ import (
 
 var emojiExpandCommand = &router.SubCommand{
 	Name:        "expand",
-	Description: "Expands an emoji and displays it",
+	Description: "Expands a custom Discord emoji and displays it",
 	Handler: &router.CommandHandler{
 		Executor: emojiExec,
 	},
 	Options: []discord.CommandOptionValue{
 		&discord.StringOption{
 			OptionName:  "emoji",
-			Description: "The emoji to expand",
+			Description: "The Discord emoji to expand",
 			Required:    true,
 		},
 	},
@@ -34,7 +34,7 @@ func emojiExec(ctx router.CommandCtx) {
 
 	emoji, err := dctools.ParseEmoji(emojiString)
 	if err != nil {
-		ctx.RespondWarning("Invalid emoji provided.")
+		ctx.RespondWarning("Please provide a custom Discord emoji.")
 		return
 	}
 
