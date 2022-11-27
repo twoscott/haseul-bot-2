@@ -1,8 +1,8 @@
-package notifications
+package notification
 
 import "github.com/twoscott/haseul-bot-2/router"
 
-var notiChannelCommand = &router.SubCommandGroup{
+var notificationChannelCommand = &router.SubCommandGroup{
 	Name:        "channel",
 	Description: "Commands pertaining to notifications in channels",
 }

@@ -1,4 +1,4 @@
-package notifications
+package notification
 
 import (
 	"fmt"
@@ -10,15 +10,14 @@ import (
 	"github.com/twoscott/haseul-bot-2/router"
 	"github.com/twoscott/haseul-bot-2/utils/dctools"
 	"github.com/twoscott/haseul-bot-2/utils/util"
-	"golang.org/x/exp/slices"
 )
 
-var notiRemoveCommand = &router.SubCommand{
+var notificationRemoveCommand = &router.SubCommand{
 	Name:        "remove",
 	Description: "Removes a keyword notification",
 	Handler: &router.CommandHandler{
-		Executor:      notiRemoveExec,
-		Autocompleter: notiKeywordCompleter,
+		Executor:      notificationRemoveExec,
+		Autocompleter: notificationKeywordCompleter,
 		Ephemeral:     true,
 	},
 	Options: []discord.CommandOptionValue{
@@ -39,7 +38,7 @@ var notiRemoveCommand = &router.SubCommand{
 	},
 }
 
-func notiRemoveExec(ctx router.CommandCtx) {
+func notificationRemoveExec(ctx router.CommandCtx) {
 	rawKeyword := ctx.Options.Find("keyword").String()
 	keyword := strings.ToLower(rawKeyword)
 
@@ -141,7 +140,7 @@ func removeGlobalNoti(ctx router.CommandCtx, keyword string) {
 	ctx.State.SendMessage(dmChannel.ID, dmMsg)
 }
 
-func notiKeywordCompleter(ctx router.AutocompleteCtx) {
+func notificationKeywordCompleter(ctx router.AutocompleteCtx) {
 	keyword := ctx.Options.Find("keyword").String()
 
 	notis, err := db.Notifications.GetByGuildAndGlobalUser(
@@ -149,6 +148,11 @@ func notiKeywordCompleter(ctx router.AutocompleteCtx) {
 	)
 	if err != nil {
 		log.Println(err)
+		ctx.RespondChoices(nil)
+		return
+	}
+	if len(notis) == 0 {
+		ctx.RespondChoices(nil)
 		return
 	}
 
@@ -159,7 +163,6 @@ func notiKeywordCompleter(ctx router.AutocompleteCtx) {
 
 	var choices api.AutocompleteStringChoices
 	if keyword == "" {
-		keywords := slices.Compact(keywords)
 		choices = dctools.MakeStringChoices(keywords)
 	} else {
 		matches := util.SearchSort(keywords, keyword)

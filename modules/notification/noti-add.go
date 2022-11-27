@@ -1,12 +1,12 @@
-package notifications
+package notification
 
 import (
 	"fmt"
 	"log"
-	"strconv"
 	"strings"
 
 	"github.com/diamondburned/arikawa/v3/discord"
+	"github.com/diamondburned/arikawa/v3/utils/json/option"
 	"github.com/twoscott/haseul-bot-2/database/notifdb"
 	"github.com/twoscott/haseul-bot-2/router"
 	"github.com/twoscott/haseul-bot-2/utils/dctools"
@@ -14,17 +14,18 @@ import (
 
 const notificationLimit = 25
 
-var notiAddCommand = &router.SubCommand{
+var notificationAddCommand = &router.SubCommand{
 	Name:        "add",
 	Description: "Adds a keyword notification",
 	Handler: &router.CommandHandler{
-		Executor:  notiAddExec,
+		Executor:  notificationAddExec,
 		Ephemeral: true,
 	},
 	Options: []discord.CommandOptionValue{
 		&discord.StringOption{
 			OptionName:  "keyword",
 			Description: "The keyword to be notified for mentions of",
+			MaxLength:   option.NewInt(128),
 			Required:    true,
 		},
 		&discord.IntegerOption{
@@ -48,7 +49,7 @@ var notiAddCommand = &router.SubCommand{
 	},
 }
 
-func notiAddExec(ctx router.CommandCtx) {
+func notificationAddExec(ctx router.CommandCtx) {
 	rawKeyword := ctx.Options.Find("keyword").String()
 	keyword := strings.ToLower(rawKeyword)
 	if keyword == "" {
@@ -95,10 +96,12 @@ func addServerNoti(
 	}
 	if len(notifications) >= notificationLimit {
 		ctx.RespondWarning(
-			"You cannot have more than " + strconv.Itoa(notificationLimit) +
-				" notifications set up in a server. " +
-				"You may remove server notifications and re-add them " +
-				"as global notifications.",
+			fmt.Sprintf(
+				"You cannot have more than %d notifications set up in a "+
+					"server. You may remove server notifications and re-add "+
+					"them as global notifications.",
+				notificationLimit,
+			),
 		)
 		return
 	}
@@ -178,8 +181,10 @@ func addGlobalNoti(
 	}
 	if len(notifications) >= notificationLimit {
 		ctx.RespondWarning(
-			"You cannot have more than " + strconv.Itoa(notificationLimit) +
-				" global notifications set up.",
+			fmt.Sprintf(
+				"You cannot have more than %d global notifications set up.",
+				notificationLimit,
+			),
 		)
 		return
 	}

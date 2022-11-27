@@ -1,4 +1,4 @@
-package notifications
+package notification
 
 import (
 	"github.com/twoscott/haseul-bot-2/router"
@@ -9,7 +9,7 @@ const (
 	globalScope
 )
 
-var notiCommand = &router.Command{
-	Name:        "notifications",
+var notificationCommand = &router.Command{
+	Name:        "notification",
 	Description: "Commands pertaining to keyword notifications",
 }

@@ -1,4 +1,4 @@
-package notifications
+package notification
 
 import (
 	"log"
@@ -7,11 +7,11 @@ import (
 	"github.com/twoscott/haseul-bot-2/router"
 )
 
-var notiChannelMuteCommand = &router.SubCommand{
+var notificationChannelMuteCommand = &router.SubCommand{
 	Name:        "mute",
 	Description: "Mutes notifications for a channel",
 	Handler: &router.CommandHandler{
-		Executor:  notiChannelMuteExec,
+		Executor:  notificationChannelMuteExec,
 		Ephemeral: true,
 	},
 	Options: []discord.CommandOptionValue{
@@ -27,7 +27,7 @@ var notiChannelMuteCommand = &router.SubCommand{
 	},
 }
 
-func notiChannelMuteExec(ctx router.CommandCtx) {
+func notificationChannelMuteExec(ctx router.CommandCtx) {
 	snowflake, _ := ctx.Options.Find("channel").SnowflakeValue()
 	channelID := discord.ChannelID(snowflake)
 	if !channelID.IsValid() {

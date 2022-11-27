@@ -1,4 +1,4 @@
-package notifications
+package notification
 
 import (
 	"log"
@@ -6,17 +6,17 @@ import (
 	"github.com/twoscott/haseul-bot-2/router"
 )
 
-var notiDndCommand = &router.SubCommand{
+var notificationDndCommand = &router.SubCommand{
 	Name: "dnd",
 	Description: "Toggles whether Do Not Disturb is turned on " +
 		"for notifications",
 	Handler: &router.CommandHandler{
-		Executor:  notiDndExec,
+		Executor:  notificationDndExec,
 		Ephemeral: true,
 	},
 }
 
-func notiDndExec(ctx router.CommandCtx) {
+func notificationDndExec(ctx router.CommandCtx) {
 	dndOn, err := db.Notifications.ToggleDnD(ctx.Interaction.SenderID())
 	if err != nil {
 		log.Println(err)

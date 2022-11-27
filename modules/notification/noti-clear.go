@@ -1,4 +1,4 @@
-package notifications
+package notification
 
 import (
 	"log"
@@ -7,11 +7,11 @@ import (
 	"github.com/twoscott/haseul-bot-2/router"
 )
 
-var notiClearCommand = &router.SubCommand{
+var notificationClearCommand = &router.SubCommand{
 	Name:        "clear",
 	Description: "Clears all keyword notifications",
 	Handler: &router.CommandHandler{
-		Executor:  notiClearExec,
+		Executor:  notificationClearExec,
 		Ephemeral: true,
 	},
 	Options: []discord.CommandOptionValue{
@@ -26,7 +26,7 @@ var notiClearCommand = &router.SubCommand{
 	},
 }
 
-func notiClearExec(ctx router.CommandCtx) {
+func notificationClearExec(ctx router.CommandCtx) {
 	scope, _ := ctx.Options.Find("scope").IntValue()
 
 	switch scope {
