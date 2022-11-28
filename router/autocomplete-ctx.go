@@ -30,9 +30,9 @@ func AutocompleteInteractionKey(
 func autocompleteString(option *discord.AutocompleteOption) string {
 	switch option.Type {
 	case discord.SubcommandGroupOptionType:
-		return "/" + option.Name + autocompleteString(&option.Options[0])
+		return " " + option.Name + autocompleteString(&option.Options[0])
 	case discord.SubcommandOptionType:
-		return "/" + option.Name
+		return " " + option.Name
 	default:
 		return ""
 	}

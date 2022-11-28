@@ -146,7 +146,7 @@ func SearchSortStringChoices(
 		}
 	}
 
-	slices.SortStableFunc(matches, func(a, b discord.StringChoice) bool {
+	slices.SortFunc(matches, func(a, b discord.StringChoice) bool {
 		return strings.Compare(a.Name, b.Name) < 0
 	})
 	slices.SortStableFunc(matches, func(a, b discord.StringChoice) bool {

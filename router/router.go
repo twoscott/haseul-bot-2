@@ -199,7 +199,7 @@ func (rt *Router) HandleButtonPress(
 
 // GetRawCreateCommandData converts all commands stored in the router to
 // Discord API create command data types.
-func (rt *Router) GetRawCreateCommandData() []api.CreateCommandData {
+func (rt Router) GetRawCreateCommandData() []api.CreateCommandData {
 	newCommandData := make([]api.CreateCommandData, len(rt.commands))
 
 	for i, cmd := range rt.commands {
@@ -207,6 +207,17 @@ func (rt *Router) GetRawCreateCommandData() []api.CreateCommandData {
 	}
 
 	return newCommandData
+}
+
+// FindCommand finds a bot command by name.
+func (rt Router) FindCommand(name string) *Command {
+	for _, cmd := range rt.commands {
+		if cmd.Name == name {
+			return cmd
+		}
+	}
+
+	return nil
 }
 
 // AddCommandsToDiscord sends the defined commands to the Discord API,
@@ -220,7 +231,17 @@ func (rt *Router) AddCommandsToDiscord() error {
 		return err
 	}
 
-	_, err = rt.State.BulkOverwriteCommands(app.ID, createData)
+	discordCommands, err := rt.State.BulkOverwriteCommands(app.ID, createData)
+	for _, dcCmd := range discordCommands {
+		cmd := rt.FindCommand(dcCmd.Name)
+		if cmd == nil {
+			log.Panic(
+				"Unable to find command corresponding to a Discord command",
+			)
+		}
+
+		cmd.discordID = &dcCmd.ID
+	}
 
 	return err
 }
@@ -230,7 +251,7 @@ func (rt *Router) AddCommandsToDiscord() error {
 func (rt *Router) MustRegisterCommandHandlers() {
 	for _, cmd := range rt.commands {
 		for _, group := range cmd.SubCommandGroups {
-			prefix := cmd.Name + "/" + group.Name
+			prefix := cmd.Name + " " + group.Name
 			rt.mustRegisterSubCommandHandlers(prefix, group.SubCommands)
 		}
 
@@ -246,7 +267,7 @@ func (rt *Router) MustRegisterCommandHandlers() {
 func (rt *Router) mustRegisterSubCommandHandlers(
 	prefix string, subCommands []*SubCommand) {
 	for _, cmd := range subCommands {
-		trigger := prefix + "/" + cmd.Name
+		trigger := prefix + " " + cmd.Name
 		rt.mustRegisterCommandHandler(trigger, cmd.Handler)
 	}
 }

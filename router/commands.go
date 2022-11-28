@@ -11,7 +11,13 @@ import (
 	"github.com/diamondburned/arikawa/v3/state"
 	"github.com/diamondburned/arikawa/v3/utils/sendpart"
 	"github.com/twoscott/haseul-bot-2/utils/botutil"
+	"github.com/twoscott/haseul-bot-2/utils/dctools"
 )
+
+type ParentCommand interface {
+	ID() discord.CommandID
+	NameReference() []string
+}
 
 type Command struct {
 	Name                string
@@ -22,15 +28,38 @@ type Command struct {
 	SubCommandGroups    []*SubCommandGroup
 	SubCommands         []*SubCommand
 	Handler             *CommandHandler
+	discordID           *discord.CommandID
+}
+
+// ID implements ParentCommand and facilitates fetching command mentions.
+func (c Command) ID() discord.CommandID {
+	if c.discordID == nil {
+		return discord.NullCommandID
+	}
+
+	return *c.discordID
+}
+
+// NameReference implements ParentCommand and facilitiates
+// fetching command mentions.
+func (c Command) NameReference() []string {
+	return []string{c.Name}
+}
+
+// Mention returns the mention string for a Discord message.
+func (c Command) Mention() string {
+	return dctools.CommandMention(c.ID(), c.NameReference()...)
 }
 
 // AddSubCommandGroup adds a group of sub commands to a slash command.
 func (c *Command) AddSubCommandGroup(group *SubCommandGroup) {
+	group.Parent = c
 	c.SubCommandGroups = append(c.SubCommandGroups, group)
 }
 
 // AddSubCommand adds a sub command to a slash command.
 func (c *Command) AddSubCommand(command *SubCommand) {
+	command.Parent = c
 	c.SubCommands = append(c.SubCommands, command)
 }
 
@@ -61,10 +90,32 @@ type SubCommandGroup struct {
 	Name        string
 	Description string
 	SubCommands []*SubCommand
+	Parent      *Command
+}
+
+// ID implements ParentCommand and facilitates fetching command mentions.
+func (c SubCommandGroup) ID() discord.CommandID {
+	if c.Parent == nil {
+		return discord.NullCommandID
+	}
+
+	return c.Parent.ID()
+}
+
+// NameReference implements ParentCommand and facilitiates
+// fetching command mentions.
+func (c SubCommandGroup) NameReference() []string {
+	return append(c.Parent.NameReference(), c.Name)
+}
+
+// Mention returns the mention string for a Discord message.
+func (c SubCommandGroup) Mention() string {
+	return dctools.CommandMention(c.ID(), c.NameReference()...)
 }
 
 // AddSubCommand adds a sub command to a command group.
 func (g *SubCommandGroup) AddSubCommand(command *SubCommand) {
+	command.Parent = g
 	g.SubCommands = append(g.SubCommands, command)
 }
 
@@ -94,6 +145,26 @@ type SubCommand struct {
 	// handler.
 	Options []discord.CommandOptionValue
 	Handler *CommandHandler
+	Parent  ParentCommand
+}
+
+func (c SubCommand) ID() discord.CommandID {
+	if c.Parent == nil {
+		return discord.NullCommandID
+	}
+
+	return c.Parent.ID()
+}
+
+// NameReference implements ParentCommand and facilitiates
+// fetching command mentions.
+func (c *SubCommand) NameReference() []string {
+	return append(c.Parent.NameReference(), c.Name)
+}
+
+// Mention returns the mention string for a Discord message.
+func (c SubCommand) Mention() string {
+	return dctools.CommandMention(c.ID(), c.NameReference()...)
 }
 
 // ToCreateData converts a sub command nto its underlying sub command option
@@ -120,9 +191,9 @@ func CommandInteractionKey(command *discord.CommandInteraction) string {
 func commandString(option *discord.CommandInteractionOption) string {
 	switch option.Type {
 	case discord.SubcommandGroupOptionType:
-		return "/" + option.Name + commandString(&option.Options[0])
+		return " " + option.Name + commandString(&option.Options[0])
 	case discord.SubcommandOptionType:
-		return "/" + option.Name
+		return " " + option.Name
 	default:
 		return ""
 	}
