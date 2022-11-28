@@ -2,10 +2,10 @@ package util
 
 import (
 	"fmt"
-	"log"
 	"regexp"
 	"strings"
 
+	"github.com/dustin/go-humanize"
 	"golang.org/x/exp/slices"
 )
 
@@ -65,6 +65,12 @@ func Pluralise(target string, amount int64) string {
 	return getPlural(target)
 }
 
+// PluraliseWithCount returns the pluralised version of targe, prefixed with
+// the amount itself.
+func PluraliseWithCount(target string, amount int64) string {
+	return humanize.Comma(amount) + " " + Pluralise(target, amount)
+}
+
 // PluraliseSpecial returns the supplied singular string if amount is 1,
 // else the supplied plural string is returned.
 func PluraliseSpecial(singular, plural string, amount int64) string {
@@ -82,25 +88,21 @@ func getPlural(target string) (plural string) {
 	}
 
 	plural = replaceWithEsRegex.ReplaceAllString(target, "es")
-	log.Println(plural)
 	if plural != target {
 		return plural
 	}
 
 	plural = replaceWithVesRegex.ReplaceAllString(target, "ves")
-	log.Println(plural)
 	if plural != target {
 		return plural
 	}
 
 	plural = replaceWithOesRegex.ReplaceAllString(target, "${1}oes")
-	log.Println(plural)
 	if plural != target {
 		return plural
 	}
 
 	plural = replaceWithIesRegex.ReplaceAllString(target, "${1}ies")
-	log.Println(plural)
 	if plural != target {
 		return plural
 	}
