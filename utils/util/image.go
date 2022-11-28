@@ -50,7 +50,7 @@ func ImageFromURL(url string) (*Image, *http.Response, error) {
 	}
 
 	if res.StatusCode != http.StatusOK {
-		return nil, res, errors.New("Bad response")
+		return nil, res, errors.New("bad response")
 	}
 
 	bytes, err := io.ReadAll(res.Body)

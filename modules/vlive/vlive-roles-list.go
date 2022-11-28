@@ -117,17 +117,12 @@ func vliveRoleListExec(ctx router.CommandCtx) {
 	}
 
 	descriptionPages := util.PagedLines(mentionList, 2048, 20)
-	messagePages := make([]router.MessagePage, len(descriptionPages))
-	numOfMentions := len(mentions)
-	numOfMentionsFooter := fmt.Sprintf(
-		"%d %s",
-		numOfMentions,
-		util.Pluralise("Mention Role", int64(numOfMentions)),
-	)
+	pages := make([]router.MessagePage, len(descriptionPages))
+	footer := util.PluraliseWithCount("Mention Role", int64(len(mentions)))
 
 	for i, description := range descriptionPages {
 		pageID := fmt.Sprintf("Page %d/%d", i+1, len(descriptionPages))
-		messagePages[i] = router.MessagePage{
+		pages[i] = router.MessagePage{
 			Embeds: []discord.Embed{
 				{
 					Author: &discord.EmbedAuthor{
@@ -141,7 +136,7 @@ func vliveRoleListExec(ctx router.CommandCtx) {
 					Footer: &discord.EmbedFooter{
 						Text: dctools.SeparateEmbedFooter(
 							pageID,
-							numOfMentionsFooter,
+							footer,
 						),
 					},
 				},
@@ -149,5 +144,5 @@ func vliveRoleListExec(ctx router.CommandCtx) {
 		}
 	}
 
-	ctx.RespondPaging(messagePages)
+	ctx.RespondPaging(pages)
 }

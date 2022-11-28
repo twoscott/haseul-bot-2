@@ -85,17 +85,12 @@ func twtFeedListExec(ctx router.CommandCtx) {
 	}
 
 	descriptionPages := util.PagedLines(feedList, 2048, 20)
-	messagePages := make([]router.MessagePage, len(descriptionPages))
-	numOfFeeds := len(feeds)
-	numOfFeedsFooter := fmt.Sprintf(
-		"%d %s",
-		numOfFeeds,
-		util.Pluralise("Feed", int64(numOfFeeds)),
-	)
+	pages := make([]router.MessagePage, len(descriptionPages))
+	footer := util.PluraliseWithCount("Feed", int64(len(feeds)))
 
 	for i, description := range descriptionPages {
 		pageID := fmt.Sprintf("Page %d/%d", i+1, len(descriptionPages))
-		messagePages[i] = router.MessagePage{
+		pages[i] = router.MessagePage{
 			Embeds: []discord.Embed{
 				{
 					Author: &discord.EmbedAuthor{
@@ -106,7 +101,7 @@ func twtFeedListExec(ctx router.CommandCtx) {
 					Footer: &discord.EmbedFooter{
 						Text: dctools.SeparateEmbedFooter(
 							pageID,
-							numOfFeedsFooter,
+							footer,
 						),
 					},
 				},
@@ -114,5 +109,5 @@ func twtFeedListExec(ctx router.CommandCtx) {
 		}
 	}
 
-	ctx.RespondPaging(messagePages)
+	ctx.RespondPaging(pages)
 }

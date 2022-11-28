@@ -81,6 +81,19 @@ func PluraliseSpecial(singular, plural string, amount int64) string {
 	return plural
 }
 
+// PluralSuffix returns the plural suffix for a word. This misses most of the
+// cases that Pluralise covers, as many cases require replace some ending
+// characters of the word and don't just append a suffix.
+func PluralSuffix(target string) (suffix string) {
+	if endsInEsRegex.MatchString(target) {
+		suffix = "es"
+	} else {
+		suffix = "s"
+	}
+
+	return suffix
+}
+
 func getPlural(target string) (plural string) {
 	plural = replaceWithIRegex.ReplaceAllString(target, "i")
 	if plural != target {
@@ -108,19 +121,6 @@ func getPlural(target string) (plural string) {
 	}
 
 	return target + PluralSuffix(target)
-}
-
-// PluralSuffix returns the plural suffix for a word. This misses most of the
-// cases that Pluralise covers, as many cases require replace some ending
-// characters of the word and don't just append a suffix.
-func PluralSuffix(target string) (suffix string) {
-	if endsInEsRegex.MatchString(target) {
-		suffix = "es"
-	} else {
-		suffix = "s"
-	}
-
-	return suffix
 }
 
 // PagedLines returns a slice of pages where the given lines are added to pages

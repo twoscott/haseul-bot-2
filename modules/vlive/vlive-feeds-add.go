@@ -97,7 +97,7 @@ func vliveFeedAddExec(ctx router.CommandCtx) {
 	postTypesInt, _ := ctx.Options.Find("types").IntValue()
 	postTypes := vlivedb.PostTypes(postTypesInt)
 
-	reposts, err := ctx.Options.Find("reposts").BoolValue()
+	reposts, _ := ctx.Options.Find("reposts").BoolValue()
 
 	_, err = db.VLIVE.GetBoard(board.ID)
 	if err != nil {

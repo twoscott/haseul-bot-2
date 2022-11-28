@@ -17,8 +17,8 @@ const (
 			guildID       INT8    NOT NULL,
 			channelID     INT8    NOT NULL,
 			twitterUserID INT8    NOT NULL,
-			replies		  BOOLEAN DEFAULT TRUE,
-			retweets      BOOLEAN DEFAULT TRUE,
+			replies		  BOOLEAN NOT NULL DEFAULT TRUE,
+			retweets      BOOLEAN NOT NULL DEFAULT TRUE,
 			PRIMARY KEY(channelID, twitterUserID),
 			FOREIGN KEY(twitterUserID) REFERENCES TwitterUsers(ID)
 		)`

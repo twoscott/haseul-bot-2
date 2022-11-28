@@ -88,7 +88,7 @@ func (w Welcome) FormattedMessage(member discord.Member, guild discord.Guild) st
 // not set, a default embed background colour is returned.
 func (w Welcome) Colour() discord.Color {
 	if !w.RawColour.Valid {
-		return dctools.BlurpleColour
+		return dctools.EmbedBackColour
 	}
 
 	return discord.Color(w.RawColour.Int32)

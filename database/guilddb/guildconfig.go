@@ -84,7 +84,7 @@ func (db *DB) SetMemberLogsChannel(
 	}
 
 	updated, err := res.RowsAffected()
-	return updated > 0, nil
+	return updated > 0, err
 }
 
 // DisableMemberLogs updates the guild config of the given guild ID and sets

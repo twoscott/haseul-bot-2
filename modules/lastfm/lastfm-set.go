@@ -11,7 +11,7 @@ import (
 
 var lastFmSetCommand = &router.SubCommand{
 	Name:        "set",
-	Description: "Links a Last.fm username to your Discord account.",
+	Description: "Links a Last.fm username to your Discord account",
 	Handler: &router.CommandHandler{
 		Executor: lastFmSetExec,
 	},

@@ -25,8 +25,8 @@ const (
 			boardID   INT8    NOT NULL,
 			guildID   INT8    NOT NULL,
 			channelID INT8    NOT NULL,
-			postTypes INT2    DEFAULT 0,
-			reposts   BOOLEAN DEFAULT TRUE,
+			postTypes INT2    NOT NULL DEFAULT 0,
+			reposts   BOOLEAN NOT NULL DEFAULT TRUE,
 			PRIMARY KEY(boardID, channelID),
 			FOREIGN KEY(boardID) REFERENCES VLIVEBoards(id)
 		)`

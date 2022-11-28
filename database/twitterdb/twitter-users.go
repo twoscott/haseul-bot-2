@@ -12,7 +12,7 @@ const (
 	createTwitterUsersTableQuery = `
 		CREATE TABLE IF NOT EXISTS TwitterUsers(
 			ID            INT8 NOT NULL,
-			LastTweetID   INT8 DEFAULT  0,
+			LastTweetID   INT8 NOT NULL DEFAULT  0,
 			PRIMARY KEY(ID)
 		)
 	`

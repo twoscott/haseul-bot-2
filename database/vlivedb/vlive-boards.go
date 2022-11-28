@@ -15,8 +15,8 @@ const (
 		CREATE TABLE IF NOT EXISTS VLIVEBoards(
 			id                INT8        NOT NULL,
 			channelCode       VARCHAR(64) NOT NULL,
-			lastPostTimestamp INT8        DEFAULT  0,
-			lastPostID		  VARCHAR(64) DEFAULT  '0-0',
+			lastPostTimestamp INT8        NOT NULL DEFAULT  0,
+			lastPostID		  VARCHAR(64) NOT NULL DEFAULT  '0-0',
 			PRIMARY KEY(id)
 		)
 	`

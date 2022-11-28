@@ -56,12 +56,8 @@ func notificationListExec(ctx router.CommandCtx) {
 
 	descriptionPages := util.PagedLines(notiList, 2048, 10)
 	pages := make([]router.MessagePage, len(descriptionPages))
-	numOfNotis := len(notifications)
-	numOfNotisFooter := fmt.Sprintf(
-		"%d %s",
-		numOfNotis,
-		util.Pluralise("Notification", int64(numOfNotis)),
-	)
+	footer := util.PluraliseWithCount("Notification", int64(len(notifications)))
+
 	for i, description := range descriptionPages {
 		pageID := fmt.Sprintf("Page %d/%d", i+1, len(descriptionPages))
 		pages[i] = router.MessagePage{
@@ -73,7 +69,7 @@ func notificationListExec(ctx router.CommandCtx) {
 					Footer: &discord.EmbedFooter{
 						Text: dctools.SeparateEmbedFooter(
 							pageID,
-							numOfNotisFooter,
+							footer,
 						),
 					},
 				},
