@@ -1,4 +1,4 @@
-package command
+package commands
 
 import (
 	"database/sql"
@@ -11,11 +11,11 @@ import (
 	"github.com/twoscott/haseul-bot-2/router"
 )
 
-var commandUseCommand = &router.SubCommand{
+var commandsUseCommand = &router.SubCommand{
 	Name:        "use",
 	Description: "Runs a custom server command",
 	Handler: &router.CommandHandler{
-		Executor:      commandUseExec,
+		Executor:      commandsUseExec,
 		Autocompleter: completeCommandUseName,
 	},
 	Options: []discord.CommandOptionValue{
@@ -29,7 +29,7 @@ var commandUseCommand = &router.SubCommand{
 	},
 }
 
-func commandUseExec(ctx router.CommandCtx) {
+func commandsUseExec(ctx router.CommandCtx) {
 	name := ctx.Options.Find("name").String()
 	content, err := db.Commands.GetContent(ctx.Interaction.GuildID, name)
 	if errors.Is(err, sql.ErrNoRows) {

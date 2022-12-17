@@ -1,4 +1,4 @@
-package command
+package commands
 
 import (
 	"fmt"
@@ -9,11 +9,11 @@ import (
 	"github.com/twoscott/haseul-bot-2/router"
 )
 
-var commandDeleteCommand = &router.SubCommand{
+var commandsDeleteCommand = &router.SubCommand{
 	Name:        "delete",
 	Description: "Deletes a custom server command",
 	Handler: &router.CommandHandler{
-		Executor:      commandDeleteExec,
+		Executor:      commandsDeleteExec,
 		Autocompleter: completeCommandRemoveName,
 	},
 	Options: []discord.CommandOptionValue{
@@ -27,7 +27,7 @@ var commandDeleteCommand = &router.SubCommand{
 	},
 }
 
-func commandDeleteExec(ctx router.CommandCtx) {
+func commandsDeleteExec(ctx router.CommandCtx) {
 	name := ctx.Options.Find("name").String()
 
 	ok, err := db.Commands.Delete(ctx.Interaction.GuildID, name)

@@ -1,4 +1,4 @@
-package command
+package commands
 
 import (
 	"log"
@@ -10,11 +10,11 @@ import (
 	"github.com/twoscott/haseul-bot-2/utils/util"
 )
 
-var commandInfoCommand = &router.SubCommand{
+var commandsInfoCommand = &router.SubCommand{
 	Name:        "info",
 	Description: "Displays information about a custom server command",
 	Handler: &router.CommandHandler{
-		Executor:      commandInfoExec,
+		Executor:      commandsInfoExec,
 		Autocompleter: completeCommandInfoName,
 	},
 	Options: []discord.CommandOptionValue{
@@ -28,7 +28,7 @@ var commandInfoCommand = &router.SubCommand{
 	},
 }
 
-func commandInfoExec(ctx router.CommandCtx) {
+func commandsInfoExec(ctx router.CommandCtx) {
 	name := ctx.Options.Find("name").String()
 
 	command, err := db.Commands.GetCommand(ctx.Interaction.GuildID, name)

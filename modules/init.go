@@ -2,7 +2,7 @@ package modules
 
 import (
 	"github.com/twoscott/haseul-bot-2/modules/bot"
-	"github.com/twoscott/haseul-bot-2/modules/command"
+	"github.com/twoscott/haseul-bot-2/modules/commands"
 	"github.com/twoscott/haseul-bot-2/modules/emoji"
 	"github.com/twoscott/haseul-bot-2/modules/lastfm"
 	"github.com/twoscott/haseul-bot-2/modules/logs"
@@ -18,7 +18,7 @@ import (
 
 func Init(rt *router.Router) {
 	bot.Init(rt)
-	command.Init(rt)
+	commands.Init(rt)
 	emoji.Init(rt)
 	lastfm.Init(rt)
 	logs.Init(rt)

@@ -1,4 +1,4 @@
-package command
+package commands
 
 import (
 	"log"
@@ -12,8 +12,8 @@ import (
 
 const commandNameLimit = 32
 
-var commandCommand = &router.Command{
-	Name:        "command",
+var commandsCommand = &router.Command{
+	Name:        "commands",
 	Description: "Commands pertaining to custom server commands",
 }
 

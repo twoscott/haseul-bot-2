@@ -1,4 +1,4 @@
-package command
+package commands
 
 import (
 	"fmt"
@@ -6,7 +6,7 @@ import (
 	"strings"
 
 	"github.com/diamondburned/arikawa/v3/discord"
-	"github.com/twoscott/haseul-bot-2/database/commandsdb"
+	"github.com/twoscott/haseul-bot-2/database/commanddb"
 	"github.com/twoscott/haseul-bot-2/router"
 	"github.com/twoscott/haseul-bot-2/utils/dctools"
 	"github.com/twoscott/haseul-bot-2/utils/util"
@@ -20,11 +20,11 @@ const (
 	usesSort
 )
 
-var commandListCommand = &router.SubCommand{
+var commandsListCommand = &router.SubCommand{
 	Name:        "list",
 	Description: "Lists all custom commands added to the server",
 	Handler: &router.CommandHandler{
-		Executor: commandListExec,
+		Executor: commandsListExec,
 	},
 	Options: []discord.CommandOptionValue{
 		&discord.IntegerOption{
@@ -39,7 +39,7 @@ var commandListCommand = &router.SubCommand{
 	},
 }
 
-func commandListExec(ctx router.CommandCtx) {
+func commandsListExec(ctx router.CommandCtx) {
 	commands, err := db.Commands.GetAllByGuild(ctx.Interaction.GuildID)
 	if err != nil {
 		log.Println(err)
@@ -59,14 +59,14 @@ func commandListExec(ctx router.CommandCtx) {
 }
 
 func getCommandsListPages(
-	commands []commandsdb.Command, sort commandListSort) []router.MessagePage {
+	commands []commanddb.Command, sort commandListSort) []router.MessagePage {
 
-	slices.SortFunc(commands, func(a, b commandsdb.Command) bool {
+	slices.SortFunc(commands, func(a, b commanddb.Command) bool {
 		return strings.Compare(a.Name, b.Name) < 0
 	})
 
 	if sort == usesSort {
-		slices.SortStableFunc(commands, func(a, b commandsdb.Command) bool {
+		slices.SortStableFunc(commands, func(a, b commanddb.Command) bool {
 			return a.Uses-b.Uses > 0
 		})
 	}

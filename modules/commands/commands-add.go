@@ -1,4 +1,4 @@
-package command
+package commands
 
 import (
 	"database/sql"
@@ -17,11 +17,11 @@ const commandLimit = 1024
 
 var commandNameRegex = regexp.MustCompile(`^[\p{L}\p{N}]+$`)
 
-var commandAddCommand = &router.SubCommand{
+var commandsAddCommand = &router.SubCommand{
 	Name:        "add",
 	Description: "Adds a custom server command",
 	Handler: &router.CommandHandler{
-		Executor: commandAddExec,
+		Executor: commandsAddExec,
 	},
 	Options: []discord.CommandOptionValue{
 		&discord.StringOption{
@@ -40,7 +40,7 @@ var commandAddCommand = &router.SubCommand{
 	},
 }
 
-func commandAddExec(ctx router.CommandCtx) {
+func commandsAddExec(ctx router.CommandCtx) {
 	name := ctx.Options.Find("name").String()
 	validName := commandNameRegex.MatchString(name)
 	if !validName {
@@ -89,7 +89,7 @@ func commandAddExec(ctx router.CommandCtx) {
 		fmt.Sprintf(
 			"Command '%s' added. Use %s to trigger the command.",
 			name,
-			commandListCommand.Mention(),
+			commandsListCommand.Mention(),
 		),
 	)
 }

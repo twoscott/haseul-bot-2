@@ -1,4 +1,4 @@
-package command
+package commands
 
 import (
 	"log"
@@ -6,17 +6,17 @@ import (
 
 	"github.com/diamondburned/arikawa/v3/discord"
 	"github.com/diamondburned/arikawa/v3/utils/json/option"
-	"github.com/twoscott/haseul-bot-2/database/commandsdb"
+	"github.com/twoscott/haseul-bot-2/database/commanddb"
 	"github.com/twoscott/haseul-bot-2/router"
 	"golang.org/x/exp/slices"
 )
 
-var commandSearchCommand = &router.SubCommand{
+var commandsSearchCommand = &router.SubCommand{
 	Name: "search",
 	Description: "Searches for a custom command with a given name in " +
 		"the server.",
 	Handler: &router.CommandHandler{
-		Executor:      commandSearchExec,
+		Executor:      commandsSearchExec,
 		Autocompleter: completeCommandSearchName,
 	},
 	Options: []discord.CommandOptionValue{
@@ -30,7 +30,7 @@ var commandSearchCommand = &router.SubCommand{
 	},
 }
 
-func commandSearchExec(ctx router.CommandCtx) {
+func commandsSearchExec(ctx router.CommandCtx) {
 	query := ctx.Options.Find("query").String()
 
 	commands, err := db.Commands.GetAllByGuild(ctx.Interaction.GuildID)
@@ -44,17 +44,17 @@ func commandSearchExec(ctx router.CommandCtx) {
 		return
 	}
 
-	filteredCommands := make([]commandsdb.Command, 0)
+	filteredCommands := make([]commanddb.Command, 0)
 	for _, cmd := range commands {
 		if strings.Contains(cmd.Name, query) {
 			filteredCommands = append(filteredCommands, cmd)
 		}
 	}
 
-	slices.SortStableFunc(filteredCommands, func(a, b commandsdb.Command) bool {
+	slices.SortStableFunc(filteredCommands, func(a, b commanddb.Command) bool {
 		return len(a.Name) < len(b.Name)
 	})
-	slices.SortStableFunc(filteredCommands, func(a, b commandsdb.Command) bool {
+	slices.SortStableFunc(filteredCommands, func(a, b commanddb.Command) bool {
 		return strings.Index(a.Name, query) < strings.Index(b.Name, query)
 	})
 

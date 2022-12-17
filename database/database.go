@@ -4,7 +4,7 @@ import (
 	"sync"
 
 	"github.com/jmoiron/sqlx"
-	"github.com/twoscott/haseul-bot-2/database/commandsdb"
+	"github.com/twoscott/haseul-bot-2/database/commanddb"
 	"github.com/twoscott/haseul-bot-2/database/guilddb"
 	"github.com/twoscott/haseul-bot-2/database/invitedb"
 	"github.com/twoscott/haseul-bot-2/database/lastfmdb"
@@ -17,7 +17,7 @@ import (
 
 type DB struct {
 	*sqlx.DB
-	Commands      *commandsdb.DB
+	Commands      *commanddb.DB
 	Guilds        *guilddb.DB
 	Invites       *invitedb.DB
 	LastFM        *lastfmdb.DB
@@ -38,7 +38,7 @@ func GetInstance() *DB {
 
 		db = &DB{
 			DB:            dbConn,
-			Commands:      commandsdb.New(dbConn),
+			Commands:      commanddb.New(dbConn),
 			Guilds:        guilddb.New(dbConn),
 			Invites:       invitedb.New(dbConn),
 			LastFM:        lastfmdb.New(dbConn),
