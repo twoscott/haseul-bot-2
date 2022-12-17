@@ -1,4 +1,4 @@
-package notification
+package notifications
 
 import (
 	"fmt"
@@ -14,11 +14,11 @@ import (
 
 const notificationLimit = 25
 
-var notificationAddCommand = &router.SubCommand{
+var notificationsAddCommand = &router.SubCommand{
 	Name:        "add",
 	Description: "Adds a keyword notification",
 	Handler: &router.CommandHandler{
-		Executor:  notificationAddExec,
+		Executor:  notificationsAddExec,
 		Ephemeral: true,
 	},
 	Options: []discord.CommandOptionValue{
@@ -49,7 +49,7 @@ var notificationAddCommand = &router.SubCommand{
 	},
 }
 
-func notificationAddExec(ctx router.CommandCtx) {
+func notificationsAddExec(ctx router.CommandCtx) {
 	rawKeyword := ctx.Options.Find("keyword").String()
 	keyword := strings.ToLower(rawKeyword)
 	if keyword == "" {

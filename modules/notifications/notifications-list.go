@@ -1,4 +1,4 @@
-package notification
+package notifications
 
 import (
 	"fmt"
@@ -11,16 +11,16 @@ import (
 	"golang.org/x/exp/slices"
 )
 
-var notificationListCommand = &router.SubCommand{
+var notificationsListCommand = &router.SubCommand{
 	Name:        "list",
 	Description: "Lists all notifications",
 	Handler: &router.CommandHandler{
-		Executor:  notificationListExec,
+		Executor:  notificationsListExec,
 		Ephemeral: true,
 	},
 }
 
-func notificationListExec(ctx router.CommandCtx) {
+func notificationsListExec(ctx router.CommandCtx) {
 	notifications, err := db.Notifications.GetByUser(ctx.Interaction.SenderID())
 	if err != nil {
 		log.Println(err)

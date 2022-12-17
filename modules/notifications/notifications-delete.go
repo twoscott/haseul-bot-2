@@ -1,4 +1,4 @@
-package notification
+package notifications
 
 import (
 	"fmt"
@@ -12,11 +12,11 @@ import (
 	"github.com/twoscott/haseul-bot-2/utils/util"
 )
 
-var notificationRemoveCommand = &router.SubCommand{
-	Name:        "remove",
+var notificationsDeleteCommand = &router.SubCommand{
+	Name:        "delete",
 	Description: "Removes a keyword notification",
 	Handler: &router.CommandHandler{
-		Executor:      notificationRemoveExec,
+		Executor:      notificationsDeleteExec,
 		Autocompleter: notificationKeywordCompleter,
 		Ephemeral:     true,
 	},
@@ -38,7 +38,7 @@ var notificationRemoveCommand = &router.SubCommand{
 	},
 }
 
-func notificationRemoveExec(ctx router.CommandCtx) {
+func notificationsDeleteExec(ctx router.CommandCtx) {
 	rawKeyword := ctx.Options.Find("keyword").String()
 	keyword := strings.ToLower(rawKeyword)
 

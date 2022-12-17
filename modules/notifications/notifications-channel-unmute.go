@@ -1,4 +1,4 @@
-package notification
+package notifications
 
 import (
 	"log"
@@ -7,11 +7,11 @@ import (
 	"github.com/twoscott/haseul-bot-2/router"
 )
 
-var notificationChannelUnmuteCommand = &router.SubCommand{
+var notificationsChannelUnmuteCommand = &router.SubCommand{
 	Name:        "unmute",
 	Description: "Unmutes notifications for a channel",
 	Handler: &router.CommandHandler{
-		Executor:  notificationChannelUnmuteExec,
+		Executor:  notificationsChannelUnmuteExec,
 		Ephemeral: true,
 	},
 	Options: []discord.CommandOptionValue{
@@ -27,7 +27,7 @@ var notificationChannelUnmuteCommand = &router.SubCommand{
 	},
 }
 
-func notificationChannelUnmuteExec(ctx router.CommandCtx) {
+func notificationsChannelUnmuteExec(ctx router.CommandCtx) {
 	snowflake, _ := ctx.Options.Find("channel").SnowflakeValue()
 	channelID := discord.ChannelID(snowflake)
 	if !channelID.IsValid() {

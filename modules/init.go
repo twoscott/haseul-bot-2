@@ -7,7 +7,7 @@ import (
 	"github.com/twoscott/haseul-bot-2/modules/lastfm"
 	"github.com/twoscott/haseul-bot-2/modules/logs"
 	"github.com/twoscott/haseul-bot-2/modules/misc"
-	"github.com/twoscott/haseul-bot-2/modules/notification"
+	"github.com/twoscott/haseul-bot-2/modules/notifications"
 	"github.com/twoscott/haseul-bot-2/modules/server"
 	"github.com/twoscott/haseul-bot-2/modules/twitter"
 	"github.com/twoscott/haseul-bot-2/modules/user"
@@ -23,7 +23,7 @@ func Init(rt *router.Router) {
 	lastfm.Init(rt)
 	logs.Init(rt)
 	misc.Init(rt)
-	notification.Init(rt)
+	notifications.Init(rt)
 	server.Init(rt)
 	twitter.Init(rt)
 	user.Init(rt)
