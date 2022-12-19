@@ -1,7 +1,6 @@
 package twitter
 
 import (
-	"fmt"
 	"log"
 	"net/http"
 	"sync"
@@ -29,7 +28,8 @@ func startTwitterLoop(st *state.State) {
 
 		elapsed := time.Since(start)
 		log.Printf(
-			"Finished checking Twitter feeds, took: %1.2fs\n", elapsed.Seconds(),
+			"Finished checking Twitter feeds, took: %1.2fs\n",
+			elapsed.Seconds(),
 		)
 
 		waitTime := calcWaitTime(elapsed, userCount)
@@ -117,30 +117,6 @@ func checkTweets(st *state.State, user twitterdb.User) {
 	wg.Wait()
 }
 
-func postTweetToFeeds(
-	st *state.State, feeds []twitterdb.Feed, tweet twitter.Tweet) {
-
-	var wg sync.WaitGroup
-	for _, feed := range feeds {
-		wg.Add(1)
-		go func(feed twitterdb.Feed) {
-			defer wg.Done()
-
-			retry := postTweet(st, feed, tweet)
-			if retry {
-				log.Printf(
-					"Failed to post tweet %d, adding to retry backlog.\n",
-					tweet.ID,
-				)
-
-				db.Twitter.AddRetry(tweet.ID)
-			}
-		}(feed)
-	}
-
-	wg.Wait()
-}
-
 func sendFeedPosts(
 	st *state.State, feed twitterdb.Feed, tweets []twitter.Tweet) {
 
@@ -169,11 +145,7 @@ func postTweet(st *state.State, feed twitterdb.Feed, tweet twitter.Tweet) bool {
 		return false
 	}
 
-	url := fmt.Sprintf(
-		"https://twitter.com/%s/status/%s/",
-		tweet.User.ScreenName, tweet.IDStr,
-	)
-
+	url := buildTweetURL(tweet.User.ScreenName, tweet.ID)
 	roleIDs, _ := db.Twitter.GetMentionRoles(feed.ChannelID, feed.TwitterUserID)
 	roles := ""
 	for _, roleID := range roleIDs {
@@ -184,16 +156,15 @@ func postTweet(st *state.State, feed twitterdb.Feed, tweet twitter.Tweet) bool {
 
 	_, err := st.SendMessage(feed.ChannelID, content)
 	if err != nil {
+		log.Println(err)
 		switch {
 		case dctools.ErrUnknownChannel(err),
 			dctools.ErrMissingAccess(err),
 			dctools.ErrLackPermission(err):
 
-			log.Println(err)
 			db.Twitter.RemoveFeedsByChannel(feed.ChannelID)
 			return false
 		default:
-			log.Println(err)
 			return true
 		}
 	}

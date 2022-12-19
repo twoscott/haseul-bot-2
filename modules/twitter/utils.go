@@ -1,10 +1,10 @@
 package twitter
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 	"regexp"
-	"strings"
 
 	"github.com/dghubble/go-twitter/twitter"
 	"github.com/diamondburned/arikawa/v3/api"
@@ -15,26 +15,19 @@ import (
 )
 
 const (
+	twitterURL    = "https://twitter.com"
 	twitterIcon   = "https://abs.twimg.com/icons/apple-touch-icon-192x192.png"
 	twitterColour = 0x1da1f2
 )
 
-var URLRegex = regexp.MustCompile("https://twitter.com/([^/]+)/?.*")
+var URLRegex = regexp.MustCompile(twitterURL + "/([^/]+)/?.*")
 
-func parseUserIfURL(user string) string {
-	if user == "" {
-		return user
-	}
+func buildUserURL(screenName string) string {
+	return fmt.Sprintf("%s/%s/", twitterURL, screenName)
+}
 
-	match := URLRegex.FindStringSubmatch(user)
-	if match == nil {
-		if strings.HasPrefix(user, "@") {
-			user = user[1:]
-		}
-		return user
-	}
-
-	return match[1]
+func buildTweetURL(screenName string, tweetID int64) string {
+	return fmt.Sprintf("%s/%s/status/%d/", twitterURL, screenName, tweetID)
 }
 
 func fetchUser(screenName string) (*twitter.User, router.CmdResponse) {

@@ -97,12 +97,12 @@ func recentsListEmbeds(
 			trackElems[0], dctools.Hyperlink(trackElems[1], track.Url),
 		)
 
-		var line string
+		var timeAgoString string
 		if i == 0 && nowPlaying {
-			line = fmt.Sprintf("1. %s", lineTrack)
+			timeAgoString = dctools.UnixTimestampStyled(
+				time.Now(), dctools.RelativeTime,
+			)
 		} else {
-			var timeAgoString string
-
 			unixTime, err := strconv.ParseInt(track.Date.Uts, 10, 64)
 			if err != nil {
 				log.Println(err)
@@ -113,10 +113,9 @@ func recentsListEmbeds(
 					timestamp, dctools.RelativeTime,
 				)
 			}
-
-			line = fmt.Sprintf("%d. %s %s", i+1, lineTrack, timeAgoString)
 		}
 
+		line := fmt.Sprintf("%d. %s %s", i+1, lineTrack, timeAgoString)
 		trackList = append(trackList, line)
 	}
 

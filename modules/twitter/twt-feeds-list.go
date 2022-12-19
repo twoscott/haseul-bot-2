@@ -69,7 +69,7 @@ func twtFeedListExec(ctx router.CommandCtx) {
 			feedEntry += fmt.Sprintf("(ID#%d)", feed.TwitterUserID)
 		} else {
 			handle := fmt.Sprintf("@%s", screenName)
-			url := fmt.Sprintf("https://twitter.com/%s", screenName)
+			url := buildUserURL(screenName)
 			feedEntry += dctools.Hyperlink(handle, url)
 		}
 

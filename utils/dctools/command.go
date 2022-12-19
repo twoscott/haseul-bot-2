@@ -9,6 +9,10 @@ import (
 
 // CommandMention returns a string to mention a command in a message.
 func CommandMention(id discord.CommandID, names ...string) string {
+	if !id.IsValid() {
+		return "/" + strings.Join(names, " ")
+	}
+
 	if len(names) > 3 {
 		names = names[:3]
 	}

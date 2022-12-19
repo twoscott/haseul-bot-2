@@ -1,6 +1,7 @@
 package twitter
 
 import (
+	"context"
 	"log"
 
 	"github.com/dghubble/go-twitter/twitter"
@@ -9,7 +10,6 @@ import (
 	"github.com/twoscott/haseul-bot-2/database"
 	"github.com/twoscott/haseul-bot-2/router"
 	ptutil "github.com/twoscott/haseul-bot-2/utils/patreonutil"
-	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/clientcredentials"
 )
 
@@ -36,7 +36,7 @@ func Init(rt *router.Router) {
 		TokenURL:     "https://api.twitter.com/oauth2/token",
 	}
 
-	httpClient := httpConfig.Client(oauth2.NoContext)
+	httpClient := httpConfig.Client(context.Background())
 	twt = twitter.NewClient(httpClient)
 
 	rt.AddStartupListener(onStartup)
