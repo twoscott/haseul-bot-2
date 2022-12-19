@@ -8,6 +8,7 @@ import (
 	"github.com/twoscott/haseul-bot-2/modules/logs"
 	"github.com/twoscott/haseul-bot-2/modules/misc"
 	"github.com/twoscott/haseul-bot-2/modules/notifications"
+	"github.com/twoscott/haseul-bot-2/modules/reminders"
 	"github.com/twoscott/haseul-bot-2/modules/server"
 	"github.com/twoscott/haseul-bot-2/modules/twitter"
 	"github.com/twoscott/haseul-bot-2/modules/user"
@@ -24,6 +25,7 @@ func Init(rt *router.Router) {
 	logs.Init(rt)
 	misc.Init(rt)
 	notifications.Init(rt)
+	reminders.Init(rt)
 	server.Init(rt)
 	twitter.Init(rt)
 	user.Init(rt)

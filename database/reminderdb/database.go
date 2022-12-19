@@ -1,14 +1,14 @@
-package commandsdb
+package reminderdb
 
 import "github.com/jmoiron/sqlx"
 
 // DB wraps an sqlx database instance with helper methods for
-// Notification querying.
+// Command querying.
 type DB struct {
 	*sqlx.DB
 }
 
-// New returns a new instance of a Notifications database.
+// New returns a new instance of a Commands database.
 func New(dbConn *sqlx.DB) *DB {
 	db := &DB{dbConn}
 	db.createTables()
@@ -16,5 +16,5 @@ func New(dbConn *sqlx.DB) *DB {
 }
 
 func (db *DB) createTables() {
-	db.MustExec(createCommandsTableQuery)
+	db.MustExec(createRemindersTableQuery)
 }

@@ -21,7 +21,7 @@ const (
 var startTime = time.Now()
 
 // Uptime returns a time period between the time the bot started, and now.
-func Uptime() *util.TimePeriod {
+func Uptime() util.TimePeriod {
 	return util.TimeDiff(startTime, time.Now())
 }
 

@@ -9,6 +9,7 @@ import (
 	"github.com/twoscott/haseul-bot-2/database/invitedb"
 	"github.com/twoscott/haseul-bot-2/database/lastfmdb"
 	"github.com/twoscott/haseul-bot-2/database/notifdb"
+	"github.com/twoscott/haseul-bot-2/database/reminderdb"
 	"github.com/twoscott/haseul-bot-2/database/twitterdb"
 	"github.com/twoscott/haseul-bot-2/database/vlivedb"
 	"github.com/twoscott/haseul-bot-2/database/youtubedb"
@@ -22,6 +23,7 @@ type DB struct {
 	Invites       *invitedb.DB
 	LastFM        *lastfmdb.DB
 	Notifications *notifdb.DB
+	Reminders     *reminderdb.DB
 	Twitter       *twitterdb.DB
 	VLIVE         *vlivedb.DB
 	YouTube       *youtubedb.DB
@@ -43,6 +45,7 @@ func GetInstance() *DB {
 			Invites:       invitedb.New(dbConn),
 			LastFM:        lastfmdb.New(dbConn),
 			Notifications: notifdb.New(dbConn),
+			Reminders:     reminderdb.New(dbConn),
 			Twitter:       twitterdb.New(dbConn),
 			VLIVE:         vlivedb.New(dbConn),
 			YouTube:       youtubedb.New(dbConn),
