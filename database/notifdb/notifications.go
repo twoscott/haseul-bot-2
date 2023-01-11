@@ -81,7 +81,7 @@ const (
 	// - the guild ID is either that of the incoming message's guild, or is
 	//   global
 	// - the guild ID is not muted by the user the notification belongs to
-	// - the channel ID is not mutedb y the user the notification belongs to
+	// - the channel ID is not muted by the user the notification belongs to
 	getAllCheckingNotificationsQuery = `
 		SELECT * FROM Notifications 
 		WHERE (
