@@ -17,6 +17,7 @@ require (
 	golang.org/x/exp v0.0.0-20220518171630-0b5c67f07fdf
 	golang.org/x/net v0.0.0-20220517181318-183a9ca12b87
 	golang.org/x/oauth2 v0.0.0-20220411215720-9780585627b5
+	golang.org/x/text v0.5.0
 )
 
 require (

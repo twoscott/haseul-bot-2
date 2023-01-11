@@ -19,10 +19,12 @@ import (
 /////
 //	TODO:
 //      unit testing for utils etc.
-//      use icon pack https://www.flaticon.com/authors/basic-gradient/circular
+//      use icon pack?
 //      use FollowUpInteraction
 //      use patreon-go and refactor patreonutil
 //      implement option checking; check if option was set to allow for defaults
+//      add rate limiting
+//
 //      STOP GUILDS FROM BEING AUTO WHITELISTED IN PRODUCTION ENV
 /////
 

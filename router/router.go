@@ -19,6 +19,8 @@ type (
 		commandHandlers        CommandHandlers
 		modalHandlers          ModalHandlers
 		buttonPagers           ButtonPagerMap
+		buttonListeners        []ButtonListener
+		selectListeners        []SelectListener
 		guildJoinListeners     []GuildJoinListener
 		memberJoinListeners    []MemberJoinListener
 		memberLeaveListeners   []MemberLeaveListener
@@ -27,9 +29,19 @@ type (
 		startupListeners       []ReadyListener
 	}
 
-	CommandHandlers       map[string]*CommandHandler
-	ModalHandlers         map[discord.ComponentID]*CommandHandler
-	ButtonPagerMap        map[discord.InteractionID]*ButtonPager
+	CommandHandlers map[string]*CommandHandler
+	ModalHandlers   map[discord.ComponentID]*CommandHandler
+	ButtonPagerMap  map[discord.InteractionID]*ButtonPager
+	SelectListener  func(
+		*Router,
+		*discord.InteractionEvent,
+		*discord.SelectInteraction,
+	)
+	ButtonListener func(
+		*Router,
+		*discord.InteractionEvent,
+		*discord.ButtonInteraction,
+	)
 	MessageCreateListener func(*Router, discord.Message, *discord.Member)
 	GuildJoinListener     func(*Router, *state.GuildJoinEvent)
 	MemberJoinListener    func(*Router, discord.Member, discord.GuildID)
@@ -156,45 +168,6 @@ func (rt *Router) HandleModalSubmit(
 	}
 
 	handler.HandleModalSubmit(ctx)
-}
-
-// AddButtonPager adds a button pager to the given message with the given pages.
-func (rt *Router) AddButtonPager(
-	interaction *discord.InteractionEvent, pages []MessagePage) error {
-
-	if !interaction.ID.IsValid() {
-		return errors.New(
-			"no interaction ID was provided to add a button pager to",
-		)
-	}
-	if len(pages) < 2 {
-		return nil
-	}
-
-	if _, ok := rt.buttonPagers[interaction.ID]; ok {
-		return errors.New(
-			"no more than one button pager can be assigned to a single message",
-		)
-	}
-
-	buttonPager := newButtonPager(interaction, pages)
-	rt.buttonPagers[interaction.ID] = buttonPager
-
-	go buttonPager.deleteAfterTimeout(rt)
-
-	return nil
-}
-
-// HandleButton routes a button press to the relevant button pager.
-func (rt *Router) HandleButtonPress(
-	button *discord.InteractionEvent, data *discord.ButtonInteraction) {
-
-	buttonPager, ok := rt.buttonPagers[button.Message.Interaction.ID]
-	if !ok {
-		return
-	}
-
-	buttonPager.handleButtonPress(rt, button, data)
 }
 
 // GetRawCreateCommandData converts all commands stored in the router to
@@ -365,5 +338,71 @@ func (rt *Router) AddStartupListener(readyListener ReadyListener) {
 func (rt *Router) HandleStartupEvent(readyEvent *gateway.ReadyEvent) {
 	for _, listener := range rt.startupListeners {
 		go listener(rt, readyEvent)
+	}
+}
+
+// AddButtonPager adds a button pager to the given message with the given pages.
+func (rt *Router) AddButtonPager(
+	interaction *discord.InteractionEvent, pages []MessagePage) error {
+
+	if !interaction.ID.IsValid() {
+		return errors.New(
+			"no interaction ID was provided to add a button pager to",
+		)
+	}
+	if len(pages) < 2 {
+		return nil
+	}
+
+	if _, ok := rt.buttonPagers[interaction.ID]; ok {
+		return errors.New(
+			"no more than one button pager can be assigned to a single message",
+		)
+	}
+
+	buttonPager := newButtonPager(interaction, pages)
+	rt.buttonPagers[interaction.ID] = buttonPager
+
+	go buttonPager.deleteAfterTimeout(rt)
+
+	return nil
+}
+
+// AddButtonListener adds a function to receive all button press interactions.
+func (rt *Router) AddButtonListener(buttonListener ButtonListener) {
+	rt.buttonListeners = append(rt.buttonListeners, buttonListener)
+}
+
+// HandleButton routes a button press to the relevant button pager.
+func (rt *Router) HandleButtonPress(
+	interaction *discord.InteractionEvent, data *discord.ButtonInteraction) {
+
+	for _, listener := range rt.buttonListeners {
+		go listener(rt, interaction, data)
+	}
+
+	if interaction.Message.Interaction == nil {
+		return
+	}
+
+	buttonPager, ok := rt.buttonPagers[interaction.Message.Interaction.ID]
+	if !ok {
+		return
+	}
+
+	buttonPager.handleButtonPress(rt, interaction, data)
+}
+
+// AddStartupListener adds a function to receive all select interactions.
+func (rt *Router) AddSelectListener(selectListener SelectListener) {
+	rt.selectListeners = append(rt.selectListeners, selectListener)
+}
+
+// HandleStartupEvent routes a select interaction to all listener functions
+// registered to the router.
+func (rt *Router) HandleSelect(
+	interaction *discord.InteractionEvent, data *discord.SelectInteraction) {
+	for _, listener := range rt.selectListeners {
+		go listener(rt, interaction, data)
 	}
 }
