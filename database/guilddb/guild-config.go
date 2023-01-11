@@ -21,14 +21,19 @@ const (
 		CREATE TABLE IF NOT EXISTS GuildConfigs(
 			guildID              INT8          NOT NULL,
 			autoroleID           INT8          DEFAULT 0 # 0,
+			muteroleID           INT8          DEFAULT 0 # 0,
+			
 			memberLogsChannelID  INT8          DEFAULT 0 # 0,
 			messageLogsChannelID INT8          DEFAULT 0 # 0,
-			muteroleID           INT8          DEFAULT 0 # 0,
+
 			rolesChannelID       INT8          DEFAULT 0 # 0,
+			rolesMessage         VARCHAR(1024) DEFAULT '',
+
 			welcomeChannelID     INT8          DEFAULT 0 # 0,
 			welcomeTitle         VARCHAR(32)   DEFAULT '',
 			welcomeMessage       VARCHAR(1024) DEFAULT '',
 			welcomeColour        INT4		   DEFAULT NULL,
+			
 			PRIMARY KEY(guildID)
 		)`
 
