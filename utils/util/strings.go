@@ -7,6 +7,8 @@ import (
 
 	"github.com/dustin/go-humanize"
 	"golang.org/x/exp/slices"
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 )
 
 const vowelsRegexString = `[b-df-hj-np-tv-z]`
@@ -162,8 +164,11 @@ func TrimArgs(content string, limit int) string {
 // SearchSort takes a slice of string results and a query to search for, and
 // then filters and sorts them accordingly.
 func SearchSort(results []string, query string) []string {
+	query = strings.ToLower(query)
+
 	matches := make([]string, 0, len(results))
 	for _, r := range results {
+		r = strings.ToLower(r)
 		if strings.Contains(r, query) {
 			matches = append(matches, r)
 		}
@@ -179,4 +184,11 @@ func SearchSort(results []string, query string) []string {
 	})
 
 	return matches
+}
+
+// TitleCase returns the title case of content, meaning the first letter of each
+// word is capitalised.
+func TitleCase(content string) string {
+	c := cases.Title(language.BritishEnglish, cases.NoLower)
+	return c.String(content)
 }
