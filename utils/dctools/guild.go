@@ -33,6 +33,16 @@ func MemberNumber(
 	return memberNo
 }
 
+// IsOwner returns whether the user ID is the owner of the guild.
+func IsOwner(guild discord.Guild, userID discord.UserID) bool {
+	return guild.OwnerID == userID
+}
+
+// IsEveryoneRole returns whether the role is the @everyone role for the server.
+func IsEveryoneRole(guildID discord.GuildID, roleID discord.RoleID) bool {
+	return discord.Snowflake(guildID) == discord.Snowflake(roleID)
+}
+
 // GuildStatuses returns the approximate number of online and offline
 // members in a guild.
 func GuildStatuses(guild *discord.Guild) (uint64, uint64) {

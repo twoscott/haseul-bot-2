@@ -1,53 +1,34 @@
 package roles
 
 import (
-	"database/sql"
-	"errors"
 	"fmt"
 	"log"
 
 	"github.com/diamondburned/arikawa/v3/discord"
-	"github.com/diamondburned/arikawa/v3/utils/json/option"
 	"github.com/twoscott/haseul-bot-2/router"
 	"github.com/twoscott/haseul-bot-2/utils/dctools"
 )
 
-var rolePickerRolesAdd = &router.SubCommand{
+var joinRolesAdd = &router.SubCommand{
 	Name:        "add",
-	Description: "Add a role for users to be able to select",
+	Description: "Add a role to be assigned to new members who join the server",
 	Handler: &router.CommandHandler{
-		Executor:      rolePickerRolesAddExec,
-		Autocompleter: tierNameCompleter,
+		Executor: joinRolesAddExec,
 	},
 	Options: []discord.CommandOptionValue{
-		&discord.StringOption{
-			OptionName:   "tier",
-			Description:  "The tier to add the role to",
-			MaxLength:    option.NewInt(32),
-			Required:     true,
-			Autocomplete: true,
-		},
 		&discord.RoleOption{
 			OptionName:  "role",
-			Description: "The role to add to the tier",
+			Description: "The role to be added to new members",
 			Required:    true,
-		},
-		&discord.StringOption{
-			OptionName:  "description",
-			Description: "The description to show for the role option",
-			MaxLength:   option.NewInt(100),
 		},
 	},
 }
 
-func rolePickerRolesAddExec(ctx router.CommandCtx) {
-	tierName := ctx.Options.Find("tier").String()
-	description := ctx.Options.Find("description").String()
-
-	roleVal, _ := ctx.Options.Find("role").SnowflakeValue()
-	roleID := discord.RoleID(roleVal)
+func joinRolesAddExec(ctx router.CommandCtx) {
+	snowflake, _ := ctx.Options.Find("role").SnowflakeValue()
+	roleID := discord.RoleID(snowflake)
 	if !roleID.IsValid() {
-		ctx.RespondWarning("Invalid role provided.")
+		ctx.RespondWarning("Malformed role ID provided.")
 		return
 	}
 
@@ -64,17 +45,6 @@ func rolePickerRolesAddExec(ctx router.CommandCtx) {
 
 	if role.Managed {
 		ctx.RespondWarning("I cannot assign managed bot roles to users!")
-		return
-	}
-
-	tier, err := db.Roles.GetTierByName(ctx.Interaction.GuildID, tierName)
-	if errors.Is(err, sql.ErrNoRows) {
-		ctx.RespondWarning("This role tier does not exist.")
-		return
-	}
-	if err != nil {
-		log.Println(err)
-		ctx.RespondError("Error occurred while fetching role tiers.")
 		return
 	}
 
@@ -125,24 +95,23 @@ func rolePickerRolesAddExec(ctx router.CommandCtx) {
 		return
 	}
 
-	ok, err := db.Roles.AddRole(roleID, tier.ID, description)
+	ok, err := db.Roles.AddJoinRole(ctx.Interaction.GuildID, roleID)
 	if err != nil {
 		log.Println(err)
-		ctx.RespondError("Error occurred while adding the new role.")
+		ctx.RespondError("Error occurred while adding join role.")
 		return
 	}
 	if !ok {
-		ctx.RespondWarning(fmt.Sprintf(
-			"The role %s is already added to '%s'.",
-			roleID.Mention(), tier.Title(),
-		))
+		ctx.RespondWarning(
+			"This role is already set to be assigned to new members",
+		)
 		return
 	}
 
 	ctx.RespondSuccess(
 		fmt.Sprintf(
-			"The role %s has been added to the '%s' tier.",
-			roleID.Mention(), tier.Title(),
+			"%s will now be assigned to new members who join the server.",
+			roleID.Mention(),
 		),
 	)
 }

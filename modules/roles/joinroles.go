@@ -5,9 +5,9 @@ import (
 	"github.com/twoscott/haseul-bot-2/router"
 )
 
-var rolePicker = &router.Command{
-	Name:        "role-picker",
-	Description: "Commands pertaining to the role picker",
+var joinRoles = &router.Command{
+	Name:        "join-roles",
+	Description: "Commands pertaining to roles assigned to new members",
 	RequiredPermissions: discord.NewPermissions(
 		discord.PermissionManageRoles,
 	),

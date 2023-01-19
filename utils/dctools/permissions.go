@@ -8,7 +8,7 @@ func HasAnyPerm(
 	targetPermissions discord.Permissions,
 	requiredPermissions discord.Permissions) bool {
 
-	return targetPermissions&requiredPermissions > 0x0
+	return (targetPermissions & requiredPermissions) > 0x0
 }
 
 // HasAnyPermOrAdmin returns whether the target permissions includes any one of

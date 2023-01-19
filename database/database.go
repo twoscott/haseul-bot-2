@@ -25,7 +25,7 @@ type DB struct {
 	LastFM        *lastfmdb.DB
 	Notifications *notifdb.DB
 	Reminders     *reminderdb.DB
-	RolePicker    *rolesdb.DB
+	Roles         *rolesdb.DB
 	Twitter       *twitterdb.DB
 	VLIVE         *vlivedb.DB
 	YouTube       *youtubedb.DB
@@ -48,7 +48,7 @@ func GetInstance() *DB {
 			LastFM:        lastfmdb.New(dbConn),
 			Notifications: notifdb.New(dbConn),
 			Reminders:     reminderdb.New(dbConn),
-			RolePicker:    rolesdb.New(dbConn),
+			Roles:         rolesdb.New(dbConn),
 			Twitter:       twitterdb.New(dbConn),
 			VLIVE:         vlivedb.New(dbConn),
 			YouTube:       youtubedb.New(dbConn),

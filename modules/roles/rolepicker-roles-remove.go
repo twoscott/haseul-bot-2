@@ -44,7 +44,7 @@ func rolePickerRolesRemoveExec(ctx router.CommandCtx) {
 		return
 	}
 
-	tier, err := db.RolePicker.GetTierByName(ctx.Interaction.GuildID, tierName)
+	tier, err := db.Roles.GetTierByName(ctx.Interaction.GuildID, tierName)
 	if errors.Is(err, sql.ErrNoRows) {
 		ctx.RespondWarning(
 			fmt.Sprintf(
@@ -59,7 +59,7 @@ func rolePickerRolesRemoveExec(ctx router.CommandCtx) {
 		return
 	}
 
-	removed, err := db.RolePicker.RemoveRole(roleID, tier.ID)
+	removed, err := db.Roles.RemoveRole(roleID, tier.ID)
 	if err != nil {
 		log.Println(err)
 		ctx.RespondError("Error occurred while removing role.")

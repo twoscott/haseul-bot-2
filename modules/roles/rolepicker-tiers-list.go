@@ -19,7 +19,7 @@ var rolePickerTiersList = &router.SubCommand{
 }
 
 func rolePickerTiersListExec(ctx router.CommandCtx) {
-	tiers, err := db.RolePicker.GetAllTiersByGuild(ctx.Interaction.GuildID)
+	tiers, err := db.Roles.GetAllTiersByGuild(ctx.Interaction.GuildID)
 	if err != nil {
 		log.Println(err)
 		ctx.RespondError("Error occurred while fetching role tiers.")

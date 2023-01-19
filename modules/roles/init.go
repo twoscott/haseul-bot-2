@@ -21,6 +21,7 @@ func Init(rt *router.Router) {
 
 	rt.AddSelectListener(handleRoleSelect)
 	rt.AddButtonListener(handleRoleButton)
+	rt.AddMemberJoinHandler(handleNewMember)
 
 	rt.AddCommand(rolePicker)
 	rolePicker.AddSubCommandGroup(rolePickerRoles)
@@ -33,4 +34,10 @@ func Init(rt *router.Router) {
 	rolePickerTiers.AddSubCommand(rolePickerTiersRemove)
 	rolePickerTiers.AddSubCommand(rolePickerTiersSend)
 	rolePickerTiers.AddSubCommand(rolePickerTiersList)
+
+	rt.AddCommand(joinRoles)
+	joinRoles.AddSubCommand(joinRolesAdd)
+	joinRoles.AddSubCommand(joinRolesRemove)
+	joinRoles.AddSubCommand(joinRolesClear)
+	joinRoles.AddSubCommand(joinRolesList)
 }

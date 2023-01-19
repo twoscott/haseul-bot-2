@@ -37,7 +37,7 @@ func rolePickerTiersAddExec(ctx router.CommandCtx) {
 	tierName = strings.ToLower(tierName)
 	description := ctx.Options.Find("description").String()
 
-	ok, err := db.RolePicker.AddTier(ctx.Interaction.GuildID, tierName, description)
+	ok, err := db.Roles.AddTier(ctx.Interaction.GuildID, tierName, description)
 	if err != nil {
 		log.Println(err)
 		ctx.RespondError("Error occurred adding role tier.")

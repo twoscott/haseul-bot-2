@@ -31,7 +31,7 @@ var rolePickerTiersRemove = &router.SubCommand{
 func rolePickerTiersRemoveExec(ctx router.CommandCtx) {
 	tierName := ctx.Options.Find("tier").String()
 
-	removed, err := db.RolePicker.RemoveTier(ctx.Interaction.GuildID, tierName)
+	removed, err := db.Roles.RemoveTier(ctx.Interaction.GuildID, tierName)
 	if err != nil {
 		log.Println(err)
 		ctx.RespondError("Error occurred while removing tier.")

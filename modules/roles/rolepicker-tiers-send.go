@@ -44,7 +44,7 @@ var rolePickerTiersSend = &router.SubCommand{
 func rolePickerTiersSendExec(ctx router.CommandCtx) {
 	tierName := ctx.Options.Find("tier").String()
 
-	tier, err := db.RolePicker.GetTierByName(ctx.Interaction.GuildID, tierName)
+	tier, err := db.Roles.GetTierByName(ctx.Interaction.GuildID, tierName)
 	if errors.Is(err, sql.ErrNoRows) {
 		ctx.RespondError(
 			fmt.Sprintf("The role tier '%s' does not exist.", tierName),
@@ -100,7 +100,7 @@ func rolePickerTiersSendExec(ctx router.CommandCtx) {
 		return
 	}
 
-	dbRoles, err := db.RolePicker.GetAllRolesByTier(tier.ID)
+	dbRoles, err := db.Roles.GetAllRolesByTier(tier.ID)
 	if err != nil {
 		log.Println(err)
 		ctx.RespondError("Error occurred while fetching roles.")

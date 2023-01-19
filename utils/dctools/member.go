@@ -40,32 +40,40 @@ func MemberCanModifyRole(
 
 	g, err := st.Guild(guildID)
 	if err != nil {
-		return
+		return false, err
+	}
+
+	if IsOwner(*g, userID) {
+		return true, nil
 	}
 
 	ch, err := st.Channel(channelID)
 	if err != nil {
-		return
+		return false, err
 	}
 
 	m, err := st.Member(guildID, userID)
 	if err != nil {
-		return
+		return false, err
 	}
 
 	r, err := st.Role(guildID, roleID)
 	if err != nil {
-		return
+		return false, err
 	}
 
 	p := discord.CalcOverwrites(*g, *ch, *m)
+	if p.Has(discord.PermissionAdministrator) {
+		return true, nil
+	}
+
 	if !p.Has(discord.PermissionManageRoles) {
-		return
+		return false, nil
 	}
 
 	hr, err := MemberHighestRole(st, guildID, m.User.ID)
 	if err != nil {
-		return
+		return false, err
 	}
 
 	if r.Position > hr.Position {

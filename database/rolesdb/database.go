@@ -16,6 +16,7 @@ func New(dbConn *sqlx.DB) *DB {
 }
 
 func (db *DB) createTables() {
+	db.MustExec(createJoinRolesTableQuery)
 	db.MustExec(createRoleTiersTableQuery)
 	db.MustExec(createRolePickerTableQuery)
 }
