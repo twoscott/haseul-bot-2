@@ -2,7 +2,6 @@ package database
 
 import (
 	"fmt"
-	"log"
 
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
@@ -25,10 +24,6 @@ func mustGetConnection() *sqlx.DB {
 		cfg.PostgreSQL.Username,
 		cfg.PostgreSQL.Password,
 	)
-	dbConn, err := sqlx.Connect("postgres", connStr)
-	if err != nil {
-		log.Fatalf("Failed to connect to database: %s\n", err)
-	}
 
-	return dbConn
+	return sqlx.MustConnect("postgres", connStr)
 }
