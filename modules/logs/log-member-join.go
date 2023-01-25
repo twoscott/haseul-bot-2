@@ -83,7 +83,7 @@ func logMemberJoin(
 	guild discord.Guild,
 	welcomeChan <-chan *discord.Message) {
 
-	logChannelID, err := db.Guilds.MemberLogsChannel(guild.ID)
+	logChannelID, err := db.Guilds.GetMemberLogsChannel(guild.ID)
 	if err != nil {
 		log.Println(err)
 		return

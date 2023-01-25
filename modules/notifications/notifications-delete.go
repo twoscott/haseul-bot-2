@@ -31,8 +31,8 @@ var notificationsDeleteCommand = &router.SubCommand{
 			OptionName:  "scope",
 			Description: "Where to delete the keyword from",
 			Choices: []discord.IntegerChoice{
-				{Name: "Server", Value: int(serverScope)},
-				{Name: "Global", Value: int(globalScope)},
+				{Name: "Server", Value: serverScope},
+				{Name: "Global", Value: globalScope},
 			},
 		},
 	},

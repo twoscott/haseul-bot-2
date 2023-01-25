@@ -8,7 +8,7 @@ type DB struct {
 	*sqlx.DB
 }
 
-// New returns a new instance of a Commands database.
+// New returns a new instance of a Reminders database.
 func New(dbConn *sqlx.DB) *DB {
 	db := &DB{dbConn}
 	db.createTables()

@@ -101,6 +101,8 @@ func handleRoleButton(
 		actionType = addRoleAction
 	case buttonIDRemoveSelectedRoles:
 		actionType = removeRoleAction
+	default:
+		return
 	}
 
 	targetRoleIDs := selectionCache.GetSelectedRoleIDs(interaction)

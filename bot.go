@@ -24,6 +24,10 @@ import (
 //      use patreon-go and refactor patreonutil
 //      implement option checking; check if option was set to allow for defaults
 //      add rate limiting
+//      make Last.fm commands anonymise Last.fm username
+//		add deprecation warnings for old text-based commands
+//		ensure all long commands are deferred
+//      add username caching
 //
 //      STOP GUILDS FROM BEING AUTO WHITELISTED IN PRODUCTION ENV
 /////

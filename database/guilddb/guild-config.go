@@ -7,6 +7,7 @@ import (
 // Config represents a guild config database entry.
 type Config struct {
 	GuildID              discord.GuildID   `db:"guildid"`
+	LegacyPrefix         rune              `db:"legacyprefix"`
 	AutoroleID           discord.RoleID    `db:"autoroleid"`
 	MemberLogsChannelID  discord.ChannelID `db:"memberlogschannelid"`
 	MessageLogsChannelID discord.ChannelID `db:"messagelogschannelid"`
@@ -20,6 +21,9 @@ const (
 	createGuildConfigsTableQuery = `
 		CREATE TABLE IF NOT EXISTS GuildConfigs(
 			guildID              INT8          NOT NULL,
+
+			legacyPrefix         CHAR(1)       DEFAULT '.',
+
 			autoroleID           INT8          DEFAULT 0 # 0,
 			muteroleID           INT8          DEFAULT 0 # 0,
 			
@@ -41,8 +45,8 @@ const (
 	getConfigQuery  = `SELECT * FROM GuildConfigs WHERE guildID = $1`
 	addConfigQuery  = `
 		INSERT INTO GuildConfigs(guildID) VALUES($1) ON CONFLICT DO NOTHING`
-	getPrefixQuery = `
-		SELECT prefix FROM GuildConfigs WHERE guildID = $1`
+	getLegacyPrefixQuery = `
+		SELECT legacyPrefix FROM GuildConfigs WHERE guildID = $1`
 	setMemberLogsChannelQuery = `
 		UPDATE GuildConfigs SET memberLogsChannelID = $1
 		WHERE guildID = $2`
@@ -78,6 +82,14 @@ func (db *DB) Add(guildID discord.GuildID) (bool, error) {
 	return added > 1, err
 }
 
+// GetLegacyPrefix returns the legacy prefix for the guild - the prefix uses
+// for old commands.
+func (db *DB) GetLegacyPrefix(
+	guildID discord.GuildID) (prefix rune, err error) {
+
+	return prefix, db.Get(&prefix, getLegacyPrefixQuery, guildID)
+}
+
 // SetMemberLogsChannel updates the guild config of the given guild ID and sets
 // the member logs channel ID to the provided channel ID.
 func (db *DB) SetMemberLogsChannel(
@@ -104,9 +116,9 @@ func (db *DB) DisableMemberLogs(guildID discord.GuildID) (bool, error) {
 	return updated > 0, err
 }
 
-// MemberLogsChannel returns the greeting logs channelID of the guild config
+// GetMemberLogsChannel returns the greeting logs channelID of the guild config
 // corresponding to the provided guild ID.
-func (db *DB) MemberLogsChannel(
+func (db *DB) GetMemberLogsChannel(
 	guildID discord.GuildID) (discord.ChannelID, error) {
 
 	var id discord.ChannelID

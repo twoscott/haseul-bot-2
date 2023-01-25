@@ -19,8 +19,8 @@ var notificationsClearCommand = &router.SubCommand{
 			OptionName:  "scope",
 			Description: "Where to clear keyword notifications",
 			Choices: []discord.IntegerChoice{
-				{Name: "Server", Value: int(serverScope)},
-				{Name: "Global", Value: int(globalScope)},
+				{Name: "Server", Value: serverScope},
+				{Name: "Global", Value: globalScope},
 			},
 		},
 	},

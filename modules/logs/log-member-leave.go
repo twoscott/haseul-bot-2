@@ -13,7 +13,7 @@ import (
 func logMemberLeave(
 	rt *router.Router, user discord.User, guildID discord.GuildID) {
 
-	logChannelID, err := db.Guilds.MemberLogsChannel(guildID)
+	logChannelID, err := db.Guilds.GetMemberLogsChannel(guildID)
 	if err != nil {
 		log.Println(err)
 		return

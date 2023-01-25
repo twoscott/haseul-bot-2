@@ -32,8 +32,8 @@ var notificationsAddCommand = &router.SubCommand{
 			OptionName:  "scope",
 			Description: "Where to be notified for the keyword",
 			Choices: []discord.IntegerChoice{
-				{Name: "Server", Value: int(serverScope)},
-				{Name: "Global", Value: int(globalScope)},
+				{Name: "Server", Value: serverScope},
+				{Name: "Global", Value: globalScope},
 			},
 		},
 		&discord.IntegerOption{

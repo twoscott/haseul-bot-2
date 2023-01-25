@@ -5,7 +5,7 @@ import (
 )
 
 const (
-	serverScope int64 = iota
+	serverScope = iota
 	globalScope
 )
 

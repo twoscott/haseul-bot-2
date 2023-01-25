@@ -17,19 +17,19 @@ type Reminder struct {
 const (
 	createRemindersTableQuery = `
 		CREATE TABLE IF NOT EXISTS Reminders(
-			ID      SERIAL,
+			id      SERIAL,
 			userID  INT8          NOT NULL,
 			time    TIMESTAMP     NOT NULL,
 			content VARCHAR(2048) NOT NULL,
 			created TIMESTAMPTZ   NOT NULL DEFAULT now(),
-			PRIMARY KEY(ID)
+			PRIMARY KEY(id)
 		)`
 	addReminderQuery = `
 		INSERT INTO Reminders (userID, time, content) 
 		VALUES($1, $2, $3)
-		RETURNING ID`
+		RETURNING id`
 	deleteReminderQuery = `
-		DELETE FROM Reminders WHERE userID = $1 AND ID = $2`
+		DELETE FROM Reminders WHERE userID = $1 AND id = $2`
 	clearRemindersQuery   = `DELETE FROM Reminders WHERE userID = $1`
 	getAllRemindersByUser = `SELECT * FROM Reminders WHERE userID = $1`
 	getOverdueReminders   = `SELECT * FROM Reminders WHERE time <= now()`
