@@ -81,7 +81,10 @@ const (
 		ORDER BY xp DESC 
 		LIMIT $1`
 	getEntriesSizeQuery = `
-		SELECT COUNT(*) FROM UserXP`
+		SELECT COUNT(userID) FROM UserXP 
+		WHERE guildID = $1`
+	getGlobalEntriesSizeQuery = `
+		SELECT COUNT(DISTINCT userID) FROM UserXP`
 )
 
 // AddUserXP XP for a user in a guild.
@@ -119,8 +122,14 @@ func (db *DB) GetTopGlobalUsers(limit int64) (users []UserXP, err error) {
 	return users, db.Select(&users, getTopGlobalUsersQuery, limit)
 }
 
-// GetEntriesSize returns the number of entries in the table.
-func (db *DB) GetEntriesSize() (size int64, err error) {
+// GetEntriesSize returns the number of entries in a guild.
+func (db *DB) GetEntriesSize(guildID discord.GuildID) (size int64, err error) {
 
-	return size, db.Get(&size, getEntriesSizeQuery)
+	return size, db.Get(&size, getEntriesSizeQuery, guildID)
+}
+
+// GetEntriesSize returns the number of entries in the table.
+func (db *DB) GetGlobalEntriesSize() (size int64, err error) {
+
+	return size, db.Get(&size, getGlobalEntriesSizeQuery)
 }

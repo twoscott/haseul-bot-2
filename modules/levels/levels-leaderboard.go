@@ -50,6 +50,7 @@ func levelsLeaderboardExec(ctx router.CommandCtx) {
 		usersXP  []levelsdb.UserXP
 		err      error
 		listName string
+		entries  int64
 	)
 	switch scope {
 	case serverScope:
@@ -66,10 +67,12 @@ func levelsLeaderboardExec(ctx router.CommandCtx) {
 		}
 
 		listName = guild.Name + " "
+		entries, _ = db.Levels.GetEntriesSize(guild.ID)
 
 	case globalScope:
 		usersXP, err = db.Levels.GetTopGlobalUsers(limit)
 		listName = "Global" + " "
+		entries, _ = db.Levels.GetGlobalEntriesSize()
 	}
 	if err != nil {
 		log.Println(err)
@@ -98,7 +101,6 @@ func levelsLeaderboardExec(ctx router.CommandCtx) {
 		userList = append(userList, row)
 	}
 
-	entries, _ := db.Levels.GetEntriesSize()
 	descriptionPages := util.PagedLines(userList, 2048, 25)
 	footer := util.PluraliseWithCount("Total Entry", entries)
 
