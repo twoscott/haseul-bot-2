@@ -1,4 +1,4 @@
-package levels
+package user
 
 import (
 	"github.com/twoscott/haseul-bot-2/router"
