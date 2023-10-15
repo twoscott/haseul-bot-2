@@ -20,7 +20,7 @@ services:
     networks:
       - haseul_bot
   postgres:
-    image: postgres:15.1
+    image: postgres:15.4
     container_name: postgres
     command: postgres -c shared_buffers=512MB
     restart: unless-stopped
@@ -28,11 +28,11 @@ services:
     env_file:
       - .env
     volumes:
-      - pg_data:/var/lib/postgresql/data:r,w
+      - pg_data:/var/lib/postgresql/data:rw
     networks:
       - haseul_bot
   sushii-image-server:
-    image: sushii-image-server:latest
+    image: sushii-image-server:5.2.3
     container_name: sushii-image-server
     build:
       context: .

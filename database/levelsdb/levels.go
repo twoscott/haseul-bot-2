@@ -124,12 +124,10 @@ func (db *DB) GetTopGlobalUsers(limit int64) (users []UserXP, err error) {
 
 // GetEntriesSize returns the number of entries in a guild.
 func (db *DB) GetEntriesSize(guildID discord.GuildID) (size int64, err error) {
-
 	return size, db.Get(&size, getEntriesSizeQuery, guildID)
 }
 
 // GetEntriesSize returns the number of entries in the table.
 func (db *DB) GetGlobalEntriesSize() (size int64, err error) {
-
 	return size, db.Get(&size, getGlobalEntriesSizeQuery)
 }

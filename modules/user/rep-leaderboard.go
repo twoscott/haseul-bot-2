@@ -7,18 +7,18 @@ import (
 	"github.com/diamondburned/arikawa/v3/discord"
 	"github.com/diamondburned/arikawa/v3/utils/json/option"
 	"github.com/dustin/go-humanize"
-	"github.com/twoscott/haseul-bot-2/database/levelsdb"
+	"github.com/twoscott/haseul-bot-2/database/repdb"
 	"github.com/twoscott/haseul-bot-2/router"
 	"github.com/twoscott/haseul-bot-2/utils/dctools"
 	"github.com/twoscott/haseul-bot-2/utils/util"
+	"golang.org/x/exp/slices"
 )
 
-var levelsLeaderboardCommand = &router.SubCommand{
-	Name: "leaderboard",
-	Description: "Lists the users with the highest levels in a " +
-		"server or globally",
+var repLeaderboardCommand = &router.SubCommand{
+	Name:        "leaderboard",
+	Description: "Displays a list of users with the highest rep score",
 	Handler: &router.CommandHandler{
-		Executor: levelsLeaderboardExec,
+		Executor: repLeaderboardExec,
 		Defer:    true,
 	},
 	Options: []discord.CommandOptionValue{
@@ -39,7 +39,7 @@ var levelsLeaderboardCommand = &router.SubCommand{
 	},
 }
 
-func levelsLeaderboardExec(ctx router.CommandCtx) {
+func repLeaderboardExec(ctx router.CommandCtx) {
 	scope, _ := ctx.Options.Find("scope").IntValue()
 	limit, _ := ctx.Options.Find("users").IntValue()
 	if limit == 0 {
@@ -47,31 +47,41 @@ func levelsLeaderboardExec(ctx router.CommandCtx) {
 	}
 
 	var (
-		usersXP  []levelsdb.UserXP
+		userReps []repdb.RepUser
 		err      error
 		listName string
-		entries  int64
 	)
 	switch scope {
 	case serverScope:
-		var gUsers []levelsdb.GuildUserXP
-		gUsers, err = db.Levels.GetTopUsers(ctx.Interaction.GuildID, limit)
-		for _, gu := range gUsers {
-			usersXP = append(usersXP, gu.UserXP)
-		}
-
 		guild, err := ctx.State.Guild(ctx.Interaction.GuildID)
 		if err != nil {
 			break
 		}
 
-		listName = guild.Name + " "
-		entries, _ = db.Levels.GetEntriesSize(guild.ID)
+		members, err := ctx.State.Members(guild.ID)
+		if err != nil {
+			break
+		}
 
+		allReps, err := db.Reps.GetAllUsers()
+		if err != nil {
+			break
+		}
+
+		for _, r := range allReps {
+			match := slices.ContainsFunc(members, func(m discord.Member) bool {
+				return r.UserID == m.User.ID
+			})
+
+			if match {
+				userReps = append(userReps, r)
+			}
+		}
+
+		listName = guild.Name + " "
 	case globalScope:
-		usersXP, err = db.Levels.GetTopGlobalUsers(limit)
 		listName = "Global" + " "
-		entries, _ = db.Levels.GetGlobalEntriesSize()
+		userReps, err = db.Reps.GetTopUsers(limit)
 	}
 	if err != nil {
 		log.Println(err)
@@ -79,29 +89,29 @@ func levelsLeaderboardExec(ctx router.CommandCtx) {
 		return
 	}
 
-	userList := make([]string, 0, len(usersXP))
-	for i, uxp := range usersXP {
+	userList := make([]string, 0, len(userReps))
+	for i, u := range userReps {
 		var username string
-		user, err := ctx.State.User(uxp.UserID)
+		user, err := ctx.State.User(u.UserID)
 		if err != nil {
 			log.Println(err)
-			username = uxp.UserID.Mention()
+			username = u.UserID.Mention()
 		} else {
 			username = user.Username
 		}
 
 		row := fmt.Sprintf(
-			"%d. %s (Lvl %s) - %s XP",
+			"%d. %s (%s rep)",
 			i+1,
 			username,
-			humanize.Comma(int64(uxp.Level())),
-			humanize.Comma(uxp.XP),
+			humanize.Comma(int64(u.Rep)),
 		)
 		userList = append(userList, row)
 	}
 
+	totalReps, _ := db.Reps.GetTotalReps()
 	descriptionPages := util.PagedLines(userList, 2048, 25)
-	footer := util.PluraliseWithCount("Total Entry", entries)
+	footer := util.PluraliseWithCount("Total Rep", int64(totalReps))
 
 	pages := make([]router.MessagePage, len(descriptionPages))
 	for i, description := range descriptionPages {
@@ -109,7 +119,7 @@ func levelsLeaderboardExec(ctx router.CommandCtx) {
 		pages[i] = router.MessagePage{
 			Embeds: []discord.Embed{
 				{
-					Title:       listName + "Leaderboard",
+					Title:       listName + "Rep Leaderboard",
 					Description: description,
 					Color:       dctools.EmbedBackColour,
 					Footer: &discord.EmbedFooter{

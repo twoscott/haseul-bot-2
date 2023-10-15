@@ -17,7 +17,7 @@ const (
 	WhiteColour   = 0xffffff
 	BlackColour   = 0x23272a
 	// EmbedBackColour is the default embed background colour Discord uses.
-	EmbedBackColour = 0x2f3136
+	EmbedBackColour = 0x2b2d31
 )
 
 var ErrInvalidHexColour = errors.New("invalid hexadecimal RGB value provided")

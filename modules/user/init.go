@@ -15,6 +15,11 @@ func Init(rt *router.Router) {
 	rt.AddCommand(levelsCommand)
 	levelsCommand.AddSubCommand(levelsLeaderboardCommand)
 
+	rt.AddCommand(repCommand)
+	repCommand.AddSubCommand(repGiveCommand)
+	repCommand.AddSubCommand(repStatusCommand)
+	repCommand.AddSubCommand(repLeaderboardCommand)
+
 	rt.AddCommand(userCommand)
 	userCommand.AddSubCommand(userAvatarCommand)
 	userCommand.AddSubCommand(userBannerCommand)

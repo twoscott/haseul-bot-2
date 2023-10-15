@@ -28,8 +28,10 @@ import (
 //		add deprecation warnings for old text-based commands
 //		ensure all long commands are deferred
 //      add username caching
+//      create sql tables through docker migrations https://levelup.gitconnected.com/creating-and-filling-a-postgres-db-with-docker-compose-e1607f6f882f
 //
-//      STOP GUILDS FROM BEING AUTO WHITELISTED IN PRODUCTION ENV
+//      ~~STOP GUILDS FROM BEING AUTO WHITELISTED IN PRODUCTION ENV~~
+//		^ whitelist no-longer needed, remove whitelist system
 /////
 
 func main() {
