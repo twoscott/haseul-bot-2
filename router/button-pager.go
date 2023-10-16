@@ -105,32 +105,42 @@ func (b ButtonPager) currentPage() *MessagePage {
 
 func (b *ButtonPager) handleButtonPress(
 	rt *Router,
-	button *discord.InteractionEvent,
+	itx *discord.InteractionEvent,
 	data *discord.ButtonInteraction) {
 
-	user := button.User
+	user := itx.User
 	if user == nil {
-		user = &button.Member.User
+		user = &itx.Member.User
 	}
 	if user == nil {
 		return
 	}
 
 	if user.ID != b.Interaction.SenderID() {
+		rt.State.RespondInteraction(itx.ID, itx.Token,
+			api.InteractionResponse{
+				Type: api.MessageInteractionWithSource,
+				Data: &api.InteractionResponseData{
+					Content: option.NewNullableString(
+						"You cannot interact with this message.",
+					),
+					Flags: discord.EphemeralMessage,
+				},
+			})
 		return
 	}
 
 	if data.CustomID == ButtonIDConfirm {
-		b.confirmPage(rt, button)
+		b.confirmPage(rt, itx)
 		return
 	}
 
-	b.changePages(rt, button, data)
+	b.changePages(rt, itx, data)
 }
 
 func (b *ButtonPager) changePages(
 	rt *Router,
-	button *discord.InteractionEvent,
+	itx *discord.InteractionEvent,
 	data *discord.ButtonInteraction) {
 
 	startPage := b.PageNumber
@@ -155,7 +165,7 @@ func (b *ButtonPager) changePages(
 	}
 
 	if b.PageNumber == startPage {
-		rt.State.RespondInteraction(button.ID, button.Token,
+		rt.State.RespondInteraction(itx.ID, itx.Token,
 			api.InteractionResponse{
 				Type: api.DeferredMessageUpdate,
 			},
@@ -164,7 +174,7 @@ func (b *ButtonPager) changePages(
 	}
 
 	newPage := b.currentPage().InteractionData()
-	rt.State.RespondInteraction(button.ID, button.Token,
+	rt.State.RespondInteraction(itx.ID, itx.Token,
 		api.InteractionResponse{
 			Type: api.UpdateMessage,
 			Data: newPage,
