@@ -69,7 +69,7 @@ func lastFmTopAlbumsExec(ctx router.CommandCtx) {
 
 	if len(res.Albums) < 1 {
 		ctx.RespondWarning(
-			"You have not scrobbled any tracks on Last.fm.",
+			"You have not scrobbled any albums on Last.fm in this period.",
 		)
 		return
 	}

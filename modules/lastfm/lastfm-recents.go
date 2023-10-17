@@ -60,6 +60,13 @@ func lastFmRecentExec(ctx router.CommandCtx) {
 		return
 	}
 
+	if len(res.Tracks) < 1 {
+		ctx.RespondWarning(
+			"You have not scrobbled any tracks on Last.fm in this period.",
+		)
+		return
+	}
+
 	messagePages := recentsListEmbeds(res)
 
 	ctx.RespondPaging(messagePages)
@@ -99,9 +106,7 @@ func recentsListEmbeds(
 
 		var timeAgoString string
 		if i == 0 && nowPlaying {
-			timeAgoString = dctools.UnixTimestampStyled(
-				time.Now(), dctools.RelativeTime,
-			)
+			timeAgoString = "- Now"
 		} else {
 			unixTime, err := strconv.ParseInt(track.Date.Uts, 10, 64)
 			if err != nil {
@@ -115,7 +120,7 @@ func recentsListEmbeds(
 			}
 		}
 
-		line := fmt.Sprintf("%d. %s %s", i+1, lineTrack, timeAgoString)
+		line := fmt.Sprintf("- %s %s", lineTrack, timeAgoString)
 		trackList = append(trackList, line)
 	}
 

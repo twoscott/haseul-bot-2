@@ -32,6 +32,7 @@ import (
 //
 //      ~~STOP GUILDS FROM BEING AUTO WHITELISTED IN PRODUCTION ENV~~
 //		^ whitelist no-longer needed, remove whitelist system
+//      add rep leaderboard position to rep status
 /////
 
 func main() {
