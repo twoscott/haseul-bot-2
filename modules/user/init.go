@@ -20,6 +20,9 @@ func Init(rt *router.Router) {
 	repCommand.AddSubCommand(repStatusCommand)
 	repCommand.AddSubCommand(repLeaderboardCommand)
 
+	repCommand.AddSubCommandGroup(repStreaksCommand)
+	repStreaksCommand.AddSubCommand(repStreaksLeaderboardCommand)
+
 	rt.AddCommand(userCommand)
 	userCommand.AddSubCommand(userAvatarCommand)
 	userCommand.AddSubCommand(userBannerCommand)

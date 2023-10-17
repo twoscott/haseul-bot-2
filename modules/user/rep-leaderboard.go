@@ -11,7 +11,6 @@ import (
 	"github.com/twoscott/haseul-bot-2/router"
 	"github.com/twoscott/haseul-bot-2/utils/dctools"
 	"github.com/twoscott/haseul-bot-2/utils/util"
-	"golang.org/x/exp/slices"
 )
 
 var repLeaderboardCommand = &router.SubCommand{
@@ -23,14 +22,6 @@ var repLeaderboardCommand = &router.SubCommand{
 	},
 	Options: []discord.CommandOptionValue{
 		&discord.IntegerOption{
-			OptionName:  "scope",
-			Description: "Where to fetch user levels from",
-			Choices: []discord.IntegerChoice{
-				{Name: "Server", Value: serverScope},
-				{Name: "Global", Value: globalScope},
-			},
-		},
-		&discord.IntegerOption{
 			OptionName:  "users",
 			Description: "The amount of top users to list",
 			Min:         option.NewInt(1),
@@ -40,7 +31,6 @@ var repLeaderboardCommand = &router.SubCommand{
 }
 
 func repLeaderboardExec(ctx router.CommandCtx) {
-	scope, _ := ctx.Options.Find("scope").IntValue()
 	limit, _ := ctx.Options.Find("users").IntValue()
 	if limit == 0 {
 		limit = 10
@@ -49,43 +39,19 @@ func repLeaderboardExec(ctx router.CommandCtx) {
 	var (
 		userReps []repdb.RepUser
 		err      error
-		listName string
 	)
-	switch scope {
-	case serverScope:
-		guild, err := ctx.State.Guild(ctx.Interaction.GuildID)
-		if err != nil {
-			break
-		}
 
-		members, err := ctx.State.Members(guild.ID)
-		if err != nil {
-			break
-		}
-
-		allReps, err := db.Reps.GetAllUsers()
-		if err != nil {
-			break
-		}
-
-		for _, r := range allReps {
-			match := slices.ContainsFunc(members, func(m discord.Member) bool {
-				return r.UserID == m.User.ID
-			})
-
-			if match {
-				userReps = append(userReps, r)
-			}
-		}
-
-		listName = guild.Name + " "
-	case globalScope:
-		listName = "Global" + " "
-		userReps, err = db.Reps.GetTopUsers(limit)
-	}
+	userReps, err = db.Reps.GetTopUsers(limit)
 	if err != nil {
 		log.Println(err)
 		ctx.RespondError("Error occurred while fetching top users.")
+		return
+	}
+
+	if len(userReps) < 1 {
+		ctx.RespondWarning(
+			"There are no repped users to display.",
+		)
 		return
 	}
 
@@ -119,7 +85,7 @@ func repLeaderboardExec(ctx router.CommandCtx) {
 		pages[i] = router.MessagePage{
 			Embeds: []discord.Embed{
 				{
-					Title:       listName + "Rep Leaderboard",
+					Title:       "Global Rep Leaderboard",
 					Description: description,
 					Color:       dctools.EmbedBackColour,
 					Footer: &discord.EmbedFooter{

@@ -30,7 +30,7 @@ const (
 		LIMIT $1`
 	getAllUsersQuery = `
 		SELECT * FROM UserRep`
-	getEntriesSizeQuery = `
+	getTotalRepsQuery = `
 		SELECT SUM(rep) FROM UserRep`
 )
 
@@ -86,5 +86,5 @@ func (db *DB) GetAllUsers() (users []RepUser, err error) {
 
 // GetTotalReps returns the total number of reps between all users.
 func (db *DB) GetTotalReps() (reps int64, err error) {
-	return reps, db.Get(&reps, getEntriesSizeQuery)
+	return reps, db.Get(&reps, getTotalRepsQuery)
 }
