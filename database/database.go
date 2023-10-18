@@ -13,7 +13,6 @@ import (
 	"github.com/twoscott/haseul-bot-2/database/reminderdb"
 	"github.com/twoscott/haseul-bot-2/database/repdb"
 	"github.com/twoscott/haseul-bot-2/database/rolesdb"
-	"github.com/twoscott/haseul-bot-2/database/vlivedb"
 	"github.com/twoscott/haseul-bot-2/database/youtubedb"
 	"github.com/twoscott/haseul-bot-2/router"
 )
@@ -29,7 +28,6 @@ type DB struct {
 	Reminders     *reminderdb.DB
 	Reps          *repdb.DB
 	Roles         *rolesdb.DB
-	VLIVE         *vlivedb.DB
 	YouTube       *youtubedb.DB
 }
 
@@ -53,7 +51,6 @@ func GetInstance() *DB {
 			Reps:          repdb.New(dbConn),
 			Roles:         rolesdb.New(dbConn),
 			Levels:        levelsdb.New(dbConn),
-			VLIVE:         vlivedb.New(dbConn),
 			YouTube:       youtubedb.New(dbConn),
 		}
 	})
