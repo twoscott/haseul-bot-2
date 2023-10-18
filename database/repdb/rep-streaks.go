@@ -12,6 +12,18 @@ type RepStreak struct {
 	FirstRep time.Time      `db:"firstrep"`
 }
 
+// OtherUser returns the other user in a streak, given one of the users.
+func (rs RepStreak) OtherUser(userID discord.UserID) discord.UserID {
+	switch userID {
+	case rs.UserID1:
+		return rs.UserID2
+	case rs.UserID2:
+		return rs.UserID1
+	default:
+		return discord.NullUserID
+	}
+}
+
 const (
 	createRepStreaksTableQuery = `
 		CREATE TABLE IF NOT EXISTS RepStreaks(
@@ -45,6 +57,8 @@ const (
 	getUserStreakQuery = `
 		SELECT CURRENT_DATE - firstRep::DATE FROM RepStreaks
 		WHERE userID1 IN ($1, $2) AND userID2 IN ($1, $2)`
+	getUserStreaksQuery = `
+		SELECT * FROM RepStreaks WHERE $1 IN (userID1, userID2)`
 	getTopStreaksQuery = `
 		SELECT * FROM RepStreaks WHERE now() - firstRep > INTERVAL '24 hours'
 		ORDER BY firstRep ASC
@@ -93,6 +107,13 @@ func (db *DB) GetUserStreak(
 	userID1, userID2 discord.UserID) (streak int, err error) {
 
 	return streak, db.Get(&streak, getUserStreakQuery, userID1, userID2)
+}
+
+// GetUserStreaks returns a list of streaks the provided user currently has.
+func (db *DB) GetUserStreaks(
+	userID discord.UserID) (streaks []RepStreak, err error) {
+
+	return streaks, db.Select(&streaks, getUserStreaksQuery, userID)
 }
 
 // GetTopStreaks returns the pairs of users with the longest rep streaks.

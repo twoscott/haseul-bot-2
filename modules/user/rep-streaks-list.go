@@ -6,35 +6,23 @@ import (
 	"time"
 
 	"github.com/diamondburned/arikawa/v3/discord"
-	"github.com/diamondburned/arikawa/v3/utils/json/option"
 	"github.com/dustin/go-humanize"
 	"github.com/twoscott/haseul-bot-2/router"
 	"github.com/twoscott/haseul-bot-2/utils/dctools"
 	"github.com/twoscott/haseul-bot-2/utils/util"
 )
 
-var repStreaksLeaderboardCommand = &router.SubCommand{
-	Name:        "leaderboard",
-	Description: "Displays a list of users with the longest rep streaks",
+var repStreaksListCommand = &router.SubCommand{
+	Name:        "list",
+	Description: "Displays a list of rep streaks you currently have.",
 	Handler: &router.CommandHandler{
-		Executor: repStreaksLeaderboardExec,
+		Executor: repStreaksListExec,
 		Defer:    true,
-	},
-	Options: []discord.CommandOptionValue{
-		&discord.IntegerOption{
-			OptionName:  "users",
-			Description: "The amount of top users to list",
-			Min:         option.NewInt(1),
-			Max:         option.NewInt(100),
-		},
 	},
 }
 
-func repStreaksLeaderboardExec(ctx router.CommandCtx) {
-	limit, _ := ctx.Options.Find("users").IntValue()
-	if limit == 0 {
-		limit = 10
-	}
+func repStreaksListExec(ctx router.CommandCtx) {
+	senderID := ctx.Interaction.SenderID()
 
 	_, err := db.Reps.UpdateRepStreaks()
 	if err != nil {
@@ -43,54 +31,45 @@ func repStreaksLeaderboardExec(ctx router.CommandCtx) {
 		return
 	}
 
-	streaks, err := db.Reps.GetTopStreaks(limit)
+	streaks, err := db.Reps.GetUserStreaks(senderID)
 	if err != nil {
 		log.Println(err)
-		ctx.RespondError("Error occurred while fetching top streaks.")
+		ctx.RespondError("Error occurred while fetching your rep streaks.")
 		return
 	}
 
 	if len(streaks) < 1 {
 		ctx.RespondWarning(
-			"There are no ongoing rep streaks to display.",
+			"You have no ongoing rep streaks to display.",
 		)
 		return
 	}
 
 	streakList := make([]string, 0, len(streaks))
 	for i, s := range streaks {
+		otherUserID := s.OtherUser(senderID)
 		days := time.Since(s.FirstRep) / humanize.Day
 
-		var uname1, uname2 string
-		user1, err := ctx.State.User(s.UserID1)
+		var username string
+		user, err := ctx.State.User(otherUserID)
 		if err != nil {
 			log.Println(err)
-			uname1 = s.UserID1.Mention()
+			username = otherUserID.Mention()
 		} else {
-			uname1 = user1.Username
-		}
-
-		user2, err := ctx.State.User(s.UserID2)
-		if err != nil {
-			log.Println(err)
-			uname2 = s.UserID2.Mention()
-		} else {
-			uname2 = user2.Username
+			username = user.Username
 		}
 
 		row := fmt.Sprintf(
-			"%d. %s & %s (%s days)",
+			"%d. %s (%s days)",
 			i+1,
-			uname1,
-			uname2,
+			username,
 			humanize.Comma(int64(days)),
 		)
 		streakList = append(streakList, row)
 	}
 
-	totalStreaks, _ := db.Reps.GetTotalStreaks()
 	descriptionPages := util.PagedLines(streakList, 2048, 25)
-	footer := util.PluraliseWithCount("Ongoing Streak", int64(totalStreaks))
+	footer := util.PluraliseWithCount("Ongoing Streak", int64(len(streaks)))
 
 	pages := make([]router.MessagePage, len(descriptionPages))
 	for i, description := range descriptionPages {

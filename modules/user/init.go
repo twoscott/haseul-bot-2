@@ -21,6 +21,7 @@ func Init(rt *router.Router) {
 	repCommand.AddSubCommand(repLeaderboardCommand)
 
 	repCommand.AddSubCommandGroup(repStreaksCommand)
+	repStreaksCommand.AddSubCommand(repStreaksListCommand)
 	repStreaksCommand.AddSubCommand(repStreaksLeaderboardCommand)
 
 	rt.AddCommand(userCommand)
