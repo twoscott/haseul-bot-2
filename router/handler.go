@@ -3,10 +3,12 @@ package router
 
 import (
 	"log"
+	"strings"
 
 	"github.com/diamondburned/arikawa/v3/discord"
 	"github.com/diamondburned/arikawa/v3/gateway"
 	"github.com/diamondburned/arikawa/v3/state"
+	"github.com/twoscott/haseul-bot-2/database"
 	"github.com/twoscott/haseul-bot-2/utils/botutil"
 	"github.com/twoscott/haseul-bot-2/utils/dctools"
 )
@@ -14,13 +16,17 @@ import (
 // Handler wraps router and handles events from the API, and passes them on
 // to the router.
 type Handler struct {
+	db      *database.DB
 	Router  *Router
 	Started bool
 }
 
+const defaultPrefix = '.'
+
 // New returns a new instance of Handler.
 func NewHandler(router *Router) *Handler {
 	return &Handler{
+		db:      database.GetInstance(),
 		Router:  router,
 		Started: false,
 	}
@@ -72,7 +78,23 @@ func (h *Handler) MessageCreate(msg *gateway.MessageCreateEvent) {
 		return
 	}
 
-	h.Router.HandleMessage(msg.Message, msg.Member)
+	go h.Router.HandleMessage(msg.Message, msg.Member)
+
+	args := strings.Fields(msg.Content[1:])
+	if len(args) < 1 {
+		return
+	}
+
+	prefix, _ := h.db.Guilds.GetLegacyPrefix(msg.GuildID)
+	if prefix == 0 {
+		prefix = defaultPrefix
+	}
+
+	if !strings.HasPrefix(msg.Content, string(prefix)) {
+		return
+	}
+
+	h.Router.HandleLegacyCommand(msg, args)
 }
 
 func (h *Handler) MessageDelete(ev *gateway.MessageDeleteEvent) {
