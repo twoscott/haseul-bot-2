@@ -14,7 +14,6 @@ import (
 	"github.com/twoscott/haseul-bot-2/database/repdb"
 	"github.com/twoscott/haseul-bot-2/database/rolesdb"
 	"github.com/twoscott/haseul-bot-2/database/youtubedb"
-	"github.com/twoscott/haseul-bot-2/router"
 )
 
 type DB struct {
@@ -56,9 +55,4 @@ func GetInstance() *DB {
 	})
 
 	return db
-}
-
-func Init(rt *router.Router) {
-	db := GetInstance()
-	db.Guilds.Init(rt)
 }

@@ -64,8 +64,6 @@ func New(state *state.State) *Router {
 	}
 }
 
-// TODO: add command counter; count how many times each command has been used.
-
 // AddCommand adds a slash command to the router.
 func (rt *Router) AddCommand(cmd *Command) {
 	rt.commands = append(rt.commands, cmd)

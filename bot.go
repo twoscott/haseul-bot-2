@@ -9,7 +9,6 @@ import (
 	"github.com/diamondburned/arikawa/v3/gateway"
 	"github.com/diamondburned/arikawa/v3/state"
 	"github.com/twoscott/haseul-bot-2/config"
-	"github.com/twoscott/haseul-bot-2/database"
 	"github.com/twoscott/haseul-bot-2/handler"
 	"github.com/twoscott/haseul-bot-2/modules"
 	"github.com/twoscott/haseul-bot-2/router"
@@ -32,7 +31,6 @@ func main() {
 
 	setIntents(st)
 	setHandlers(st, hnd)
-	database.Init(rt)
 	modules.Init(rt)
 
 	rt.MustRegisterCommandHandlers()
