@@ -2,7 +2,7 @@ package vlivedb
 
 import "github.com/jmoiron/sqlx"
 
-// DB wraps an sqlx database instance with helper methods for Twitter querying.
+// DB wraps an sqlx database instance with helper methods for VLIVE querying.
 type DB struct {
 	*sqlx.DB
 }

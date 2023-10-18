@@ -11,7 +11,6 @@ import (
 	"github.com/twoscott/haseul-bot-2/modules/reminders"
 	"github.com/twoscott/haseul-bot-2/modules/roles"
 	"github.com/twoscott/haseul-bot-2/modules/server"
-	"github.com/twoscott/haseul-bot-2/modules/twitter"
 	"github.com/twoscott/haseul-bot-2/modules/user"
 	"github.com/twoscott/haseul-bot-2/modules/vlive"
 	"github.com/twoscott/haseul-bot-2/modules/youtube"
@@ -29,7 +28,6 @@ func Init(rt *router.Router) {
 	reminders.Init(rt)
 	roles.Init(rt)
 	server.Init(rt)
-	twitter.Init(rt)
 	user.Init(rt)
 	vlive.Init(rt)
 	youtube.Init(rt)

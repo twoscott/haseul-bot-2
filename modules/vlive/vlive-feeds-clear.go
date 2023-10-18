@@ -8,7 +8,7 @@ import (
 
 var vliveFeedsClearCommand = &router.SubCommand{
 	Name:        "clear",
-	Description: "Clears all Twitter feeds from the server",
+	Description: "Clears all VLIVE feeds from the server",
 	Handler: &router.CommandHandler{
 		Executor: vliveFeedClearExec,
 	},

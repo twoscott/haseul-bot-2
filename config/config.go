@@ -29,10 +29,6 @@ type Config struct {
 		Key    string `env:"KEY"`
 		Secret string `env:"SECRET"`
 	} `env:",prefix=LASTFM_"`
-	Twitter struct {
-		ConsumerKey    string `env:"CONSUMER_KEY"`
-		ConsumerSecret string `env:"CONSUMER_SECRET"`
-	} `env:",prefix=TWITTER_"`
 	Patreon struct {
 		CampaignID  string `env:"CAMPAIGN_ID"`
 		AccessToken string `env:"ACCESS_TOKEN"`

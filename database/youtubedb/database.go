@@ -2,12 +2,12 @@ package youtubedb
 
 import "github.com/jmoiron/sqlx"
 
-// DB wraps an sqlx database instance with helper methods for Twitter querying.
+// DB wraps an sqlx database instance with helper methods for YouTube querying.
 type DB struct {
 	*sqlx.DB
 }
 
-// New returns a new instance of a Twitter database.
+// New returns a new instance of a YouTube database.
 func New(dbConn *sqlx.DB) *DB {
 	db := &DB{dbConn}
 	db.createTables()

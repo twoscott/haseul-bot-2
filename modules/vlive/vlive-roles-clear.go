@@ -8,7 +8,7 @@ import (
 
 var vliveRolesClearCommand = &router.SubCommand{
 	Name:        "clear",
-	Description: "Clears all mention roles for all Twitter feeds",
+	Description: "Clears all mention roles for all VLIVE feeds",
 	Handler: &router.CommandHandler{
 		Executor: vliveRoleClearExec,
 	},
