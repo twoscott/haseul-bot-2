@@ -16,25 +16,6 @@ import (
 	"github.com/twoscott/haseul-bot-2/utils/dctools"
 )
 
-/////
-//	TODO:
-//      unit testing for utils etc.
-//      use icon pack?
-//      use FollowUpInteraction
-//      use patreon-go and refactor patreonutil
-//      implement option checking; check if option was set to allow for defaults
-//      add rate limiting
-//      make Last.fm commands anonymise Last.fm username
-//		add deprecation warnings for old text-based commands
-//		ensure all long commands are deferred
-//      add username caching
-//      create sql tables through docker migrations https://levelup.gitconnected.com/creating-and-filling-a-postgres-db-with-docker-compose-e1607f6f882f
-//
-//      ~~STOP GUILDS FROM BEING AUTO WHITELISTED IN PRODUCTION ENV~~
-//		^ whitelist no-longer needed, remove whitelist system
-//      add rep leaderboard position to rep status
-/////
-
 func main() {
 	log.Println("Haseul Bot starting...")
 

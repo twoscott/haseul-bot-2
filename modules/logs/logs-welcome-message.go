@@ -1,6 +1,7 @@
 package logs
 
 import (
+	"fmt"
 	"log"
 
 	"github.com/diamondburned/arikawa/v3/discord"
@@ -27,8 +28,18 @@ var logsWelcomeMessageCommand = &router.SubCommand{
 func logsWelcomeMessageExec(ctx router.CommandCtx) {
 	message := ctx.Options.Find("message").String()
 
-	_, err := db.Guilds.SetWelcomeMessage(ctx.Interaction.GuildID, message)
+	set, err := db.Guilds.SetWelcomeMessage(ctx.Interaction.GuildID, message)
 	if err != nil {
+		log.Println(err)
+		ctx.RespondError("Error occurred while setting welcome message.")
+		return
+	}
+
+	if !set {
+		err := fmt.Errorf(
+			"welcome message wasn't updated for %d",
+			ctx.Interaction.GuildID,
+		)
 		log.Println(err)
 		ctx.RespondError("Error occurred while setting welcome message.")
 		return

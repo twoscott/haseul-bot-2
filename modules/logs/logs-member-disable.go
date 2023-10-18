@@ -1,6 +1,7 @@
 package logs
 
 import (
+	"fmt"
 	"log"
 
 	"github.com/twoscott/haseul-bot-2/router"
@@ -15,8 +16,18 @@ var logsMemberDisableCommand = &router.SubCommand{
 }
 
 func logsMemberDisableExec(ctx router.CommandCtx) {
-	_, err := db.Guilds.DisableMemberLogs(ctx.Interaction.GuildID)
+	disabled, err := db.Guilds.DisableMemberLogs(ctx.Interaction.GuildID)
 	if err != nil {
+		log.Println(err)
+		ctx.RespondError("Error occurred while disabling member logs.")
+		return
+	}
+
+	if !disabled {
+		err := fmt.Errorf(
+			"member logs weren't disabled for %d",
+			ctx.Interaction.GuildID,
+		)
 		log.Println(err)
 		ctx.RespondError("Error occurred while disabling member logs.")
 		return

@@ -8,11 +8,8 @@ import (
 type Config struct {
 	GuildID              discord.GuildID   `db:"guildid"`
 	LegacyPrefix         rune              `db:"legacyprefix"`
-	AutoroleID           discord.RoleID    `db:"autoroleid"`
 	MemberLogsChannelID  discord.ChannelID `db:"memberlogschannelid"`
 	MessageLogsChannelID discord.ChannelID `db:"messagelogschannelid"`
-	MuteroleID           discord.RoleID    `db:"muteroleid"`
-	RolesChannelID       discord.RoleID    `db:"roleschannelid"`
 
 	Welcome Welcome `db:""`
 }
@@ -23,15 +20,8 @@ const (
 			guildID              INT8          NOT NULL,
 
 			legacyPrefix         CHAR(1)       DEFAULT '.',
-
-			autoroleID           INT8          DEFAULT 0 # 0,
-			muteroleID           INT8          DEFAULT 0 # 0,
-			
 			memberLogsChannelID  INT8          DEFAULT 0 # 0,
 			messageLogsChannelID INT8          DEFAULT 0 # 0,
-
-			rolesChannelID       INT8          DEFAULT 0 # 0,
-			rolesMessage         VARCHAR(1024) DEFAULT '',
 
 			welcomeChannelID     INT8          DEFAULT 0 # 0,
 			welcomeTitle         VARCHAR(32)   DEFAULT '',

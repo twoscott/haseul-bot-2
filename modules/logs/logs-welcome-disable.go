@@ -1,6 +1,7 @@
 package logs
 
 import (
+	"fmt"
 	"log"
 
 	"github.com/twoscott/haseul-bot-2/router"
@@ -15,10 +16,20 @@ var logsWelcomeDisableCommand = &router.SubCommand{
 }
 
 func logsWelcomeDisableExec(ctx router.CommandCtx) {
-	_, err := db.Guilds.DisableWelcomeLogs(ctx.Interaction.GuildID)
+	disabled, err := db.Guilds.DisableWelcomeLogs(ctx.Interaction.GuildID)
 	if err != nil {
 		log.Println(err)
-		ctx.RespondError("Error occurred while disabling member logs.")
+		ctx.RespondError("Error occurred while disabling welcome messages.")
+		return
+	}
+
+	if !disabled {
+		err := fmt.Errorf(
+			"welcome logs weren't disabled for %d",
+			ctx.Interaction.GuildID,
+		)
+		log.Println(err)
+		ctx.RespondError("Error occurred while disabling welcome messages.")
 		return
 	}
 

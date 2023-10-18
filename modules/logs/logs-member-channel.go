@@ -1,6 +1,7 @@
 package logs
 
 import (
+	"fmt"
 	"log"
 
 	"github.com/diamondburned/arikawa/v3/discord"
@@ -42,8 +43,18 @@ func logsMemberChannelExec(ctx router.CommandCtx) {
 		return
 	}
 
-	_, err := db.Guilds.SetMemberLogsChannel(ctx.Interaction.GuildID, channel.ID)
+	set, err := db.Guilds.SetMemberLogsChannel(ctx.Interaction.GuildID, channel.ID)
 	if err != nil {
+		log.Println(err)
+		ctx.RespondError("Error occurred while setting member logs channel.")
+		return
+	}
+
+	if !set {
+		err := fmt.Errorf(
+			"member logs channel wasn't updated for %d",
+			ctx.Interaction.GuildID,
+		)
 		log.Println(err)
 		ctx.RespondError("Error occurred while setting member logs channel.")
 		return

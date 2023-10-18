@@ -1,6 +1,7 @@
 package logs
 
 import (
+	"fmt"
 	"log"
 
 	"github.com/diamondburned/arikawa/v3/discord"
@@ -36,8 +37,18 @@ func logsWelcomeColourExec(ctx router.CommandCtx) {
 		return
 	}
 
-	_, err = db.Guilds.SetWelcomeColour(ctx.Interaction.GuildID, colour)
+	set, err := db.Guilds.SetWelcomeColour(ctx.Interaction.GuildID, colour)
 	if err != nil {
+		log.Println(err)
+		ctx.RespondError("Error occurred while setting welcome colour.")
+		return
+	}
+
+	if !set {
+		err := fmt.Errorf(
+			"welcome colour wasn't updated for %d",
+			ctx.Interaction.GuildID,
+		)
 		log.Println(err)
 		ctx.RespondError("Error occurred while setting welcome colour.")
 		return

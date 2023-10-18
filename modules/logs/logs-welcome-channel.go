@@ -1,6 +1,7 @@
 package logs
 
 import (
+	"fmt"
 	"log"
 
 	"github.com/diamondburned/arikawa/v3/discord"
@@ -42,8 +43,18 @@ func logsWelcomeChannelExec(ctx router.CommandCtx) {
 		return
 	}
 
-	_, err := db.Guilds.SetWelcomeChannel(ctx.Interaction.GuildID, channel.ID)
+	set, err := db.Guilds.SetWelcomeChannel(ctx.Interaction.GuildID, channel.ID)
 	if err != nil {
+		log.Println(err)
+		ctx.RespondError("Error occurred while setting welcome channel.")
+		return
+	}
+
+	if !set {
+		err := fmt.Errorf(
+			"welcome channel wasn't updated for %d",
+			ctx.Interaction.GuildID,
+		)
 		log.Println(err)
 		ctx.RespondError("Error occurred while setting welcome channel.")
 		return

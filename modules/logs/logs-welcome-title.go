@@ -1,6 +1,7 @@
 package logs
 
 import (
+	"fmt"
 	"log"
 
 	"github.com/diamondburned/arikawa/v3/discord"
@@ -27,8 +28,18 @@ var logsWelcomeTitleCommand = &router.SubCommand{
 func logsWelcomeTitleExec(ctx router.CommandCtx) {
 	title := ctx.Options.Find("title").String()
 
-	_, err := db.Guilds.SetWelcomeTitle(ctx.Interaction.GuildID, title)
+	set, err := db.Guilds.SetWelcomeTitle(ctx.Interaction.GuildID, title)
 	if err != nil {
+		log.Println(err)
+		ctx.RespondError("Error occurred while setting welcome title.")
+		return
+	}
+
+	if !set {
+		err := fmt.Errorf(
+			"welcome title wasn't updated for %d",
+			ctx.Interaction.GuildID,
+		)
 		log.Println(err)
 		ctx.RespondError("Error occurred while setting welcome title.")
 		return
