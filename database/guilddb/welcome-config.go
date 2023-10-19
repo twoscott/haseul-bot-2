@@ -36,7 +36,7 @@ func (t welcomeText) Format(member discord.Member, guild discord.Guild) string {
 	memberNumber := strconv.FormatInt(int64(guild.ApproximateMembers), 10)
 
 	text = strings.ReplaceAll(text, "{mention}", member.Mention())
-	text = strings.ReplaceAll(text, "{username}", member.User.Username)
+	text = strings.ReplaceAll(text, "{username}", member.User.DisplayOrUsername())
 	text = strings.ReplaceAll(text, "{tag}", member.User.Tag())
 	text = strings.ReplaceAll(text, "{server}", guild.Name)
 	text = strings.ReplaceAll(text, "{member-number}", memberNumber)

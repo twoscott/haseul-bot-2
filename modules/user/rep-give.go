@@ -94,7 +94,7 @@ func repGiveExec(ctx router.CommandCtx) {
 
 	embed := discord.Embed{
 		Author: &discord.EmbedAuthor{
-			Name: target.Username,
+			Name: target.DisplayOrUsername(),
 			Icon: target.AvatarURL(),
 		},
 		Fields: []discord.EmbedField{

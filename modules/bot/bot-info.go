@@ -35,7 +35,7 @@ func botInfoExec(ctx router.CommandCtx) {
 	}
 
 	embed := &discord.Embed{
-		Title: bot.Username + " Info",
+		Title: bot.DisplayOrUsername() + " Info",
 		Thumbnail: &discord.EmbedThumbnail{
 			URL: bot.AvatarURL(),
 		},

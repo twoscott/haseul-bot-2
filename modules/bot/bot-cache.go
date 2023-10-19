@@ -30,7 +30,7 @@ func botCacheExec(ctx router.CommandCtx) {
 	}
 
 	embed := &discord.Embed{
-		Title:  bot.Username + " Cache Stats",
+		Title:  bot.DisplayOrUsername() + " Cache Stats",
 		Fields: []discord.EmbedField{},
 		Color:  dctools.EmbedBackColour,
 	}

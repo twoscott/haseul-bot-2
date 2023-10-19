@@ -68,6 +68,8 @@ func BadgeEmojiStrings(flags discord.UserFlags) []string {
 			ID: 844332396413583401, Name: "BugHunterLvl2"},
 		discord.VerifiedBotDeveloper: {
 			ID: 844332396735627326, Name: "VerifiedBotDeveloper"},
+
+		// TODO: add badges https://discord.com/developers/docs/resources/user#user-object-user-flags
 	}
 
 	emojis := make([]string, 0, len(emojiMap))

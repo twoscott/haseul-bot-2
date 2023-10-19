@@ -44,11 +44,11 @@ func userBannerExec(ctx router.CommandCtx) {
 	}
 
 	if user.Banner == "" {
-		ctx.RespondWarning(user.Username + " has no banner.")
+		ctx.RespondWarning(user.DisplayOrUsername() + " has no banner.")
 		return
 	}
 
-	name := util.Possessive(user.Username)
+	name := util.Possessive(user.DisplayOrUsername())
 	title := name + " Banner"
 	url := dctools.ResizeImage(user.BannerURL(), 4096)
 	embed := cmdutil.ImageInfoEmbed(title, url, user.Accent)

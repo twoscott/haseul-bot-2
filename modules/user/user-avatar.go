@@ -69,7 +69,7 @@ func userAvatarExec(ctx router.CommandCtx) {
 		return
 	}
 
-	name := util.Possessive(user.Username)
+	name := util.Possessive(user.DisplayOrUsername())
 	title := name + " Avatar"
 
 	var embed *discord.Embed

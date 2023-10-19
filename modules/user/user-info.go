@@ -65,7 +65,7 @@ func userInfoExec(ctx router.CommandCtx) {
 // TODO: combine into single embed function to minimise repetition
 func userEmbed(user *discord.User) *discord.Embed {
 	embed := discord.Embed{
-		Title: user.Tag(),
+		Title: fmt.Sprintf("%s (@%s)", user.DisplayOrUsername(), user.Tag()),
 		Thumbnail: &discord.EmbedThumbnail{
 			URL: user.AvatarURL(),
 		},
@@ -123,13 +123,13 @@ func memberEmbed(
 	member *discord.Member,
 	user *discord.User) *discord.Embed {
 
-	colour, _ := ctx.State.MemberColor(ctx.Interaction.GuildID, user.ID)
+	colour := user.Accent
 	if dctools.ColourInvalid(colour) {
-		colour = user.Accent
+		colour, _ = ctx.State.MemberColor(ctx.Interaction.GuildID, user.ID)
 	}
 
 	embed := discord.Embed{
-		Title: user.Tag(),
+		Title: fmt.Sprintf("%s (@%s)", user.DisplayOrUsername(), user.Tag()),
 		Thumbnail: &discord.EmbedThumbnail{
 			URL: user.AvatarURL(),
 		},

@@ -145,7 +145,7 @@ func sendNotification(
 
 	matchString := strings.Join(matches, "`, `")
 	content := fmt.Sprintf("💬 **%s** mentioned `%s`",
-		msg.Author.Username, matchString,
+		msg.Author.DisplayOrUsername(), matchString,
 	)
 
 	guild, err := rt.State.Guild(msg.GuildID)
