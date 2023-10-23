@@ -19,8 +19,10 @@ type CommandCtx struct {
 }
 
 func (ctx CommandCtx) RespondWithModal(data api.InteractionResponseData) error {
-	customID := discord.ComponentID(data.CustomID.Val)
-	ctx.modalHandlers[customID] = ctx.Handler
+	if data.CustomID != nil {
+		customID := discord.ComponentID(data.CustomID.Val)
+		ctx.modalHandlers[customID] = ctx.Handler
+	}
 
 	return dctools.ModalRespond(ctx.State, ctx.Interaction, data)
 }
