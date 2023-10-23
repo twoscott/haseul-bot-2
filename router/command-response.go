@@ -12,45 +12,39 @@ type CmdResponse interface {
 }
 
 // CmdSuccess represents a command error response
-type CmdError struct {
-	message string
-}
+type CmdError string
 
 func (r CmdError) String() string {
-	return util.ErrorSymbol + " " + r.message
+	return util.ErrorSymbol + " " + string(r)
 }
 
 // CmdSuccess represents a command warning response
-type CmdWarning struct {
-	message string
-}
+type CmdWarning string
 
 func (r CmdWarning) String() string {
-	return util.WarningSymbol + " " + r.message
+	return util.WarningSymbol + " " + string(r)
 }
 
 // CmdSuccess represents a command success response
-type CmdSuccess struct {
-	message string
-}
+type CmdSuccess string
 
 func (r CmdSuccess) String() string {
-	return util.SuccessSymbol + " " + r.message
+	return util.SuccessSymbol + " " + string(r)
 }
 
 // Error prepends a cross symbol and a space to the provided content.
 func Error(content string) CmdError {
-	return CmdError{content}
+	return CmdError(content)
 }
 
 // Warning prepends a warning symbol and a space to the provided content.
 func Warning(content string) CmdWarning {
-	return CmdWarning{content}
+	return CmdWarning(content)
 }
 
 // Success prepends a check symbol and a space to the provided content.
 func Success(content string) CmdSuccess {
-	return CmdSuccess{content}
+	return CmdSuccess(content)
 }
 
 // Errorf prepends a cross symbol and a space to the provided content

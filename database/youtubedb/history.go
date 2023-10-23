@@ -1,8 +1,6 @@
 package youtubedb
 
 import (
-	"log"
-
 	"github.com/diamondburned/arikawa/v3/discord"
 )
 
@@ -21,11 +19,14 @@ const (
 			userID        INT8 NOT NULL,
 			interactionID INT8 NOT NULL,
 			query		  TEXT NOT NULL,
+			UNIQUE(userID, query),
 			PRIMARY KEY(userID, interactionID)
 		)`
 
 	addHistoryEntryQuery = `
-		INSERT INTO YouTubeHistory VALUES($1, $2, $3)`
+		INSERT INTO YouTubeHistory VALUES($1, $2, $3) 
+		ON CONFLICT(userID, query) DO
+		UPDATE SET interactionID = $2`
 
 	deleteOldHistoryQuery = `
 		DELETE FROM YouTubeHistory 
@@ -46,7 +47,7 @@ const (
 )
 
 // AddHistoryAndClear adds a new YouTube search to a user's search history and
-// clears old searches, keeping only the most recent 10 searches in history.
+// clears old searches, keeping only the most recent 25 searches in history.
 func (db *DB) AddHistoryAndClear(
 	userID discord.UserID,
 	interactionID discord.InteractionID,
@@ -89,7 +90,6 @@ func (db *DB) deleteOldHistory(userID discord.UserID) (int64, error) {
 	}
 
 	deleted, err := res.RowsAffected()
-	log.Printf("%d deleted from history", deleted)
 	return deleted, err
 }
 

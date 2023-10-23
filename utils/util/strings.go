@@ -175,7 +175,6 @@ func SearchSort(results []string, query string) []string {
 	}
 
 	slices.Sort(matches)
-	matches = slices.Compact(matches)
 	slices.SortStableFunc(matches, func(a, b string) bool {
 		return len(a) < len(b)
 	})

@@ -122,7 +122,9 @@ func (b *ButtonPager) handleButtonPress(
 				Type: api.MessageInteractionWithSource,
 				Data: &api.InteractionResponseData{
 					Content: option.NewNullableString(
-						"You cannot interact with this message.",
+						Error(
+							"You cannot interact with this message.",
+						).String(),
 					),
 					Flags: discord.EphemeralMessage,
 				},

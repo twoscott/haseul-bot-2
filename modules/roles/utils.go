@@ -7,7 +7,6 @@ import (
 	"github.com/twoscott/haseul-bot-2/router"
 	"github.com/twoscott/haseul-bot-2/utils/dctools"
 	"github.com/twoscott/haseul-bot-2/utils/util"
-	"golang.org/x/exp/slices"
 )
 
 func tierNameCompleter(ctx router.AutocompleteCtx) {
@@ -26,7 +25,6 @@ func tierNameCompleter(ctx router.AutocompleteCtx) {
 
 	var choices api.AutocompleteStringChoices
 	if tierName == "" {
-		tierNames := slices.Compact(tierNames)
 		choices = dctools.MakeStringChoices(tierNames)
 	} else {
 		matches := util.SearchSort(tierNames, tierName)
