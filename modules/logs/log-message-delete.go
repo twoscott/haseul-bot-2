@@ -14,6 +14,13 @@ import (
 func logMessageDelete(
 	rt *router.Router, deletedMsg discord.Message) {
 
+	if deletedMsg.Author.Bot {
+		return
+	}
+	if !dctools.IsUserMessage(deletedMsg.Type) {
+		return
+	}
+
 	logChannelID, err := db.Guilds.GetMessageLogsChannel(deletedMsg.GuildID)
 	if err != nil {
 		log.Println(err)

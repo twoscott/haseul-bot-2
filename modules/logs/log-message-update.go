@@ -16,7 +16,14 @@ func logMessageUpdate(
 	newMsg discord.Message,
 	_ *discord.Member) {
 
-	logChannelID, err := db.Guilds.GetMessageLogsChannel(oldMsg.GuildID)
+	if newMsg.Author.Bot {
+		return
+	}
+	if !dctools.IsUserMessage(newMsg.Type) {
+		return
+	}
+
+	logChannelID, err := db.Guilds.GetMessageLogsChannel(newMsg.GuildID)
 	if err != nil {
 		log.Println(err)
 		return
@@ -26,15 +33,15 @@ func logMessageUpdate(
 	}
 
 	channelName := "Unknown"
-	channel, err := rt.State.Channel(oldMsg.ChannelID)
+	channel, err := rt.State.Channel(newMsg.ChannelID)
 	if err == nil {
 		channelName = channel.Name
 	}
 
-	dpURL := dctools.ResizeImage(oldMsg.Author.AvatarURL(), 64)
+	dpURL := dctools.ResizeImage(newMsg.Author.AvatarURL(), 64)
 	embed := discord.Embed{
 		Author: &discord.EmbedAuthor{
-			Name: oldMsg.Author.Tag(),
+			Name: newMsg.Author.Tag(),
 			Icon: dpURL,
 		},
 		Title: "Message Edited",
