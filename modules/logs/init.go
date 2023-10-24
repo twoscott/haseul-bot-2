@@ -21,6 +21,10 @@ func Init(rt *router.Router) {
 	logsMemberCommand.AddSubCommand(logsMemberChannelCommand)
 	logsMemberCommand.AddSubCommand(logsMemberDisableCommand)
 
+	logsCommand.AddSubCommandGroup(logsMessageCommand)
+	logsMessageCommand.AddSubCommand(logsMessageChannelCommand)
+	logsMessageCommand.AddSubCommand(logsMessageDisableCommand)
+
 	logsCommand.AddSubCommandGroup(logsWelcomeCommand)
 	logsWelcomeCommand.AddSubCommand(logsWelcomeChannelCommand)
 	logsWelcomeCommand.AddSubCommand(logsWelcomeColourCommand)
@@ -30,4 +34,6 @@ func Init(rt *router.Router) {
 
 	rt.AddMemberJoinHandler(logNewMember)
 	rt.AddMemberLeaveHandler(logMemberLeave)
+	rt.AddMessageDeleteHandler(logMessageDelete)
+	rt.AddMessageUpdateHandler(logMessageUpdate)
 }

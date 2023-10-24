@@ -136,6 +136,7 @@ func memberEmbed(
 		Description: member.Mention(),
 		Fields:      []discord.EmbedField{},
 		Color:       dctools.EmbedColour(colour),
+		Timestamp:   discord.Timestamp(user.CreatedAt()),
 	}
 
 	var badgeString string
@@ -215,19 +216,6 @@ func memberEmbed(
 	if user.Banner != "" {
 		url := dctools.ResizeImage(user.BannerURL(), 4096)
 		embed.Image = &discord.EmbedImage{URL: url}
-	}
-
-	memberNumber := dctools.MemberNumber(
-		ctx.State, ctx.Interaction.GuildID, member,
-	)
-	if memberNumber < 1 {
-		embed.Footer = &discord.EmbedFooter{
-			Text: "Member #--",
-		}
-	} else {
-		embed.Footer = &discord.EmbedFooter{
-			Text: fmt.Sprintf("Member #%d", memberNumber),
-		}
 	}
 
 	return &embed

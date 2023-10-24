@@ -8,8 +8,8 @@ import (
 
 	"github.com/diamondburned/arikawa/v3/gateway"
 	"github.com/diamondburned/arikawa/v3/state"
+	"github.com/diamondburned/arikawa/v3/utils/handler"
 	"github.com/twoscott/haseul-bot-2/config"
-	"github.com/twoscott/haseul-bot-2/handler"
 	"github.com/twoscott/haseul-bot-2/modules"
 	"github.com/twoscott/haseul-bot-2/router"
 	"github.com/twoscott/haseul-bot-2/utils/dctools"
@@ -27,7 +27,7 @@ func main() {
 	botToken := dctools.BotToken(token)
 	st := state.New(botToken)
 	rt := router.New(st)
-	hnd := handler.New(rt)
+	hnd := router.NewHandler(rt)
 
 	setIntents(st)
 	setHandlers(st, hnd)
@@ -64,7 +64,11 @@ func setIntents(st *state.State) {
 	st.AddIntents(gateway.IntentGuildMessages)
 }
 
-func setHandlers(st *state.State, h *handler.Handler) {
+func setHandlers(st *state.State, h *router.Handler) {
+	st.PreHandler = handler.New()
+	st.PreHandler.AddSyncHandler(h.MessageDelete)
+	st.PreHandler.AddSyncHandler(h.MessageUpdate)
+
 	st.AddHandler(h.GuildJoin)
 	st.AddHandler(h.MessageCreate)
 	st.AddHandler(h.Ready)

@@ -45,6 +45,14 @@ const (
 		WHERE guildID = $1`
 	getMemberLogsQuery = `
 		SELECT memberLogsChannelID FROM GuildConfigs WHERE guildID = $1`
+	setMessageLogsChannelQuery = `
+		UPDATE GuildConfigs SET messageLogsChannelID = $1
+		WHERE guildID = $2`
+	setMessageLogsChannelNullQuery = `
+		UPDATE GuildConfigs SET messageLogsChannelID = 0 # 0
+		WHERE guildID = $1`
+	getMessageLogsQuery = `
+		SELECT messageLogsChannelID FROM GuildConfigs WHERE guildID = $1`
 )
 
 // Configs returns all guild configs from the database.
@@ -106,13 +114,50 @@ func (db *DB) DisableMemberLogs(guildID discord.GuildID) (bool, error) {
 	return updated > 0, err
 }
 
-// GetMemberLogsChannel returns the greeting logs channelID of the guild config
+// GetMemberLogsChannel returns the member logs channelID of the guild config
 // corresponding to the provided guild ID.
 func (db *DB) GetMemberLogsChannel(
 	guildID discord.GuildID) (discord.ChannelID, error) {
 
 	var id discord.ChannelID
 	err := db.Get(&id, getMemberLogsQuery, guildID)
+
+	return id, err
+}
+
+// SetMessageLogsChannel updates the guild config of the given guild ID and sets
+// the message logs channel ID to the provided channel ID.
+func (db *DB) SetMessageLogsChannel(
+	guildID discord.GuildID, channelID discord.ChannelID) (bool, error) {
+
+	res, err := db.Exec(setMessageLogsChannelQuery, channelID, guildID)
+	if err != nil {
+		return false, err
+	}
+
+	updated, err := res.RowsAffected()
+	return updated > 0, err
+}
+
+// DisableMessageLogs updates the guild config of the given guild ID and sets
+// the message logs channel ID to a value that can be interpreted as null.
+func (db *DB) DisableMessageLogs(guildID discord.GuildID) (bool, error) {
+	res, err := db.Exec(setMessageLogsChannelNullQuery, guildID)
+	if err != nil {
+		return false, err
+	}
+
+	updated, err := res.RowsAffected()
+	return updated > 0, err
+}
+
+// GetMessageLogsChannel returns the message logs channelID of the guild config
+// corresponding to the provided guild ID.
+func (db *DB) GetMessageLogsChannel(
+	guildID discord.GuildID) (discord.ChannelID, error) {
+
+	var id discord.ChannelID
+	err := db.Get(&id, getMessageLogsQuery, guildID)
 
 	return id, err
 }

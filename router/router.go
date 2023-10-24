@@ -11,6 +11,9 @@ import (
 	"github.com/twoscott/haseul-bot-2/utils/dctools"
 )
 
+// TODO: clean up whole router, can probably have a single slice of listener
+//       interfaces and check the types at runtime.
+
 type (
 	// Router handles the routing of events to receiving functions.
 	Router struct {
@@ -25,6 +28,8 @@ type (
 		memberJoinListeners    []MemberJoinListener
 		memberLeaveListeners   []MemberLeaveListener
 		messageCreateListeners []MessageCreateListener
+		messageDeleteListeners []MessageDeleteListener
+		messageUpdateListeners []MessageUpdateListener
 		mentionListeners       []MessageCreateListener
 		startupListeners       []ReadyListener
 	}
@@ -43,10 +48,14 @@ type (
 		*discord.ButtonInteraction,
 	)
 	MessageCreateListener func(*Router, discord.Message, *discord.Member)
-	GuildJoinListener     func(*Router, *state.GuildJoinEvent)
-	MemberJoinListener    func(*Router, discord.Member, discord.GuildID)
-	MemberLeaveListener   func(*Router, discord.User, discord.GuildID)
-	ReadyListener         func(*Router, *gateway.ReadyEvent)
+	MessageDeleteListener func(*Router, discord.Message)
+	MessageUpdateListener func(
+		*Router, discord.Message, discord.Message, *discord.Member,
+	)
+	GuildJoinListener   func(*Router, *state.GuildJoinEvent)
+	MemberJoinListener  func(*Router, discord.Member, discord.GuildID)
+	MemberLeaveListener func(*Router, discord.User, discord.GuildID)
+	ReadyListener       func(*Router, *gateway.ReadyEvent)
 )
 
 // New returns a new instance of Router.
@@ -258,7 +267,7 @@ func (rt *Router) mustRegisterCommandHandler(
 	rt.commandHandlers[name] = handler
 }
 
-// RegisterMessageHandler adds a function to receive all messages.
+// AddMessageHandler adds a function to receive all messages.
 func (rt *Router) AddMessageHandler(
 	messageCreateListener MessageCreateListener) {
 
@@ -274,6 +283,43 @@ func (rt *Router) HandleMessage(
 
 	for _, listener := range rt.messageCreateListeners {
 		go listener(rt, msg, member)
+	}
+}
+
+// AddMessageDeleteHandler adds a function to receive all messages deleted.
+func (rt *Router) AddMessageDeleteHandler(
+	messageDeleteListener MessageDeleteListener) {
+
+	rt.messageDeleteListeners = append(
+		rt.messageDeleteListeners, messageDeleteListener,
+	)
+}
+
+// HandleMessageDelete routes a message delete event to all listener functions
+// registered to the router.
+func (rt *Router) HandleMessageDelete(msg discord.Message) {
+
+	for _, listener := range rt.messageDeleteListeners {
+		go listener(rt, msg)
+	}
+}
+
+// AddMessageDeleteHandler adds a function to receive all messages deleted.
+func (rt *Router) AddMessageUpdateHandler(
+	messageUpdateListener MessageUpdateListener) {
+
+	rt.messageUpdateListeners = append(
+		rt.messageUpdateListeners, messageUpdateListener,
+	)
+}
+
+// HandleMessageDelete routes a message delete event to all listener functions
+// registered to the router.
+func (rt *Router) HandleMessageUpdate(
+	old discord.Message, new discord.Message, member *discord.Member) {
+
+	for _, listener := range rt.messageUpdateListeners {
+		go listener(rt, old, new, member)
 	}
 }
 
