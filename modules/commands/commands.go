@@ -15,6 +15,9 @@ const commandNameLimit = 32
 var commandsCommand = &router.Command{
 	Name:        "commands",
 	Description: "Commands pertaining to custom server commands",
+	RequiredPermissions: discord.NewPermissions(
+		discord.PermissionManageMessages,
+	),
 }
 
 func commandNameAutocomplete(guildID discord.GuildID, name string) api.AutocompleteChoices {
