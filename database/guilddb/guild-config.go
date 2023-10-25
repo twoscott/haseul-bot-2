@@ -20,10 +20,10 @@ const (
 			guildID              INT8          NOT NULL,
 
 			legacyPrefix         CHAR(1)       DEFAULT '.',
-			memberLogsChannelID  INT8          DEFAULT 0 # 0,
-			messageLogsChannelID INT8          DEFAULT 0 # 0,
+			memberLogsChannelID  INT8          DEFAULT 0,
+			messageLogsChannelID INT8          DEFAULT 0,
 
-			welcomeChannelID     INT8          DEFAULT 0 # 0,
+			welcomeChannelID     INT8          DEFAULT 0,
 			welcomeTitle         VARCHAR(32)   DEFAULT '',
 			welcomeMessage       VARCHAR(1024) DEFAULT '',
 			welcomeColour        INT4		   DEFAULT NULL,
@@ -41,7 +41,7 @@ const (
 		UPDATE GuildConfigs SET memberLogsChannelID = $1
 		WHERE guildID = $2`
 	setMemberLogsChannelNullQuery = `
-		UPDATE GuildConfigs SET memberLogsChannelID = 0 # 0
+		UPDATE GuildConfigs SET memberLogsChannelID = 0
 		WHERE guildID = $1`
 	getMemberLogsQuery = `
 		SELECT memberLogsChannelID FROM GuildConfigs WHERE guildID = $1`
@@ -49,7 +49,7 @@ const (
 		UPDATE GuildConfigs SET messageLogsChannelID = $1
 		WHERE guildID = $2`
 	setMessageLogsChannelNullQuery = `
-		UPDATE GuildConfigs SET messageLogsChannelID = 0 # 0
+		UPDATE GuildConfigs SET messageLogsChannelID = 0
 		WHERE guildID = $1`
 	getMessageLogsQuery = `
 		SELECT messageLogsChannelID FROM GuildConfigs WHERE guildID = $1`

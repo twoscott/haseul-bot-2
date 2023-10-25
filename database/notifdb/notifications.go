@@ -49,24 +49,24 @@ const (
 			keyword VARCHAR(128) NOT NULL,
 			userID  INT8         NOT NULL,
 			type    INT2         NOT NULL DEFAULT 0,
-			guildID INT8         NOT NULL DEFAULT 0 # 0,
+			guildID INT8         NOT NULL DEFAULT 0,
 			PRIMARY KEY(keyword, userID, guildID)
 		)`
 
 	addNotificationQuery = `
 		INSERT INTO Notifications VALUES($1, $2, $3, $4) ON CONFLICT DO NOTHING`
 	addGlobalNotificationQuery = `
-		INSERT INTO Notifications VALUES($1, $2, $3, 0 # 0) ON CONFLICT DO NOTHING`
+		INSERT INTO Notifications VALUES($1, $2, $3, 0) ON CONFLICT DO NOTHING`
 	removeNotificationQuery = `
 		DELETE FROM Notifications 
 		WHERE keyword = $1 AND userID = $2 AND guildID = $3`
 	removeGlobalNotificationQuery = `
 		DELETE FROM Notifications 
-		WHERE keyword = $1 AND userID = $2 AND guildID = 0 # 0`
+		WHERE keyword = $1 AND userID = $2 AND guildID = 0`
 	clearGuildUserNotifications = `
 		DELETE FROM Notifications WHERE userID = $1 AND guildID = $2`
 	clearGlobalUserNotifications = `
-		DELETE FROM Notifications WHERE userID = $1 AND guildID = 0 # 0`
+		DELETE FROM Notifications WHERE userID = $1 AND guildID = 0`
 
 	// getAllCheckingNotificationsQuery is an SQL query that fetches all stored
 	// notificatons that satisfy the following:
@@ -81,7 +81,7 @@ const (
 		WHERE (
 			userID != $1 
 				AND 
-			(guildID = $2 OR guildID = 0 # 0)
+			(guildID = $2 OR guildID = 0)
 				AND
 			userID NOT IN (SELECT userID FROM NotiDnD)
 				AND
@@ -99,12 +99,12 @@ const (
 	getUserNotificationsQuery = `
 		SELECT * FROM Notifications WHERE userID = $1`
 	getUserGlobalNotificationsQuery = `
-		SELECT * FROM Notifications WHERE userID = $1 AND guildID = 0 # 0`
+		SELECT * FROM Notifications WHERE userID = $1 AND guildID = 0`
 	getUserGuildNotificationsQuery = `
 		SELECT * FROM Notifications WHERE userID = $1 AND guildID = $2`
 	getUserGuildAndGlobalNotificationsQuery = `
 		SELECT * FROM Notifications 
-		WHERE userID = $1 AND (guildID = $2 OR guildID = 0 # 0)`
+		WHERE userID = $1 AND (guildID = $2 OR guildID = 0)`
 )
 
 // Add adds a guild notifiaction for a keyword to send to userID.

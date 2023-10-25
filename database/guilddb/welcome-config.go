@@ -99,7 +99,7 @@ const (
 		UPDATE GuildConfigs SET welcomeChannelID = $1
 		WHERE guildID = $2`
 	setWelcomeChannelNullQuery = `
-		UPDATE GuildConfigs SET welcomeChannelID = 0 # 0
+		UPDATE GuildConfigs SET welcomeChannelID = 0
 		WHERE guildID = $1`
 	setWelcomeMessageQuery = `
 		UPDATE GuildConfigs SET	welcomeMessage = $1
