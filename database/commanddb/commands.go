@@ -17,11 +17,11 @@ type Command struct {
 const (
 	createCommandsTableQuery = `
 		CREATE TABLE IF NOT EXISTS Commands(
-			guildID INT8         NOT NULL,
-			name    VARCHAR(32)  NOT NULL,
-			content VARCHAR(256) NOT NULL,
-			uses    INT8         NOT NULL DEFAULT 0,
-			created TIMESTAMPTZ  NOT NULL DEFAULT now(),
+			guildID INT8          NOT NULL,
+			name    VARCHAR(32)   NOT NULL,
+			content VARCHAR(2000) NOT NULL,
+			uses    INT8          NOT NULL DEFAULT 0,
+			created TIMESTAMPTZ   NOT NULL DEFAULT now(),
 			PRIMARY KEY(guildID, name)
 		)`
 	addCommandQuery = `
