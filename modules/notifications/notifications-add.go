@@ -43,7 +43,6 @@ var notificationsAddCommand = &router.SubCommand{
 				{Name: "Normal", Value: int(notifdb.NormalNotification)},
 				{Name: "Strict", Value: int(notifdb.StrictNotification)},
 				{Name: "Lenient", Value: int(notifdb.LenientNotification)},
-				{Name: "Anarchy", Value: int(notifdb.AnarchyNotification)},
 			},
 		},
 	},

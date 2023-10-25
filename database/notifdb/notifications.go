@@ -17,10 +17,6 @@ const (
 	// LenientNotification matches the whole word, and any combination of
 	// characters that include it (including plurals and posessive suffixes).
 	LenientNotification
-	// AnarchyNotification matches like LenientNotification, except whitespace
-	// characters and other non-alphabetic characters can be between each
-	// character.
-	AnarchyNotification
 )
 
 // String returns the string representation of a notification type.
@@ -32,8 +28,6 @@ func (n NotificationType) String() string {
 		return "Strict"
 	case LenientNotification:
 		return "Lenient"
-	case AnarchyNotification:
-		return "Anarchy"
 	default:
 		return "Unknown"
 	}
