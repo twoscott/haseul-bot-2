@@ -48,7 +48,12 @@ func notificationsListExec(ctx router.CommandCtx) {
 			}
 		}
 
-		entry := fmt.Sprintf("**%s** - %s (%s)", noti.Keyword, noti.Type, scope)
+		entry := fmt.Sprintf(
+			"**%s** - %s (%s)", 
+			dctools.EscapeMarkdown(noti.Keyword), 
+			noti.Type, 
+			scope,
+		)
 		notiList = append(notiList, entry)
 	}
 

@@ -87,7 +87,7 @@ func levelsLeaderboardExec(ctx router.CommandCtx) {
 			log.Println(err)
 			username = uxp.UserID.Mention()
 		} else {
-			username = user.Username
+			username = dctools.EscapeMarkdown(user.Username)
 		}
 
 		row := fmt.Sprintf(

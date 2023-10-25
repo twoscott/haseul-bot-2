@@ -32,7 +32,7 @@ func rolePickerTiersListExec(ctx router.CommandCtx) {
 
 	tierList := make([]string, 0, len(tiers))
 	for _, tier := range tiers {
-		tierList = append(tierList, tier.Title())
+		tierList = append(tierList, "- ", tier.Title())
 	}
 
 	descriptionPages := util.PagedLines(tierList, 2048, 20)

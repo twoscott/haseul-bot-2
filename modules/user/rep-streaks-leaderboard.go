@@ -81,8 +81,8 @@ func repStreaksLeaderboardExec(ctx router.CommandCtx) {
 		row := fmt.Sprintf(
 			"%d. %s & %s (%s days)",
 			i+1,
-			uname1,
-			uname2,
+			dctools.EscapeMarkdown(uname1),
+			dctools.EscapeMarkdown(uname2),
 			humanize.Comma(int64(days)),
 		)
 		streakList = append(streakList, row)

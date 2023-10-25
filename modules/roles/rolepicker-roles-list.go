@@ -58,7 +58,7 @@ func rolePickerRolesListExec(ctx router.CommandCtx) {
 
 	roleList := make([]string, 0, len(roles))
 	for _, role := range roles {
-		roleList = append(roleList, role.ID.Mention())
+		roleList = append(roleList, "- "+role.ID.Mention())
 	}
 
 	descriptionPages := util.PagedLines(roleList, 2048, 20)

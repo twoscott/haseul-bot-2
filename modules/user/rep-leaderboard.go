@@ -63,7 +63,7 @@ func repLeaderboardExec(ctx router.CommandCtx) {
 			log.Println(err)
 			username = u.UserID.Mention()
 		} else {
-			username = user.Username
+			username = dctools.EscapeMarkdown(user.Username)
 		}
 
 		row := fmt.Sprintf(

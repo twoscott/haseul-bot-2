@@ -46,7 +46,7 @@ func repStreaksListExec(ctx router.CommandCtx) {
 	}
 
 	streakList := make([]string, 0, len(streaks))
-	for i, s := range streaks {
+	for _, s := range streaks {
 		otherUserID := s.OtherUser(senderID)
 		days := time.Since(s.FirstRep) / humanize.Day
 
@@ -60,9 +60,8 @@ func repStreaksListExec(ctx router.CommandCtx) {
 		}
 
 		row := fmt.Sprintf(
-			"%d. %s (%s days)",
-			i+1,
-			username,
+			"- %s (%s days)",
+			dctools.EscapeMarkdown(username),
 			humanize.Comma(int64(days)),
 		)
 		streakList = append(streakList, row)
@@ -77,7 +76,7 @@ func repStreaksListExec(ctx router.CommandCtx) {
 		pages[i] = router.MessagePage{
 			Embeds: []discord.Embed{
 				{
-					Title:       "Global Streaks Leaderboard",
+					Title:       "Ongoing Rep Streaks",
 					Description: description,
 					Color:       dctools.EmbedBackColour,
 					Footer: &discord.EmbedFooter{

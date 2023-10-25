@@ -43,7 +43,7 @@ func joinRolesListExec(ctx router.CommandCtx) {
 
 	roleList := make([]string, 0, len(roleIDs))
 	for _, id := range roleIDs {
-		roleList = append(roleList, id.Mention())
+		roleList = append(roleList, "- "+id.Mention())
 	}
 
 	name := "Server"
