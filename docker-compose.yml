@@ -8,7 +8,7 @@ volumes:
 
 services:
   haseul-bot:
-    image: haseul-bot:latest
+    image: ghcr.io/twoscott/haseul-bot-2:latest
     container_name: haseul-bot
     build: .
     restart: unless-stopped
