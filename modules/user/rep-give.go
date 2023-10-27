@@ -8,6 +8,7 @@ import (
 	"strconv"
 
 	"github.com/diamondburned/arikawa/v3/discord"
+	"github.com/dustin/go-humanize"
 	"github.com/twoscott/haseul-bot-2/router"
 	"github.com/twoscott/haseul-bot-2/utils/dctools"
 )
@@ -98,7 +99,7 @@ func repGiveExec(ctx router.CommandCtx) {
 			Icon: target.AvatarURL(),
 		},
 		Fields: []discord.EmbedField{
-			{Name: "Rep", Value: strconv.Itoa(rep)},
+			{Name: "Rep", Value: humanize.Comma(int64(rep))},
 		},
 		Color: dctools.EmbedBackColour,
 	}
