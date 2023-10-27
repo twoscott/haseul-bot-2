@@ -19,3 +19,5 @@ haseul-bot-2
 
 # Go workspace file
 go.work
+
+initdb/

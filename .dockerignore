@@ -2,6 +2,7 @@ Dockerfile
 docker-compose.yml
 
 .vscode/
+initdb/
 
 .git
 .github
