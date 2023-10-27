@@ -80,6 +80,9 @@ func (h *Handler) MessageCreate(msg *gateway.MessageCreateEvent) {
 
 	go h.Router.HandleMessage(msg.Message, msg.Member)
 
+	if len(msg.Content) == 0 {
+		return
+	}
 	args := strings.Fields(msg.Content[1:])
 	if len(args) < 1 {
 		return
