@@ -132,9 +132,7 @@ func rolePickerTiersSendExec(ctx router.CommandCtx) {
 	}
 
 	embed := discord.Embed{
-		Author: &discord.EmbedAuthor{
-			Name: util.TitleCase(tier.Name),
-		},
+		Title:       util.TitleCase(tier.Name),
 		Description: tier.Description.String,
 		Color:       dctools.EmbedBackColour,
 	}

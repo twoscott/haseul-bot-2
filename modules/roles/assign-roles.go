@@ -8,6 +8,7 @@ import (
 	"github.com/diamondburned/arikawa/v3/api"
 	"github.com/diamondburned/arikawa/v3/discord"
 	"github.com/diamondburned/arikawa/v3/state"
+	"github.com/diamondburned/arikawa/v3/utils/json/option"
 	"github.com/twoscott/haseul-bot-2/router"
 	"github.com/twoscott/haseul-bot-2/utils/dctools"
 	"golang.org/x/exp/slices"
@@ -108,22 +109,30 @@ func handleRoleButton(
 	targetRoleIDs := selectionCache.GetSelectedRoleIDs(interaction)
 	if len(targetRoleIDs) < 1 {
 		clearSelection(rt.State, interaction)
-		dctools.FollowupRespondText(
-			rt.State,
-			interaction,
-			router.Warningf(
-				"Please select a role to %s.", actionType.verb(),
-			).String(),
+		dctools.FollowupRespond(rt.State, interaction,
+			api.InteractionResponseData{
+				Content: option.NewNullableString(
+					router.Warningf(
+						"Please select a role to %s.", actionType.verb(),
+					).String(),
+				),
+				Flags: discord.EphemeralMessage,
+			},
 		)
 		return
 	}
 
 	member, err := rt.State.Member(interaction.GuildID, interaction.SenderID())
 	if err != nil {
-		dctools.MessageRespondText(
-			rt.State,
-			interaction,
-			router.Error("Error occurred while fetching roles.").String(),
+		log.Println(err)
+		dctools.MessageRespond(rt.State, interaction,
+			api.InteractionResponseData{
+				Content: option.NewNullableString(
+					router.Error(
+						"Error occurred while fetching roles.").String(),
+				),
+				Flags: discord.EphemeralMessage,
+			},
 		)
 		return
 	}
@@ -181,10 +190,14 @@ func handleRoleButton(
 	}
 	if err != nil {
 		log.Println(err)
-		dctools.MessageRespondText(
-			rt.State,
-			interaction,
-			router.Error("Error occurred while modifying roles.").String(),
+		dctools.MessageRespond(rt.State, interaction,
+			api.InteractionResponseData{
+				Content: option.NewNullableString(
+					router.Error(
+						"Error occurred while modifying roles.").String(),
+				),
+				Flags: discord.EphemeralMessage,
+			},
 		)
 		return
 	}
