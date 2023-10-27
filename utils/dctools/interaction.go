@@ -8,6 +8,8 @@ import (
 	"golang.org/x/exp/slices"
 )
 
+const MaxChoices = 25
+
 // MessageResponse returns a message interaction with source response object
 // containing the supplied data.
 func MessageResponse(
@@ -124,10 +126,13 @@ func findFocusedOption(
 // MakeStringChoices takes a slice of strings and turns them into a slice of
 // autocomplete choices with matching names and string values.
 func MakeStringChoices(choiceStrings []string) api.AutocompleteStringChoices {
-	choices := make(api.AutocompleteStringChoices, 0, len(choiceStrings))
+	choices := make(api.AutocompleteStringChoices, 0, MaxChoices)
 	for _, c := range choiceStrings {
 		choice := discord.StringChoice{Name: c, Value: c}
 		choices = append(choices, choice)
+	}
+	if len(choices) > MaxChoices {
+		choices = choices[:MaxChoices]
 	}
 
 	return choices
