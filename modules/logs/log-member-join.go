@@ -98,12 +98,16 @@ func logMemberJoin(
 	}
 
 	inviteField := "Currently Unavailable"
+	inviter := "Unknown"
+	if usedInvite.Inviter != nil {
+		inviter = usedInvite.Inviter.Tag()
+	}
 	if usedInvite != nil {
 		inviteField = fmt.Sprintf(
 			"%s (%d uses)\nCreated by %s",
 			usedInvite.URL(),
 			usedInvite.Uses,
-			usedInvite.Inviter.Tag(),
+			inviter,
 		)
 	}
 
