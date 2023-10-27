@@ -43,6 +43,9 @@ func (tr *Tracker) trackNewInvites(invites []discord.Invite) error {
 	}
 
 	for _, inv := range invites {
+		if inv.Guild == nil {
+			continue
+		}
 		tr.Invites.Add(inv.Code, inv.Guild.ID, inv.Uses)
 	}
 
