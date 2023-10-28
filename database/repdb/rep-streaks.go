@@ -43,7 +43,7 @@ const (
 				WHERE rh.senderID IN ($1, $2) 
 					AND rh.receiverID IN ($1, $2)
 					AND now() - rh.time < INTERVAL '36 hours'
-			) = 0 THEN now()
+			) < 2 THEN now()
 			ELSE RepStreaks.firstRep
 		END`
 	updateRepStreaksQuery = `
