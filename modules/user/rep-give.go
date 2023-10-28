@@ -89,8 +89,6 @@ func repGiveExec(ctx router.CommandCtx) {
 		log.Println(err)
 	}
 
-	log.Println(streak)
-
 	target := ctx.Command.Resolved.Users[targetID]
 
 	embed := discord.Embed{

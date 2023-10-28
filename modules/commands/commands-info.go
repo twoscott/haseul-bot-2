@@ -38,8 +38,6 @@ func commandsInfoExec(ctx router.CommandCtx) {
 		return
 	}
 
-	log.Println(command.Created)
-
 	embed := discord.Embed{
 		Author:      &discord.EmbedAuthor{Name: command.Name},
 		Description: command.Content,
