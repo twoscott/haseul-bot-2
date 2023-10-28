@@ -83,7 +83,7 @@ func (db *DB) Add(guildID discord.GuildID) (bool, error) {
 // GetLegacyPrefix returns the legacy prefix for the guild - the prefix uses
 // for old commands.
 func (db *DB) GetLegacyPrefix(
-	guildID discord.GuildID) (prefix rune, err error) {
+	guildID discord.GuildID) (prefix string, err error) {
 
 	return prefix, db.Get(&prefix, getLegacyPrefixQuery, guildID)
 }

@@ -68,7 +68,7 @@ func repGiveExec(ctx router.CommandCtx) {
 		nextRepTime := getNextRepResetFromNow()
 		ctx.RespondWarning(
 			fmt.Sprintf(
-				"You have no reps remaining! Your reps will be replenished %s",
+				"You have no reps remaining! Your reps will be replenished %s.",
 				dctools.UnixTimestampStyled(nextRepTime, dctools.RelativeTime),
 			),
 		)

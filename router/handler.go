@@ -21,7 +21,7 @@ type Handler struct {
 	Started bool
 }
 
-const defaultPrefix = '.'
+const defaultPrefix = "."
 
 // New returns a new instance of Handler.
 func NewHandler(router *Router) *Handler {
@@ -89,7 +89,7 @@ func (h *Handler) MessageCreate(msg *gateway.MessageCreateEvent) {
 	}
 
 	prefix, _ := h.db.Guilds.GetLegacyPrefix(msg.GuildID)
-	if prefix == 0 {
+	if prefix == "" {
 		prefix = defaultPrefix
 	}
 
