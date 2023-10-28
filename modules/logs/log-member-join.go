@@ -99,16 +99,16 @@ func logMemberJoin(
 
 	inviteField := "Currently Unavailable"
 	if usedInvite != nil {
-		inviter := "Unknown"
-		if usedInvite.Inviter != nil {
-			inviter = usedInvite.Inviter.Tag()
-		}
 		inviteField = fmt.Sprintf(
-			"%s (%d uses)\nCreated by %s",
+			"%s (%d uses)",
 			usedInvite.URL(),
 			usedInvite.Uses,
-			inviter,
 		)
+
+		if usedInvite.Inviter != nil {
+			inviter := usedInvite.Inviter.Tag()
+			inviteField += fmt.Sprintf("\nCreated by %s", inviter)
+		}
 	}
 
 	embed := discord.Embed{
