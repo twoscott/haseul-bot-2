@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"log"
-	"strconv"
 
 	"github.com/diamondburned/arikawa/v3/discord"
 	"github.com/dustin/go-humanize"
@@ -97,15 +96,19 @@ func repGiveExec(ctx router.CommandCtx) {
 			Icon: target.AvatarURL(),
 		},
 		Fields: []discord.EmbedField{
-			{Name: "Rep", Value: humanize.Comma(int64(rep))},
+			{Name: "Rep", Value: humanize.Comma(int64(rep)), Inline: true},
 		},
 		Color: dctools.EmbedBackColour,
 	}
 
 	if streak > 0 {
-		embed.Fields = append(
-			embed.Fields,
-			discord.EmbedField{Name: "Streak", Value: strconv.Itoa(streak)},
+		embed.Fields = append(embed.Fields,
+			dctools.EmptyEmbedField(),
+			discord.EmbedField{
+				Name:   "Streak",
+				Value:  humanize.Comma(int64(streak)),
+				Inline: true,
+			},
 		)
 	}
 
