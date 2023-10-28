@@ -11,11 +11,14 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/diamondburned/arikawa/v3/api"
 	"github.com/diamondburned/arikawa/v3/discord"
 	"github.com/diamondburned/arikawa/v3/utils/json/option"
+	"github.com/diamondburned/arikawa/v3/utils/sendpart"
 	"github.com/dustin/go-humanize"
 	"github.com/twoscott/haseul-bot-2/router"
 	"github.com/twoscott/haseul-bot-2/utils/htmlutil"
+	"github.com/twoscott/haseul-bot-2/utils/util"
 )
 
 type collageEntry struct {
@@ -155,6 +158,20 @@ func lastFmChartAlbumsExec(ctx router.CommandCtx) {
 		time.Now().Format(time.RFC3339),
 	)
 
+	header := fmt.Sprintf(
+		"%s %s %dx%d Collage",
+		util.Possessive(lfUser),
+		timeframe.displayPeriod,
+		collageSize,
+		collageSize,
+	)
+
 	imgBuf := bytes.NewBuffer(image)
-	ctx.RespondFile(fileName, imgBuf)
+
+	ctx.Respond(api.InteractionResponseData{
+		Content: option.NewNullableString(header),
+		Files: []sendpart.File{
+			{Name: fileName, Reader: imgBuf},
+		},
+	})
 }
