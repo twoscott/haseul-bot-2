@@ -17,7 +17,6 @@ var repGiveCommand = &router.SubCommand{
 	Description: "Gives a rep to a user",
 	Handler: &router.CommandHandler{
 		Executor: repGiveExec,
-		Defer:    true,
 	},
 	Options: []discord.CommandOptionValue{
 		&discord.UserOption{
