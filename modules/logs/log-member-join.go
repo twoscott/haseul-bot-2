@@ -7,6 +7,7 @@ import (
 	"github.com/diamondburned/arikawa/v3/api"
 	"github.com/diamondburned/arikawa/v3/discord"
 	"github.com/diamondburned/arikawa/v3/state"
+	"github.com/dustin/go-humanize"
 	"github.com/twoscott/haseul-bot-2/router"
 	"github.com/twoscott/haseul-bot-2/utils/dctools"
 	"github.com/twoscott/haseul-bot-2/utils/util"
@@ -100,9 +101,9 @@ func logMemberJoin(
 	inviteField := "Currently Unavailable"
 	if usedInvite != nil {
 		inviteField = fmt.Sprintf(
-			"%s (%d uses)",
+			"%s (%s uses)",
 			usedInvite.URL(),
-			usedInvite.Uses,
+			humanize.Comma(int64(usedInvite.Uses)),
 		)
 
 		if usedInvite.Inviter != nil {
@@ -144,7 +145,10 @@ func logMemberJoin(
 			},
 		},
 		Footer: &discord.EmbedFooter{
-			Text: fmt.Sprintf("Member #%d", guild.ApproximateMembers),
+			Text: fmt.Sprintf(
+				"Member #%s",
+				humanize.Comma(int64(guild.ApproximateMembers)),
+			),
 		},
 	}
 
