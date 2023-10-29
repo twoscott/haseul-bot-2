@@ -103,7 +103,6 @@ func repGiveExec(ctx router.CommandCtx) {
 	days := humanize.Comma(int64(streak))
 	if streak > 0 {
 		embed.Fields = append(embed.Fields,
-			dctools.EmptyEmbedField(),
 			discord.EmbedField{
 				Name:   "Streak",
 				Value:  fmt.Sprintf("%s days", days),
