@@ -3,6 +3,7 @@ package message
 import (
 	"bytes"
 	"log"
+	"strconv"
 
 	"github.com/diamondburned/arikawa/v3/api"
 	"github.com/diamondburned/arikawa/v3/discord"
@@ -36,8 +37,28 @@ var messageSendCommand = &router.SubCommand{
 			MaxLength:   option.NewInt(2000),
 		},
 		&discord.AttachmentOption{
-			OptionName:  "attachment",
-			Description: "The attachment to add to the message",
+			OptionName:  "attachment-1",
+			Description: "An attachment to add to the message",
+			Required:    false,
+		},
+		&discord.AttachmentOption{
+			OptionName:  "attachment-2",
+			Description: "An attachment to add to the message",
+			Required:    false,
+		},
+		&discord.AttachmentOption{
+			OptionName:  "attachment-3",
+			Description: "An attachment to add to the message",
+			Required:    false,
+		},
+		&discord.AttachmentOption{
+			OptionName:  "attachment-4",
+			Description: "An attachment to add to the message",
+			Required:    false,
+		},
+		&discord.AttachmentOption{
+			OptionName:  "attachment-5",
+			Description: "An attachment to add to the message",
 			Required:    false,
 		},
 	},
@@ -54,36 +75,41 @@ func messageSendExec(ctx router.CommandCtx) {
 
 	content := ctx.Options.Find("content").String()
 
-	snowflake, _ = ctx.Options.Find("attachment").SnowflakeValue()
-	attachmentID := discord.AttachmentID(snowflake)
-	attachment, atchPresent := ctx.Command.Resolved.Attachments[attachmentID]
-	if content == "" && !atchPresent {
+	attachments := make([]discord.Attachment, 0, 5)
+	for i := 1; i <= 5; i++ {
+		name := "attachment-" + strconv.Itoa(i)
+		snowflake, _ = ctx.Options.Find(name).SnowflakeValue()
+		attachmentID := discord.AttachmentID(snowflake)
+		attachment, ok := ctx.Command.Resolved.Attachments[attachmentID]
+		if ok {
+			attachments = append(attachments, attachment)
+		}
+	}
+
+	if content == "" && len(attachments) == 0 {
 		ctx.RespondWarning(
 			"You must either provide message content or an attachment to send.",
 		)
 		return
 	}
 
-	data := api.SendMessageData{}
-
-	if content != "" {
-		data.Content = content
-	}
-	if atchPresent {
-		attachmentData, err := dctools.DownloadAttachment(attachment)
+	files := make([]sendpart.File, 0, len(attachments))
+	for _, a := range attachments {
+		data, err := dctools.DownloadAttachment(a)
 		if err != nil {
 			log.Println(err)
 			ctx.RespondError("Error occurred downloading attachment.")
 			return
 		}
 
-		reader := bytes.NewReader(attachmentData)
-
-		data.Files = append(data.Files, sendpart.File{
-			Name:   attachment.Filename,
+		reader := bytes.NewReader(data)
+		files = append(files, sendpart.File{
+			Name:   a.Filename,
 			Reader: reader,
 		})
 	}
+
+	data := api.SendMessageData{Content: content, Files: files}
 
 	_, err := ctx.State.SendMessageComplex(channel.ID, data)
 	if err != nil {
