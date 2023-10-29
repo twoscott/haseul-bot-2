@@ -75,7 +75,7 @@ func checkMatch(
 	case notifdb.LenientNotification:
 		rgxString = `(?i)` + rgxString
 	case notifdb.StrictNotification:
-		rgxString = `\W` + rgxString + `\W`
+		rgxString = `(^|\s)` + rgxString + `($|\s)`
 	}
 
 	rgx, err := regexp.Compile(rgxString)
