@@ -52,9 +52,3 @@ func (db *DB) GetUserLastRepTime(
 		receiverID,
 	)
 }
-
-// // GetNextRepAvailableTime returns when a user's next rep will be replenished.
-// func (db *DB) GetNextRepAvailableTime(
-// 	userID discord.UserID) (ts time.Time, err error) {
-
-// }

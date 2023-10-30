@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"math/rand"
 
 	"github.com/diamondburned/arikawa/v3/discord"
 	"github.com/dustin/go-humanize"
@@ -100,12 +101,19 @@ func repGiveExec(ctx router.CommandCtx) {
 		Color: dctools.EmbedBackColour,
 	}
 
-	days := humanize.Comma(int64(streak))
-	if streak > 0 {
+	days := streak.Days()
+	if days > 0 {
+		commaDays := humanize.Comma(int64(days))
+		emojis := getStreakEmojiString(streak)
+
+		hue := rand.Float64() * 360
+		colour := dctools.HSVToColour(hue, 0.5, 0.9)
+		embed.Color = colour
+
 		embed.Fields = append(embed.Fields,
 			discord.EmbedField{
 				Name:   "Streak",
-				Value:  fmt.Sprintf("%s days", days),
+				Value:  fmt.Sprintf("%s days %s", commaDays, emojis),
 				Inline: true,
 			},
 		)

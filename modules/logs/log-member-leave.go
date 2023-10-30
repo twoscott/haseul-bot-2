@@ -45,11 +45,9 @@ func logMemberLeave(
 				Value:  dctools.UnixTimestamp(user.CreatedAt()),
 				Inline: true,
 			},
-			dctools.EmptyEmbedField(),
 			{
-				Name:   "User ID",
-				Value:  user.ID.String(),
-				Inline: true,
+				Name:  "User ID",
+				Value: user.ID.String(),
 			},
 		},
 	}

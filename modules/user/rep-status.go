@@ -6,6 +6,7 @@ import (
 
 	"github.com/twoscott/haseul-bot-2/router"
 	"github.com/twoscott/haseul-bot-2/utils/dctools"
+	"github.com/twoscott/haseul-bot-2/utils/util"
 )
 
 var repStatusCommand = &router.SubCommand{
@@ -28,7 +29,8 @@ func repStatusExec(ctx router.CommandCtx) {
 
 	var message string
 	if remaining > 0 {
-		message = fmt.Sprintf("You have %d reps remaining to give.", remaining)
+		repsString := util.PluraliseWithCount("rep", remaining)
+		message = fmt.Sprintf("You have %s remaining to give.", repsString)
 	} else {
 		resetTime := getNextRepResetFromNow()
 		timeString := dctools.UnixTimestampStyled(

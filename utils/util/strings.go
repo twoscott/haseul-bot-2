@@ -67,7 +67,7 @@ func Pluralise(target string, amount int64) string {
 	return getPlural(target)
 }
 
-// PluraliseWithCount returns the pluralised version of targe, prefixed with
+// PluraliseWithCount returns the pluralised version of target, prefixed with
 // the amount itself.
 func PluraliseWithCount(target string, amount int64) string {
 	return humanize.Comma(amount) + " " + Pluralise(target, amount)

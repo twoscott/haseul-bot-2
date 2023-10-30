@@ -2,6 +2,7 @@ package dctools
 
 import (
 	"errors"
+	"math"
 	"strconv"
 	"strings"
 
@@ -56,4 +57,38 @@ func HexToColour(hex string) (discord.Color, error) {
 	}
 
 	return discord.Color(colourInt64), nil
+}
+
+// HSVToColour takes 3 values and converts it to a Discord colour;
+// - hue - 0-360
+// - sat - 0-1
+// - val - 0-1
+func HSVToColour(hue, sat, val float64) discord.Color {
+	c := val * sat
+	arc := hue / 60
+	x := c * (1 - math.Abs(math.Mod(arc, 2)-1))
+
+	var rf, gf, bf float64
+
+	switch {
+	case arc < 1:
+		rf, gf, bf = c, x, 0
+	case arc < 2:
+		rf, gf, bf = x, c, 0
+	case arc < 3:
+		rf, gf, bf = 0, c, x
+	case arc < 4:
+		rf, gf, bf = 0, x, c
+	case arc < 5:
+		rf, gf, bf = x, 0, c
+	case arc < 6:
+		rf, gf, bf = c, 0, x
+	}
+
+	m := val - c
+	r := discord.Color(math.Round((rf + m) * 255))
+	g := discord.Color(math.Round((gf + m) * 255))
+	b := discord.Color(math.Round((bf + m) * 255))
+
+	return r<<16 | g<<8 | b
 }

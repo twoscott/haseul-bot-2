@@ -4,12 +4,18 @@ import (
 	"time"
 
 	"github.com/diamondburned/arikawa/v3/discord"
+	"github.com/dustin/go-humanize"
 )
 
 type RepStreak struct {
 	UserID1  discord.UserID `db:"userid1"`
 	UserID2  discord.UserID `db:"userid2"`
 	FirstRep time.Time      `db:"firstrep"`
+}
+
+// Days returns the number of days elapsed since the start of the streak.
+func (rs RepStreak) Days() int {
+	return int(time.Since(rs.FirstRep) / humanize.Day)
 }
 
 // OtherUser returns the other user in a streak, given one of the users.
@@ -22,6 +28,13 @@ func (rs RepStreak) OtherUser(userID discord.UserID) discord.UserID {
 	default:
 		return discord.NullUserID
 	}
+}
+
+// Equals returns whether two streaks are equal
+func (rs RepStreak) Equals(streak RepStreak) bool {
+	return rs.UserID1 == streak.UserID1 &&
+		rs.UserID2 == streak.UserID2 &&
+		rs.FirstRep == streak.FirstRep
 }
 
 const (
@@ -55,7 +68,7 @@ const (
 					AND now() - rh.time < INTERVAL '36 hours'
 			) < 2`
 	getUserStreakQuery = `
-		SELECT CURRENT_DATE - firstRep::DATE FROM RepStreaks
+		SELECT * FROM RepStreaks 
 		WHERE userID1 IN ($1, $2) AND userID2 IN ($1, $2)`
 	getUserStreaksQuery = `
 		SELECT * FROM RepStreaks WHERE $1 IN (userID1, userID2)`
@@ -66,6 +79,15 @@ const (
 	getEntriesSizeQuery = `
 		SELECT COUNT(*) FROM RepStreaks 
 		WHERE now() - firstRep > INTERVAL '24 hours'`
+	getTimeToStreakExpiryQuery = `		
+		SELECT EXTRACT(EPOCH FROM AGE(
+			(
+				SELECT min(time) FROM RepHistory AS rh
+				WHERE rh.senderID IN ($1, $2) 
+					AND rh.receiverID IN ($1, $2)
+			), 
+			now() - INTERVAL '36 hours'
+		))::BIGINT`
 )
 
 // AddOrUpdateRepStreak adds a rep streak start entry to the database if it
@@ -101,10 +123,9 @@ func (db *DB) UpdateRepStreaks() (int64, error) {
 	return res.RowsAffected()
 }
 
-// GetUserStreak returns the number of days a rep streak is at between two
-// users.
+// GetUserStreak returns a rep streak between two users
 func (db *DB) GetUserStreak(
-	userID1, userID2 discord.UserID) (streak int, err error) {
+	userID1, userID2 discord.UserID) (streak RepStreak, err error) {
 
 	return streak, db.Get(&streak, getUserStreakQuery, userID1, userID2)
 }
@@ -124,4 +145,17 @@ func (db *DB) GetTopStreaks(limit int64) (streaks []RepStreak, err error) {
 // GetTotalStreaks returns the number of ongoing streaks.
 func (db *DB) GetTotalStreaks() (count int, err error) {
 	return count, db.Get(&count, getEntriesSizeQuery)
+}
+
+// Returns how long until the streak will expire if the earlier user to rep
+// doesn't rep soon.
+func (db *DB) GetTimeToStreakExpiry(
+	streak RepStreak) (d time.Duration, err error) {
+
+	return d * time.Second, db.Get(
+		&d,
+		getTimeToStreakExpiryQuery,
+		streak.UserID1,
+		streak.UserID2,
+	)
 }
