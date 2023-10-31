@@ -48,7 +48,6 @@ func repStreaksListExec(ctx router.CommandCtx) {
 	streakList := make([]string, 0, len(streaks))
 	for _, s := range streaks {
 		otherUserID := s.OtherUser(senderID)
-		days := time.Since(s.FirstRep) / humanize.Day
 
 		var username string
 		user, err := ctx.State.User(otherUserID)
@@ -59,10 +58,14 @@ func repStreaksListExec(ctx router.CommandCtx) {
 			username = user.Username
 		}
 
+		days := time.Since(s.FirstRep) / humanize.Day
+		emojis := getStreakEmojiString(s)
+
 		row := fmt.Sprintf(
-			"- %s (%s days)",
+			"- %s - %s %s",
 			dctools.EscapeMarkdown(username),
-			humanize.Comma(int64(days)),
+			util.PluraliseWithCount("day", int64(days)),
+			emojis,
 		)
 		streakList = append(streakList, row)
 	}

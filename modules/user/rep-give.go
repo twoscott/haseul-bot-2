@@ -11,6 +11,7 @@ import (
 	"github.com/dustin/go-humanize"
 	"github.com/twoscott/haseul-bot-2/router"
 	"github.com/twoscott/haseul-bot-2/utils/dctools"
+	"github.com/twoscott/haseul-bot-2/utils/util"
 )
 
 var repGiveCommand = &router.SubCommand{
@@ -103,7 +104,6 @@ func repGiveExec(ctx router.CommandCtx) {
 
 	days := streak.Days()
 	if days > 0 {
-		commaDays := humanize.Comma(int64(days))
 		emojis := getStreakEmojiString(streak)
 
 		hue := rand.Float64() * 360
@@ -112,8 +112,11 @@ func repGiveExec(ctx router.CommandCtx) {
 
 		embed.Fields = append(embed.Fields,
 			discord.EmbedField{
-				Name:   "Streak",
-				Value:  fmt.Sprintf("%s days %s", commaDays, emojis),
+				Name: "Streak",
+				Value: fmt.Sprintln(
+					util.PluraliseWithCount("day", int64(days)),
+					emojis,
+				),
 				Inline: true,
 			},
 		)
