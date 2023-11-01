@@ -107,7 +107,7 @@ func (h *Handler) MessageDelete(ev *gateway.MessageDeleteEvent) {
 		return
 	}
 
-	h.Router.HandleMessageDelete(*msg)
+	go h.Router.HandleMessageDelete(*msg)
 }
 
 func (h *Handler) MessageUpdate(ev *gateway.MessageUpdateEvent) {
@@ -117,7 +117,7 @@ func (h *Handler) MessageUpdate(ev *gateway.MessageUpdateEvent) {
 		return
 	}
 
-	h.Router.HandleMessageUpdate(*old, ev.Message, ev.Member)
+	go h.Router.HandleMessageUpdate(*old, ev.Message, ev.Member)
 }
 
 func (h *Handler) Ready(ev *gateway.ReadyEvent) {
