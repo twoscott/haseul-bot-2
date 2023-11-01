@@ -24,27 +24,22 @@ func logNewMember(
 		*guild = discord.Guild{Name: "the server"}
 	}
 
-	wch := make(chan *discord.Message)
-
-	go welcomeMember(rt.State, member, *guild, wch)
-	logMemberJoin(rt.State, member, *guild, wch)
+	msg := welcomeMember(rt.State, member, *guild)
+	logMemberJoin(rt.State, member, *guild, msg)
 }
 
 func welcomeMember(
 	st *state.State,
 	member discord.Member,
-	guild discord.Guild,
-	welcomeChan chan<- *discord.Message) {
+	guild discord.Guild) *discord.Message {
 
 	welcome, err := db.Guilds.WelcomeConfig(guild.ID)
 	if err != nil {
 		log.Println(err)
-		close(welcomeChan)
-		return
+		return nil
 	}
 	if !welcome.ChannelID.IsValid() {
-		close(welcomeChan)
-		return
+		return nil
 	}
 
 	embed := discord.Embed{
@@ -72,17 +67,18 @@ func welcomeMember(
 
 	msg, err := st.SendEmbeds(welcome.ChannelID, embed)
 	if err != nil {
-		close(welcomeChan)
+		log.Println(err)
+		return nil
 	}
 
-	welcomeChan <- msg
+	return msg
 }
 
 func logMemberJoin(
 	st *state.State,
 	member discord.Member,
 	guild discord.Guild,
-	welcomeChan <-chan *discord.Message) {
+	welcomeMsg *discord.Message) {
 
 	logChannelID, err := db.Guilds.GetMemberLogsChannel(guild.ID)
 	if err != nil {
@@ -163,8 +159,6 @@ func logMemberJoin(
 	}
 
 	var components discord.ContainerComponents
-
-	welcomeMsg := <-welcomeChan
 	if welcomeMsg != nil {
 		components = discord.Components(
 			&discord.ActionRowComponent{
