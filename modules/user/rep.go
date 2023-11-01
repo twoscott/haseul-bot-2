@@ -32,10 +32,16 @@ func getStreakEmojiString(streak repdb.RepStreak) string {
 	user2BF := getStreakBestFriend(streak.UserID2)
 
 	if user1BF == streak.UserID2 && user2BF == streak.UserID1 {
-		emojis = append(emojis, getBestFriendEmoji(days))
+		bfEmoji := getBestFriendEmoji(days)
+		if bfEmoji != "" {
+			emojis = append(emojis, bfEmoji)
+		}
 	}
 
-	emojis = append(emojis, getTopStreakEmoji(streak))
+	topEmoji := getTopStreakEmoji(streak)
+	if topEmoji != "" {
+		emojis = append(emojis, topEmoji)
+	}
 
 	expTime, err := db.Reps.GetTimeToStreakExpiry(streak)
 	if err != nil {
