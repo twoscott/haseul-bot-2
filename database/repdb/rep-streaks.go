@@ -61,7 +61,8 @@ const (
 		END`
 	updateRepStreaksQuery = `
 		DELETE FROM RepStreaks AS rs
-			WHERE (
+			WHERE firstRep < now() - interval '36 hours'
+			AND (
 				SELECT COUNT(*) FROM RepHistory AS rh
 				WHERE rh.senderID IN (rs.userID1, rs.userID2) 
 					AND rh.receiverID IN (rs.userID1, rs.userID2)
