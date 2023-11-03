@@ -3,6 +3,7 @@ package message
 import (
 	"fmt"
 	"log"
+	"strings"
 
 	"github.com/diamondburned/arikawa/v3/discord"
 	"github.com/diamondburned/arikawa/v3/utils/bot/extras/arguments"
@@ -57,9 +58,9 @@ func messageFetchExec(ctx router.CommandCtx) {
 		return
 	}
 
-	content := msg.Content
+	content := strings.ReplaceAll(msg.Content, "```", "'''")
 	if md {
-		content = fmt.Sprintf("```%s```", content)
+		content = fmt.Sprintf("` ``` ` -> `'''`\n```%s```", content)
 	}
 
 	ctx.RespondSimple(content)
