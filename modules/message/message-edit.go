@@ -41,15 +41,16 @@ func messageEditExec(ctx router.CommandCtx) {
 		return
 	}
 
+	var permissions discord.Permissions
 	bot, err := ctx.State.Me()
 	if err == nil {
-		permissions, err := ctx.State.Permissions(url.ChannelID, bot.ID)
-		if err == nil && !permissions.Has(discord.PermissionViewChannel) {
-			ctx.RespondWarning(
-				"I do not have permission to view the message's channel.",
-			)
-			return
-		}
+		permissions, err = ctx.State.Permissions(url.ChannelID, bot.ID)
+	}
+	if err == nil && !permissions.Has(discord.PermissionViewChannel) {
+		ctx.RespondWarning(
+			"I do not have permission to view the message's channel.",
+		)
+		return
 	}
 
 	msg, err := ctx.State.Message(url.ChannelID, url.MessageID)

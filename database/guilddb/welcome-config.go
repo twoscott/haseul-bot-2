@@ -11,7 +11,7 @@ import (
 
 const (
 	defaultWelcomeTitle   string      = "New Member!"
-	defaultWelcomeMessage welcomeText = "Welcome {mention} to {server}!"
+	defaultWelcomeMessage welcomeText = "Welcome {username} to {server}!"
 )
 
 type welcomeText string

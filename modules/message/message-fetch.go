@@ -8,6 +8,7 @@ import (
 	"github.com/diamondburned/arikawa/v3/discord"
 	"github.com/diamondburned/arikawa/v3/utils/bot/extras/arguments"
 	"github.com/twoscott/haseul-bot-2/router"
+	"github.com/twoscott/haseul-bot-2/utils/botutil"
 )
 
 var messageFetchCommand = &router.SubCommand{
@@ -40,15 +41,16 @@ func messageFetchExec(ctx router.CommandCtx) {
 		return
 	}
 
-	bot, err := ctx.State.Me()
-	if err == nil {
-		permissions, err := ctx.State.Permissions(url.ChannelID, bot.ID)
-		if err == nil && !permissions.Has(discord.PermissionViewChannel) {
-			ctx.RespondWarning(
-				"I do not have permission to view the message's channel.",
-			)
-			return
-		}
+	has, err := botutil.HasAnyPermissions(
+		ctx.State,
+		ctx.Interaction.ChannelID,
+		discord.PermissionViewChannel,
+	)
+	if err == nil && !has {
+		ctx.RespondWarning(
+			"I do not have permission to view the message's channel.",
+		)
+		return
 	}
 
 	msg, err := ctx.State.Message(url.ChannelID, url.MessageID)

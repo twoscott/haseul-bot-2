@@ -9,6 +9,7 @@ import (
 	"github.com/diamondburned/arikawa/v3/state"
 	"github.com/dustin/go-humanize"
 	"github.com/twoscott/haseul-bot-2/router"
+	"github.com/twoscott/haseul-bot-2/utils/botutil"
 	"github.com/twoscott/haseul-bot-2/utils/dctools"
 	"github.com/twoscott/haseul-bot-2/utils/util"
 )
@@ -89,17 +90,31 @@ func logMemberJoin(
 		return
 	}
 
-	usedInvite, err := inviteTracker.ResolveInvite(st, guild.ID)
-	if err != nil {
-		log.Println(err)
+	var (
+		usedInvite  *discord.Invite
+		inviteField = "Currently Unavailable"
+	)
+
+	canManageGuild, err := botutil.HasPermissions(
+		st,
+		logChannelID,
+		discord.PermissionManageGuild,
+	)
+	if err != nil || canManageGuild {
+		usedInvite, err = inviteTracker.ResolveInvite(st, guild.ID)
+		if err != nil {
+			log.Println(err)
+		}
+	} else {
+		inviteField = "I require `MANAGE_GUILD` permissions"
 	}
 
-	inviteField := "Currently Unavailable"
 	if usedInvite != nil {
+		uses := int64(usedInvite.Uses)
 		inviteField = fmt.Sprintf(
-			"%s (%s uses)",
+			"%s (%s)",
 			usedInvite.URL(),
-			humanize.Comma(int64(usedInvite.Uses)),
+			util.PluraliseWithCount("use", uses),
 		)
 
 		if usedInvite.Inviter != nil {
