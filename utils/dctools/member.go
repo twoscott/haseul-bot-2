@@ -1,6 +1,8 @@
 package dctools
 
 import (
+	"errors"
+
 	"github.com/diamondburned/arikawa/v3/discord"
 	"github.com/diamondburned/arikawa/v3/state"
 )
@@ -27,6 +29,10 @@ func MemberHighestRole(
 		}
 	}
 
+	if role == nil {
+		return nil, errors.New("no role found for user")
+	}
+
 	return
 }
 
@@ -36,23 +42,18 @@ func MemberCanModifyRole(
 	guildID discord.GuildID,
 	channelID discord.ChannelID,
 	userID discord.UserID,
-	roleID discord.RoleID) (can bool, err error) {
+	roleID discord.RoleID) (bool, error) {
 
-	g, err := st.Guild(guildID)
+	p, err := st.Permissions(channelID, userID)
 	if err != nil {
 		return false, err
 	}
 
-	if IsOwner(*g, userID) {
-		return true, nil
-	}
-
-	ch, err := st.Channel(channelID)
-	if err != nil {
+	if !HasAnyPermOrAdmin(p, discord.PermissionManageRoles) {
 		return false, err
 	}
 
-	m, err := st.Member(guildID, userID)
+	hr, err := MemberHighestRole(st, guildID, userID)
 	if err != nil {
 		return false, err
 	}
@@ -62,24 +63,9 @@ func MemberCanModifyRole(
 		return false, err
 	}
 
-	p := discord.CalcOverwrites(*g, *ch, *m)
-	if p.Has(discord.PermissionAdministrator) {
-		return true, nil
-	}
-
-	if !p.Has(discord.PermissionManageRoles) {
+	if hr.Position < r.Position {
 		return false, nil
 	}
 
-	hr, err := MemberHighestRole(st, guildID, m.User.ID)
-	if err != nil {
-		return false, err
-	}
-
-	if r.Position > hr.Position {
-		return
-	}
-
-	can = true
-	return
+	return true, nil
 }
