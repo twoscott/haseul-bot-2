@@ -63,7 +63,7 @@ const (
 func handleRoleSelect(
 	rt *router.Router,
 	interaction *discord.InteractionEvent,
-	data *discord.SelectInteraction) {
+	data *discord.StringSelectInteraction) {
 
 	if data.CustomID != selectIDRoleSelect {
 		return

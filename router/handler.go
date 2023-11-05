@@ -46,9 +46,7 @@ func (h *Handler) InteractionCreate(
 		h.Router.HandleAutocomplete(&interaction.InteractionEvent, data)
 	case *discord.ButtonInteraction:
 		h.Router.HandleButtonPress(&interaction.InteractionEvent, data)
-	case *discord.ModalInteraction:
-		h.Router.HandleModalSubmit(&interaction.InteractionEvent, data)
-	case *discord.SelectInteraction:
+	case *discord.StringSelectInteraction:
 		h.Router.HandleSelect(&interaction.InteractionEvent, data)
 	}
 }

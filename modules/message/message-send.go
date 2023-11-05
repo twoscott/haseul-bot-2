@@ -2,6 +2,7 @@ package message
 
 import (
 	"bytes"
+	"fmt"
 	"log"
 	"strconv"
 
@@ -111,12 +112,14 @@ func messageSendExec(ctx router.CommandCtx) {
 
 	data := api.SendMessageData{Content: content, Files: files}
 
-	_, err := ctx.State.SendMessageComplex(channel.ID, data)
+	msg, err := ctx.State.SendMessageComplex(channel.ID, data)
 	if err != nil {
 		log.Println(err)
 		ctx.RespondError("Error occurred while sending the message.")
 		return
 	}
 
-	ctx.RespondSuccess("Message sent.")
+	ctx.RespondSuccess(
+		fmt.Sprintf("Message sent. %s", msg.URL()),
+	)
 }

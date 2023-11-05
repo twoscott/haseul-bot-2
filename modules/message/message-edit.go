@@ -1,6 +1,7 @@
 package message
 
 import (
+	"fmt"
 	"log"
 
 	"github.com/diamondburned/arikawa/v3/discord"
@@ -61,7 +62,14 @@ func messageEditExec(ctx router.CommandCtx) {
 	}
 
 	if msg.Author.ID != bot.ID {
-		ctx.RespondWarning("Provided message was sent by another user.")
+		ctx.RespondWarning("Provided message was not sent by me.")
+		return
+	}
+
+	if msg.Interaction != nil {
+		ctx.RespondWarning(
+			"Provided message was sent in response to a command.",
+		)
 		return
 	}
 
@@ -72,5 +80,7 @@ func messageEditExec(ctx router.CommandCtx) {
 		return
 	}
 
-	ctx.RespondSuccess("Message edited successfully.")
+	ctx.RespondSuccess(
+		fmt.Sprintf("Message edited successfully. %s", msg.URL()),
+	)
 }

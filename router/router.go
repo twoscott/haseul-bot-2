@@ -20,7 +20,6 @@ type (
 		State                  *state.State
 		commands               []*Command
 		commandHandlers        CommandHandlers
-		modalHandlers          ModalHandlers
 		buttonPagers           ButtonPagerMap
 		buttonListeners        []ButtonListener
 		selectListeners        []SelectListener
@@ -40,7 +39,7 @@ type (
 	SelectListener  func(
 		*Router,
 		*discord.InteractionEvent,
-		*discord.SelectInteraction,
+		*discord.StringSelectInteraction,
 	)
 	ButtonListener func(
 		*Router,
@@ -64,7 +63,6 @@ func New(state *state.State) *Router {
 		State:                  state,
 		commands:               make([]*Command, 0),
 		commandHandlers:        make(CommandHandlers),
-		modalHandlers:          make(ModalHandlers),
 		buttonPagers:           make(ButtonPagerMap),
 		memberJoinListeners:    make([]MemberJoinListener, 0),
 		memberLeaveListeners:   make([]MemberLeaveListener, 0),
@@ -141,40 +139,6 @@ func (rt *Router) HandleAutocomplete(
 	}
 
 	handler.Autocomplete(ctx)
-}
-
-func (rt *Router) HandleModalSubmit(
-	interaction *discord.InteractionEvent,
-	modal *discord.ModalInteraction) {
-
-	key := modal.CustomID
-	handler, ok := rt.modalHandlers[key]
-	if !ok {
-		err := errors.New(
-			"No modal listener registered for '" + string(key) + "'",
-		)
-		log.Print(err)
-		return
-	}
-
-	delete(rt.modalHandlers, key)
-
-	itx := InteractionCtx{
-		Router:      rt,
-		Interaction: interaction,
-		Ephemeral:   handler.Ephemeral,
-	}
-
-	ctx := ModalCtx{
-		InteractionCtx: &itx,
-		Components:     modal.Components,
-	}
-
-	if handler.Defer {
-		itx.Defer()
-	}
-
-	handler.HandleModalSubmit(ctx)
 }
 
 // GetRawCreateCommandData converts all commands stored in the router to
@@ -445,7 +409,9 @@ func (rt *Router) AddSelectListener(selectListener SelectListener) {
 // HandleStartupEvent routes a select interaction to all listener functions
 // registered to the router.
 func (rt *Router) HandleSelect(
-	interaction *discord.InteractionEvent, data *discord.SelectInteraction) {
+	interaction *discord.InteractionEvent,
+	data *discord.StringSelectInteraction) {
+
 	for _, listener := range rt.selectListeners {
 		go listener(rt, interaction, data)
 	}

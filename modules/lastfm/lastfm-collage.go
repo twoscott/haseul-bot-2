@@ -168,7 +168,7 @@ func lastFmChartAlbumsExec(ctx router.CommandCtx) {
 
 	imgBuf := bytes.NewBuffer(image)
 
-	ctx.Respond(api.InteractionResponseData{
+	ctx.RespondMessage(api.InteractionResponseData{
 		Content: option.NewNullableString(header),
 		Files: []sendpart.File{
 			{Name: fileName, Reader: imgBuf},

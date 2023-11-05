@@ -9,4 +9,6 @@ func Init(rt *router.Router) {
 	messageCommand.AddSubCommand(messageSendCommand)
 	messageCommand.AddSubCommand(messageEditCommand)
 	messageCommand.AddSubCommand(messageFetchCommand)
+
+	rt.AddCommand(editMessageCommand)
 }

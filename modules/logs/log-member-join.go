@@ -56,16 +56,6 @@ func welcomeMember(
 		Timestamp: member.Joined,
 	}
 
-	if discord.HasFlag(
-		uint64(member.User.Flags), uint64(discord.LikelySpammer)) {
-
-		embed.Fields = append(embed.Fields, discord.EmbedField{
-			Name:   "Flags",
-			Value:  fmt.Sprint(util.WarningSymbol, "Likely Spammer"),
-			Inline: true,
-		})
-	}
-
 	msg, err := st.SendEmbeds(welcome.ChannelID, embed)
 	if err != nil {
 		log.Println(err)
@@ -168,7 +158,7 @@ func logMemberJoin(
 
 		embed.Fields = append(embed.Fields, discord.EmbedField{
 			Name:   "Flags",
-			Value:  fmt.Sprint(util.WarningSymbol, "Likely Spammer"),
+			Value:  fmt.Sprintln(util.WarningSymbol, "Likely Spammer"),
 			Inline: true,
 		})
 	}

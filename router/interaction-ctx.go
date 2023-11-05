@@ -16,9 +16,9 @@ import (
 type InteractionCtx struct {
 	*Router
 	Interaction *discord.InteractionEvent
-	// Deferred signals whether a deferred message response has been sent to
-	// the interaction.
-	Deferred bool
+	// Responded signals whether the interaction has been responded to, and so
+	// we should now respond with follow-up responses.
+	Responded bool
 	// Ephemeral signals whether responses to the interacton should include
 	// the ephemeral flag. This flag dictates that the response should only
 	// be visiable to the initial interaction sender.
@@ -34,51 +34,58 @@ func (ctx *InteractionCtx) Defer() error {
 		return err
 	}
 
-	ctx.Deferred = true
+	ctx.Responded = true
 	return err
 }
 
-// Respond responds to the supplied command with the supplied
-// response data.
-func (ctx InteractionCtx) Respond(data api.InteractionResponseData) error {
+// RespondMessage responds to the command with the supplied response data as
+// a message response.
+func (ctx *InteractionCtx) RespondMessage(
+	data api.InteractionResponseData) error {
+
 	if ctx.Ephemeral {
 		data.Flags |= discord.EphemeralMessage
 	}
-	if ctx.Deferred {
+	if ctx.Responded {
 		_, err := dctools.FollowupRespond(ctx.State, ctx.Interaction, data)
 		return err
 	}
 
-	return dctools.MessageRespond(ctx.State, ctx.Interaction, data)
+	err := dctools.MessageRespond(ctx.State, ctx.Interaction, data)
+	if err == nil {
+		ctx.Responded = true
+	}
+
+	return err
 }
 
-// RespondSimple responds to the supplied command with the supplied
+// RespondSimple responds to the command with the supplied
 // content and embed(s).
 func (ctx InteractionCtx) RespondSimple(
 	content string, embeds ...discord.Embed) error {
 
-	return ctx.Respond(api.InteractionResponseData{
+	return ctx.RespondMessage(api.InteractionResponseData{
 		Content: option.NewNullableString(content),
 		Embeds:  &embeds,
 	})
 }
 
-// RespondText responds to the supplied command with the supplied content.
+// RespondText responds to the command with the supplied content.
 func (ctx InteractionCtx) RespondText(content string) error {
 	return ctx.RespondSimple(content)
 }
 
-// RespondEmbed responds to the supplied command with the supplied embed(s).
+// RespondEmbed responds to the command with the supplied embed(s).
 func (ctx InteractionCtx) RespondEmbed(embeds ...discord.Embed) error {
 	return ctx.RespondSimple("", embeds...)
 }
 
-// RespondFiles responds to the supplied command with the supplied file(s).
+// RespondFiles responds to the  command with the supplied file(s).
 func (ctx InteractionCtx) RespondFiles(files []sendpart.File) error {
-	return ctx.Respond(api.InteractionResponseData{Files: files})
+	return ctx.RespondMessage(api.InteractionResponseData{Files: files})
 }
 
-// RespondFile responds to the supplied command with the supplied file.
+// RespondFile responds to the  command with the supplied file.
 func (ctx InteractionCtx) RespondFile(fileName string, data io.Reader) error {
 	return ctx.RespondFiles([]sendpart.File{
 		{Name: fileName, Reader: data},
@@ -106,8 +113,7 @@ func (ctx InteractionCtx) RespondError(content string) error {
 // RespondGenericError responds to a command with a
 // generic error message.
 func (ctx InteractionCtx) RespondGenericError() error {
-	errMsg := Error("Error occurred during command execution.").String()
-	return ctx.RespondText(errMsg)
+	return ctx.RespondError("Unknown error occurred during command execution.")
 }
 
 // RespondCmdMessage responds with the pre-defined error, warning, or
@@ -121,7 +127,7 @@ func (ctx InteractionCtx) RespondCmdMessage(response CmdResponse) error {
 func (ctx InteractionCtx) RespondConfirmationButtons(
 	content string, embeds ...discord.Embed) error {
 
-	return ctx.Respond(api.InteractionResponseData{
+	return ctx.RespondMessage(api.InteractionResponseData{
 		Content:    option.NewNullableString(content),
 		Embeds:     &embeds,
 		Components: ConfirmationComponents(),
@@ -133,7 +139,7 @@ func (ctx InteractionCtx) RespondConfirmationButtons(
 func (ctx InteractionCtx) RespondPagerButtons(
 	content string, embeds ...discord.Embed) error {
 
-	return ctx.Respond(api.InteractionResponseData{
+	return ctx.RespondMessage(api.InteractionResponseData{
 		Content:    option.NewNullableString(content),
 		Embeds:     &embeds,
 		Components: PagerComponents(),
@@ -243,4 +249,84 @@ func (ctx InteractionCtx) ParseSendableChannel(
 	}
 
 	return channel, nil
+}
+
+// CommandCtx wraps router and includes data about the command interaction
+// to be passed to the receiving command handler.
+type CommandCtx struct {
+	*InteractionCtx
+	Handler *CommandHandler
+	Command *discord.CommandInteraction
+	// Options contains options that were attached to the lowest level
+	// command or sub command, this means it excludes sub command groups
+	// or sub commands from the options.
+	Options discord.CommandInteractionOptions
+}
+
+// RespondModal responds to the command with the supplied response data as a
+// modal response.
+func (ctx *InteractionCtx) RespondModal(
+	data api.InteractionResponseData) error {
+
+	err := dctools.ModalRespond(ctx.State, ctx.Interaction, data)
+	if err == nil {
+		ctx.Responded = true
+	}
+
+	return err
+}
+
+// AutocompleteCtx wraps router and includes data about the autocomplete
+// interaction to be passed to the receiving completion handler.
+type AutocompleteCtx struct {
+	*InteractionCtx
+	Options discord.AutocompleteOptions
+	// Focused is the option that is currently being typed in by the user.
+	Focused discord.AutocompleteOption
+}
+
+// AutocompleteInteractionKey returns the string representing the command and
+// subcommands of an autocomplete interaction as a single string,
+// for use in the commandHandlers hash map.
+func AutocompleteInteractionKey(
+	completion *discord.AutocompleteInteraction) string {
+
+	if len(completion.Options) < 1 {
+		return completion.Name
+	}
+
+	return completion.Name + autocompleteString(&completion.Options[0])
+}
+
+func autocompleteString(option *discord.AutocompleteOption) string {
+	switch option.Type {
+	case discord.SubcommandGroupOptionType:
+		return " " + option.Name + autocompleteString(&option.Options[0])
+	case discord.SubcommandOptionType:
+		return " " + option.Name
+	default:
+		return ""
+	}
+}
+
+func (ctx AutocompleteCtx) RespondChoices(
+	choices api.AutocompleteChoices) error {
+
+	return ctx.State.RespondInteraction(
+		ctx.Interaction.ID,
+		ctx.Interaction.Token,
+		api.InteractionResponse{
+			Type: api.AutocompleteResult,
+			Data: &api.InteractionResponseData{
+				Choices: choices,
+			},
+		},
+	)
+}
+
+// ModalCtx wraps router and includes data about the modal submit
+// interaction to be passed to the receiving modal handler.
+type ModalCtx struct {
+	*InteractionCtx
+	Modal *discord.ModalInteraction
 }

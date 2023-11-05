@@ -7,9 +7,6 @@ type CommandHandler struct {
 	// Autocompleter will be run when an autocomplete interaction is determined
 	// to be aimed at the parent command.
 	Autocompleter func(AutocompleteCtx)
-	// ModalHandler will be run when a modal submit interaction is determined
-	// to be aimed at the parent command.
-	ModalHandler func(ModalCtx)
 	// Defer defines whether the command will take longer than Discord's
 	// pre-defined timeout of 3s to complete. If true, the command will
 	// acknowledge the interaction first before calling the command's
@@ -32,11 +29,4 @@ func (h CommandHandler) Execute(ctx CommandCtx) {
 func (h CommandHandler) Autocomplete(ctx AutocompleteCtx) {
 	defer handlePanic(ctx.State)
 	h.Autocompleter(ctx)
-}
-
-// HandleModalSubmit runs the handler's ModalHandler and handles any
-// resulting panics.
-func (h CommandHandler) HandleModalSubmit(ctx ModalCtx) {
-	defer handlePanic(ctx.State)
-	h.ModalHandler(ctx)
 }
