@@ -4,7 +4,7 @@ go 1.21
 
 require (
 	github.com/PuerkitoBio/goquery v1.8.0
-	github.com/diamondburned/arikawa/v3 v3.3.4-0.20231104023540-ff709fc16ca0
+	github.com/diamondburned/arikawa/v3 v3.3.6-0.20240229014621-2ec439a63f40
 	github.com/dustin/go-humanize v1.0.0
 	github.com/enescakir/emoji v1.0.0
 	github.com/jmoiron/sqlx v1.3.5
@@ -14,9 +14,9 @@ require (
 	github.com/shkh/lastfm-go v0.0.0-20191215035245-89a801c244e0
 	github.com/twoscott/patreon-go v0.0.0-20210516030041-c0b59ebddeb4
 	golang.org/x/exp v0.0.0-20230118134722-a68e582fa157
-	golang.org/x/net v0.1.0
+	golang.org/x/net v0.10.0
 	golang.org/x/oauth2 v0.0.0-20220411215720-9780585627b5
-	golang.org/x/text v0.5.0
+	golang.org/x/text v0.14.0
 )
 
 require (

@@ -3,8 +3,18 @@ package dctools
 import "github.com/diamondburned/arikawa/v3/discord"
 
 // IsTextChannel returns whether the channel is a text or news channel.
-func IsTextChannel(chType discord.ChannelType) bool {
-	return chType == discord.GuildText || chType == discord.GuildNews
+func IsTextChannel(channelType discord.ChannelType) bool {
+	return channelType == discord.GuildText || channelType == discord.GuildAnnouncement
+}
+
+// GetChannelString returns the channel name prefixed with a # if the channel is
+// a text channel.
+func GetChannelString(channel discord.Channel) string {
+	if IsTextChannel(channel.Type) {
+		return "#" + channel.Name
+	}
+
+	return channel.Name
 }
 
 // ChannelTypeString returns the channel type in string form.

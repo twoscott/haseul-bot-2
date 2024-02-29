@@ -129,11 +129,13 @@ func sendNotification(
 	userID discord.UserID,
 	matches []string) {
 
-	permissions, err := rt.State.Permissions(msg.ChannelID, userID)
-	if err != nil {
-		return
+	chString := msg.ChannelID.String()
+	channel, err := rt.State.Channel(msg.ChannelID)
+	if err == nil {
+		chString = dctools.GetChannelString(*channel)
 	}
-	if !permissions.Has(discord.PermissionViewChannel) {
+
+	if !canSeeChannel(rt, *channel, userID) {
 		return
 	}
 
@@ -151,12 +153,6 @@ func sendNotification(
 	guild, err := rt.State.Guild(msg.GuildID)
 	if err == nil {
 		content += fmt.Sprintf(" in **%s**", guild.Name)
-	}
-
-	chString := msg.ChannelID.Mention()
-	channel, err := rt.State.Channel(msg.ChannelID)
-	if err == nil {
-		chString = "#" + channel.Name
 	}
 
 	colour, _ := rt.State.MemberColor(msg.GuildID, msg.Author.ID)
@@ -185,4 +181,28 @@ func sendNotification(
 			},
 		),
 	})
+}
+
+func canSeeChannel(
+	rt *router.Router, channel discord.Channel, userID discord.UserID) bool {
+
+	switch channel.Type {
+	case discord.GuildText,
+		discord.GuildVoice,
+		discord.GuildStageVoice,
+		discord.GuildAnnouncement:
+
+		permissions, err := rt.State.Permissions(channel.ID, userID)
+		return err == nil && permissions.Has(discord.PermissionViewChannel)
+	case discord.GuildPublicThread,
+		discord.GuildAnnouncementThread:
+
+		permissions, err := rt.State.Permissions(channel.ParentID, userID)
+		return err == nil && permissions.Has(discord.PermissionViewChannel)
+	case discord.GuildPrivateThread:
+		_, err := rt.State.ThreadMember(channel.ID, userID)
+		return err == nil
+	}
+
+	return false
 }
