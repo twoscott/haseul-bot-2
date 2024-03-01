@@ -100,6 +100,7 @@ func lastFmChartAlbumsExec(ctx router.CommandCtx) {
 			"You have not scrobbled any music on Last.fm " +
 				"during this time period.",
 		)
+		return
 	}
 
 	adjustedSize := math.Sqrt(float64(albumsScrobbled))
