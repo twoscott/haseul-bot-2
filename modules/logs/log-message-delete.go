@@ -38,7 +38,7 @@ func logMessageDelete(
 
 	var proximityMsg *discord.Message
 	recentMsgs, err := rt.State.Messages(deletedMsg.ChannelID, 5)
-	if err == nil {
+	if err == nil && len(recentMsgs) > 0 {
 		proximityMsg = &recentMsgs[0]
 		for _, m := range recentMsgs {
 			if m.ID < deletedMsg.ID {
