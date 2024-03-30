@@ -15,7 +15,6 @@ var repStatusCommand = &router.SubCommand{
 		"be able to give a rep again",
 	Handler: &router.CommandHandler{
 		Executor: repStatusExec,
-		Defer:    true,
 	},
 }
 
