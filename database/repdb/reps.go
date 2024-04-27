@@ -4,6 +4,7 @@ import (
 	"errors"
 
 	"github.com/diamondburned/arikawa/v3/discord"
+	"github.com/jmoiron/sqlx"
 )
 
 type RepUser struct {
@@ -34,6 +35,28 @@ const (
 		SELECT SUM(rep) FROM UserRep`
 )
 
+// addOrUpdateRepStreak adds a rep streak start entry to the database if it
+// doesn't exist, or updates the time according to whether the rep streak should
+// be reset or continue, based on the users' rep history.
+func addOrUpdateRepStreak(
+	tx *sqlx.Tx, senderID, targetID discord.UserID) (bool, error) {
+
+	var userID1, userID2 discord.UserID
+	if senderID < targetID {
+		userID1, userID2 = senderID, targetID
+	} else {
+		userID1, userID2 = targetID, senderID
+	}
+
+	res, err := tx.Exec(addOrUpdateRepStreakQuery, userID1, userID2)
+	if err != nil {
+		return false, err
+	}
+
+	added, err := res.RowsAffected()
+	return added > 0, err
+}
+
 // RepUser adds a rep to a user.
 func (db *DB) RepUser(senderID, targetID discord.UserID) (rep int, err error) {
 	if senderID == targetID {
@@ -57,7 +80,7 @@ func (db *DB) RepUser(senderID, targetID discord.UserID) (rep int, err error) {
 		return 0, err
 	}
 
-	_, err = db.AddOrUpdateRepStreak(senderID, targetID)
+	_, err = addOrUpdateRepStreak(tx, senderID, targetID)
 	if err != nil {
 		return 0, err
 	}

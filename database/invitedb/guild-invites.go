@@ -18,7 +18,7 @@ const (
 			PRIMARY KEY(code)
 		)`
 
-	addInviteQuery = `
+	addOrUpdateInviteQuery = `
 		INSERT INTO GuildInvites VALUES($1, $2, $3)
 		ON CONFLICT(code) DO UPDATE SET uses = $3`
 	removeInviteQuery = `
@@ -30,8 +30,25 @@ const (
 // Add adds an invite to be tracked by the database, or if it exsits,
 // updates the uses field to the new amount.
 func (db *DB) Add(code string, guildID discord.GuildID, uses int) error {
-	_, err := db.Exec(addInviteQuery, code, guildID, uses)
+	_, err := db.Exec(addOrUpdateInviteQuery, code, guildID, uses)
 	return err
+}
+
+// AddAll adds multiple invites to be tracked by the database, or if it exsits,
+// updates a uses field to the new amount.
+func (db *DB) AddAll(guildID discord.GuildID, invites []discord.Invite) error {
+	tx, err := db.Begin()
+	if err != nil {
+		return err
+	}
+
+	defer tx.Rollback()
+
+	for _, inv := range invites {
+		tx.Exec(addOrUpdateInviteQuery, inv.Code, guildID, inv.Uses)
+	}
+
+	return tx.Commit()
 }
 
 // Remove removes an invite from being tracked in the database.

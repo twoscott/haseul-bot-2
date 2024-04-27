@@ -91,28 +91,6 @@ const (
 		))::BIGINT`
 )
 
-// AddOrUpdateRepStreak adds a rep streak start entry to the database if it
-// doesn't exist, or updates the time according to whether the rep streak should
-// be reset or continue, based on the users' rep history.
-func (db *DB) AddOrUpdateRepStreak(
-	senderID, targetID discord.UserID) (bool, error) {
-
-	var userID1, userID2 discord.UserID
-	if senderID < targetID {
-		userID1, userID2 = senderID, targetID
-	} else {
-		userID1, userID2 = targetID, senderID
-	}
-
-	res, err := db.Exec(addOrUpdateRepStreakQuery, userID1, userID2)
-	if err != nil {
-		return false, err
-	}
-
-	added, err := res.RowsAffected()
-	return added > 0, err
-}
-
 // UpdateRepStreaks clears any rep streaks that have fallen past the max rep
 // age time.
 func (db *DB) UpdateRepStreaks() (int64, error) {

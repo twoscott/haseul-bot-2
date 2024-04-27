@@ -32,25 +32,13 @@ func GetTracker() *Tracker {
 	return tracker
 }
 
-func (tr *Tracker) trackNewInvites(invites []discord.Invite) error {
+func (tr *Tracker) trackNewInvites(
+	guildID discord.GuildID, invites []discord.Invite) error {
 	if len(invites) < 1 {
 		return nil
 	}
 
-	tx, err := tr.Begin()
-	if err != nil {
-		return err
-	}
-
-	for _, inv := range invites {
-		if inv.Guild == nil {
-			continue
-		}
-		tr.Invites.Add(inv.Code, inv.Guild.ID, inv.Uses)
-	}
-
-	err = tx.Commit()
-	return err
+	return tr.Invites.AddAll(guildID, invites)
 }
 
 func (tr *Tracker) vanityInvite(
@@ -95,7 +83,7 @@ func (tr *Tracker) ResolveInvite(
 		return nil, err
 	}
 	newVanity, err := tr.vanityInvite(st, guildID)
-	if newVanity != nil {
+	if err == nil && newVanity != nil {
 		newInvs = append(newInvs, *newVanity)
 	}
 
@@ -121,9 +109,9 @@ func (tr *Tracker) ResolveInvite(
 		}
 	}
 
-	err = tr.trackNewInvites(usedInvites)
+	err = tr.trackNewInvites(guildID, usedInvites)
 	if err != nil {
-		log.Println("DB Err:", err) // remove
+		log.Println("DB Err:", err)
 	}
 
 	// either zero or more than one invite has been used since the tracked
