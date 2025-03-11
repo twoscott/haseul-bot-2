@@ -3,6 +3,7 @@ package logs
 import (
 	"fmt"
 	"log"
+	"slices"
 
 	"github.com/diamondburned/arikawa/v3/api"
 	"github.com/diamondburned/arikawa/v3/discord"
@@ -55,24 +56,34 @@ func logMessageUpdate(
 		},
 	}
 
-	if oldMsg.Content != "" {
+	if oldMsg.Content != newMsg.Content {
 		if len(oldMsg.Content) > 1024 {
 			oldMsg.Content = oldMsg.Content[:1021] + "..."
 		}
+		if len(newMsg.Content) > 1024 {
+			newMsg.Content = newMsg.Content[:1021] + "..."
+		}
+
 		embed.Fields = append(embed.Fields, discord.EmbedField{
 			Name:  "Old Message",
 			Value: oldMsg.Content,
 		})
-	}
-
-	if newMsg.Content != "" {
-		if len(newMsg.Content) > 1024 {
-			newMsg.Content = newMsg.Content[:1021] + "..."
-		}
 		embed.Fields = append(embed.Fields, discord.EmbedField{
 			Name:  "New Message",
 			Value: newMsg.Content,
 		})
+	}
+
+	if len(newMsg.Attachments) < len(oldMsg.Attachments) {
+		for _, a := range oldMsg.Attachments {
+			if !slices.Contains(newMsg.Attachments, a) {
+				embed.Fields = append(embed.Fields, discord.EmbedField{
+					Name:  "Deleted Attachment",
+					Value: a.Proxy,
+				})
+				break
+			}
+		}
 	}
 
 	components := discord.Components(

@@ -78,7 +78,7 @@ func logMessageDelete(
 				links = append(links, "- "+a.Filename)
 				break
 			}
-			links = append(links, "- "+dctools.Hyperlink(a.Filename, a.Proxy))
+			links = append(links, "- "+a.Proxy)
 		}
 		embed.Fields = append(embed.Fields, discord.EmbedField{
 			Name:  "Attachments",
