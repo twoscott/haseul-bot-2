@@ -32,6 +32,10 @@ func logMessageUpdate(
 		return
 	}
 
+	if messageGotEmbedded(oldMsg, newMsg) {
+		return
+	}
+
 	channelName := "Unknown"
 	channel, err := rt.State.Channel(newMsg.ChannelID)
 	if err == nil {
@@ -84,4 +88,8 @@ func logMessageUpdate(
 		Embeds:     []discord.Embed{embed},
 		Components: components,
 	})
+}
+
+func messageGotEmbedded(oldMsg, newMsg discord.Message) bool {
+	return oldMsg.Content == newMsg.Content && len(oldMsg.Attachments) == len(newMsg.Attachments)
 }
