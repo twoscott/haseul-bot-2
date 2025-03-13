@@ -28,16 +28,12 @@ type Command struct {
 	SubCommandGroups    []*SubCommandGroup
 	SubCommands         []*SubCommand
 	Handler             *CommandHandler
-	discordID           *discord.CommandID
+	discordID           discord.CommandID
 }
 
 // ID implements ParentCommand and facilitates fetching command mentions.
 func (c Command) ID() discord.CommandID {
-	if c.discordID == nil {
-		return discord.NullCommandID
-	}
-
-	return *c.discordID
+	return c.discordID
 }
 
 // NameReference implements ParentCommand and facilitiates
@@ -162,7 +158,7 @@ func (c *SubCommand) NameReference() []string {
 	return append(c.Parent.NameReference(), c.Name)
 }
 
-// Mention returns the mention string for a Discord message.
+// Mention returns the mention string for a Discord command.
 func (c SubCommand) Mention() string {
 	return dctools.CommandMention(c.ID(), c.NameReference()...)
 }

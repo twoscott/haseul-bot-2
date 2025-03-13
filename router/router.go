@@ -184,7 +184,7 @@ func (rt *Router) AddCommandsToDiscord() error {
 			)
 		}
 
-		cmd.discordID = &dcCmd.ID
+		cmd.discordID = dcCmd.ID
 	}
 
 	return err

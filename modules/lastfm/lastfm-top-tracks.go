@@ -50,7 +50,10 @@ func lastFmTopTracksExec(ctx router.CommandCtx) {
 	lfUser, err := db.LastFM.GetUser(ctx.Interaction.SenderID())
 	if errors.Is(err, sql.ErrNoRows) {
 		ctx.RespondWarning(
-			"Please link a Last.fm username to your account using `/fm set`",
+			fmt.Sprintf(
+				"Please link a Last.fm username to your account using %s",
+				lastFmSetCommand.Mention(),
+			),
 		)
 		return
 	}
