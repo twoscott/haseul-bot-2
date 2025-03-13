@@ -111,6 +111,13 @@ func logMemberJoin(
 			inviter := usedInvite.Inviter.Tag()
 			inviteField += fmt.Sprintf("\nCreated by %s", inviter)
 		}
+
+		if usedInvite.CreatedAt.IsValid() {
+			inviteField += " " + dctools.UnixTimestampStyled(
+				usedInvite.CreatedAt.Time(),
+				dctools.RelativeTime,
+			)
+		}
 	}
 
 	embed := discord.Embed{
