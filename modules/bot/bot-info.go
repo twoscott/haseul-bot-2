@@ -4,13 +4,13 @@ import (
 	"fmt"
 	"log"
 	"runtime"
-	"strings"
 
 	"github.com/diamondburned/arikawa/v3/discord"
 	"github.com/dustin/go-humanize"
 	"github.com/twoscott/haseul-bot-2/router"
 	"github.com/twoscott/haseul-bot-2/utils/botutil"
 	"github.com/twoscott/haseul-bot-2/utils/dctools"
+	"github.com/twoscott/haseul-bot-2/utils/util"
 )
 
 var botInfoCommand = &router.SubCommand{
@@ -85,12 +85,12 @@ func botInfoExec(ctx router.CommandCtx) {
 	embed.Fields = append(embed.Fields,
 		discord.EmbedField{
 			Name:   "OS",
-			Value:  strings.Title(runtime.GOOS),
+			Value:  util.TitleCase(runtime.GOOS),
 			Inline: true,
 		},
 		discord.EmbedField{
 			Name:   "Architecture",
-			Value:  strings.Title(runtime.GOARCH),
+			Value:  util.TitleCase(runtime.GOARCH),
 			Inline: true,
 		},
 	)
@@ -101,7 +101,7 @@ func botInfoExec(ctx router.CommandCtx) {
 	})
 
 	botMember, err := ctx.State.Member(ctx.Interaction.GuildID, bot.ID)
-	if botMember != nil && botMember.Joined.IsValid() {
+	if err == nil && botMember.Joined.IsValid() {
 		embed.Fields = append(embed.Fields, discord.EmbedField{
 			Name:  "Bot Joined",
 			Value: dctools.UnixTimestamp(botMember.Joined.Time()),
@@ -113,9 +113,7 @@ func botInfoExec(ctx router.CommandCtx) {
 
 	heapMB := float64(memStats.HeapAlloc) / humanize.MByte
 
-	site := dctools.Hyperlink("Website", botutil.Website)
 	invite := dctools.Hyperlink("Discord", botutil.Discord)
-	patreon := dctools.Hyperlink("Patreon", botutil.Patreon)
 
 	embed.Fields = append(embed.Fields,
 		discord.EmbedField{
@@ -124,7 +122,7 @@ func botInfoExec(ctx router.CommandCtx) {
 		},
 		discord.EmbedField{
 			Name:  "Links",
-			Value: fmt.Sprintf("%s - %s - %s", site, invite, patreon),
+			Value: invite,
 		},
 	)
 
