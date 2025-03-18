@@ -6,4 +6,5 @@ func Init(rt *router.Router) {
 	rt.AddCommand(botCommand)
 	botCommand.AddSubCommand(botCacheCommand)
 	botCommand.AddSubCommand(botInfoCommand)
+	botCommand.AddSubCommand(botInviteCommand)
 }

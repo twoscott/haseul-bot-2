@@ -39,3 +39,19 @@ func ResizeImage(url string, size int) string {
 	url = strings.Split(url, "?")[0]
 	return fmt.Sprintf("%s?size=%d", url, size)
 }
+
+// Bold returns text formatted so that it will appear as bold on Discord.
+func Bold(text string) string {
+	return "**" + text + "**"
+}
+
+// Italics returns text formatted so that it will appear as italics on Discord.
+func Italics(text string) string {
+	return "*" + text + "*"
+}
+
+// Underline returns text formatted so that it will appear with an underline
+// on Discord.
+func Underline(text string) string {
+	return "__" + text + "__"
+}
