@@ -7,10 +7,15 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"time"
 
 	"github.com/twoscott/haseul-bot-2/config"
 	"github.com/twoscott/haseul-bot-2/utils/httputil"
 )
+
+var sushiiHttpClient = &http.Client{
+	Timeout: 20 * time.Second,
+}
 
 type TemplateBody struct {
 	TemplateHtml []byte          `json:"templateHtml,omitempty"`
@@ -55,7 +60,7 @@ func templateToImage(
 	}
 
 	jsonBuf := bytes.NewBuffer(bodyJson)
-	res, err := httputil.Post(
+	res, err := sushiiHttpClient.Post(
 		url,
 		httputil.ContentTypeApplicationJSON,
 		jsonBuf,
