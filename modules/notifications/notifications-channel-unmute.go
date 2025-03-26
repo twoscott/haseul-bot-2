@@ -5,6 +5,7 @@ import (
 
 	"github.com/diamondburned/arikawa/v3/discord"
 	"github.com/twoscott/haseul-bot-2/router"
+	"github.com/twoscott/haseul-bot-2/utils/dctools"
 )
 
 var notificationsChannelUnmuteCommand = &router.SubCommand{
@@ -16,13 +17,10 @@ var notificationsChannelUnmuteCommand = &router.SubCommand{
 	},
 	Options: []discord.CommandOptionValue{
 		&discord.ChannelOption{
-			OptionName:  "channel",
-			Description: "The channel to unmute notifications in",
-			ChannelTypes: []discord.ChannelType{
-				discord.GuildText,
-				discord.GuildNews,
-			},
-			Required: true,
+			OptionName:   "channel",
+			Description:  "The channel to unmute notifications in",
+			ChannelTypes: dctools.TextChannelTypes(),
+			Required:     true,
 		},
 	},
 }

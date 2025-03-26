@@ -17,6 +17,15 @@ func GetChannelString(channel discord.Channel) string {
 	return channel.Name
 }
 
+// TextChannelTypes returns a slice of channel types that can be considered
+// "text" channels.
+func TextChannelTypes() []discord.ChannelType {
+	return []discord.ChannelType{
+		discord.GuildText,
+		discord.GuildAnnouncement,
+	}
+}
+
 // ChannelTypeString returns the channel type in string form.
 func ChannelTypeString(chType discord.ChannelType) string {
 	switch chType {
@@ -30,11 +39,11 @@ func ChannelTypeString(chType discord.ChannelType) string {
 		return "Group DM"
 	case discord.GuildCategory:
 		return "Category"
-	case discord.GuildNews:
+	case discord.GuildAnnouncement:
 		return "News"
 	case discord.GuildStore:
 		return "Store"
-	case discord.GuildNewsThread:
+	case discord.GuildAnnouncementThread:
 		return "News Thread"
 	case discord.GuildPublicThread:
 		return "Thread"

@@ -30,13 +30,10 @@ var rolePickerTiersSend = &router.SubCommand{
 			Autocomplete: true,
 		},
 		&discord.ChannelOption{
-			OptionName:  "channel",
-			Description: "The channel to send the role picker tier to",
-			Required:    true,
-			ChannelTypes: []discord.ChannelType{
-				discord.GuildText,
-				discord.GuildNews,
-			},
+			OptionName:   "channel",
+			Description:  "The channel to send the role picker tier to",
+			Required:     true,
+			ChannelTypes: dctools.TextChannelTypes(),
 		},
 	},
 }

@@ -23,13 +23,10 @@ var messageSendCommand = &router.SubCommand{
 	},
 	Options: []discord.CommandOptionValue{
 		&discord.ChannelOption{
-			OptionName:  "channel",
-			Description: "The channel to send the message to",
-			Required:    true,
-			ChannelTypes: []discord.ChannelType{
-				discord.GuildText,
-				discord.GuildNews,
-			},
+			OptionName:   "channel",
+			Description:  "The channel to send the message to",
+			Required:     true,
+			ChannelTypes: dctools.TextChannelTypes(),
 		},
 		&discord.StringOption{
 			OptionName:  "content",

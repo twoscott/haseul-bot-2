@@ -5,6 +5,7 @@ import (
 
 	"github.com/diamondburned/arikawa/v3/discord"
 	"github.com/twoscott/haseul-bot-2/router"
+	"github.com/twoscott/haseul-bot-2/utils/dctools"
 )
 
 var notificationsChannelMuteCommand = &router.SubCommand{
@@ -16,13 +17,10 @@ var notificationsChannelMuteCommand = &router.SubCommand{
 	},
 	Options: []discord.CommandOptionValue{
 		&discord.ChannelOption{
-			OptionName:  "channel",
-			Description: "The channel to mute notifications from",
-			ChannelTypes: []discord.ChannelType{
-				discord.GuildText,
-				discord.GuildNews,
-			},
-			Required: true,
+			OptionName:   "channel",
+			Description:  "The channel to mute notifications from",
+			ChannelTypes: dctools.TextChannelTypes(),
+			Required:     true,
 		},
 	},
 }

@@ -6,6 +6,7 @@ import (
 
 	"github.com/diamondburned/arikawa/v3/discord"
 	"github.com/twoscott/haseul-bot-2/router"
+	"github.com/twoscott/haseul-bot-2/utils/dctools"
 )
 
 var logsMemberChannelCommand = &router.SubCommand{
@@ -16,13 +17,10 @@ var logsMemberChannelCommand = &router.SubCommand{
 	},
 	Options: []discord.CommandOptionValue{
 		&discord.ChannelOption{
-			OptionName:  "channel",
-			Description: "The channel to log member joins & leaves in",
-			Required:    true,
-			ChannelTypes: []discord.ChannelType{
-				discord.GuildText,
-				discord.GuildNews,
-			},
+			OptionName:   "channel",
+			Description:  "The channel to log member joins & leaves in",
+			Required:     true,
+			ChannelTypes: dctools.TextChannelTypes(),
 		},
 	},
 }

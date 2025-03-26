@@ -7,8 +7,6 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/twoscott/haseul-bot-2/utils/httputil"
-
 	"github.com/diamondburned/arikawa/v3/discord"
 )
 
@@ -21,7 +19,7 @@ func DownloadAttachment(attachment discord.Attachment) ([]byte, error) {
 		return nil, errors.New("attachment must have a URL")
 	}
 
-	res, err := httputil.Get(attachment.URL)
+	res, err := attachmentClient.Get(attachment.URL)
 	if err != nil {
 		log.Println(err)
 		return nil, err
