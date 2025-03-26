@@ -27,6 +27,7 @@ type Command struct {
 	RequiredPermissions *discord.Permissions
 	SubCommandGroups    []*SubCommandGroup
 	SubCommands         []*SubCommand
+	IsAdminOnly         bool
 	Handler             *CommandHandler
 	discordID           discord.CommandID
 }
@@ -45,6 +46,11 @@ func (c Command) NameReference() []string {
 // Mention returns the mention string for a Discord message.
 func (c Command) Mention() string {
 	return dctools.CommandMention(c.ID(), c.NameReference()...)
+}
+
+// IsGlobal returns whether the command is global or not
+func (c Command) IsGlobal() bool {
+	return !c.IsAdminOnly
 }
 
 // AddSubCommandGroup adds a group of sub commands to a slash command.
@@ -135,13 +141,9 @@ func (g SubCommandGroup) CreateData() *discord.SubcommandGroupOption {
 type SubCommand struct {
 	Name        string
 	Description string
-	// Defer defines whether the command will take longer than Discord's
-	// pre-defined timeout of 3s to complete. If true, the command will
-	// acknowledge the interaction first before calling the command's
-	// handler.
-	Options []discord.CommandOptionValue
-	Handler *CommandHandler
-	Parent  ParentCommand
+	Options     []discord.CommandOptionValue
+	Handler     *CommandHandler
+	Parent      ParentCommand
 }
 
 func (c SubCommand) ID() discord.CommandID {

@@ -16,6 +16,12 @@ type CommandHandler struct {
 	// ephemeral messages are hidden from all but the user receiving
 	// the response.
 	Ephemeral bool
+	
+	// adminOnly determines whether the command should only be available in
+	// the configured home guild, and only available for the configured bot
+	// admin user. This value is set according to the top-most command or parent
+	// command's AdminOnly field when the commands are initialised.
+	adminOnly bool
 }
 
 // Execute runs the handler's Executor and handles any resulting panics.

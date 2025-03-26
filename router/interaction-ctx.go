@@ -251,18 +251,6 @@ func (ctx InteractionCtx) ParseSendableChannel(
 	return channel, nil
 }
 
-// CommandCtx wraps router and includes data about the command interaction
-// to be passed to the receiving command handler.
-type CommandCtx struct {
-	*InteractionCtx
-	Handler *CommandHandler
-	Command *discord.CommandInteraction
-	// Options contains options that were attached to the lowest level
-	// command or sub command, this means it excludes sub command groups
-	// or sub commands from the options.
-	Options discord.CommandInteractionOptions
-}
-
 // RespondModal responds to the command with the supplied response data as a
 // modal response.
 func (ctx *InteractionCtx) RespondModal(
@@ -274,6 +262,18 @@ func (ctx *InteractionCtx) RespondModal(
 	}
 
 	return err
+}
+
+// CommandCtx wraps router and includes data about the command interaction
+// to be passed to the receiving command handler.
+type CommandCtx struct {
+	*InteractionCtx
+	Handler *CommandHandler
+	Command *discord.CommandInteraction
+	// Options contains options that were attached to the lowest level
+	// command or sub command, this means it excludes sub command groups
+	// or sub commands from the options.
+	Options discord.CommandInteractionOptions
 }
 
 // AutocompleteCtx wraps router and includes data about the autocomplete

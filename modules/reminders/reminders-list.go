@@ -34,6 +34,7 @@ func remindersListExec(ctx router.CommandCtx) {
 		return
 	}
 
+	// TODO: update all uses of "golang.org/x/exp/slices" to "slices" package
 	slices.SortFunc(reminders, func(a, b reminderdb.Reminder) bool {
 		return a.Time.Unix() > b.Time.Unix()
 	})
@@ -41,7 +42,7 @@ func remindersListExec(ctx router.CommandCtx) {
 	lines := make([]string, len(reminders))
 	for i, r := range reminders {
 		lines[i] = fmt.Sprintf(
-			"%s - %s",
+			"- %s - %s",
 			dctools.UnixTimestampStyled(r.Time, dctools.RelativeTime),
 			r.Content,
 		)

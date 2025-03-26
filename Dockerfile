@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1
 
 ### buid stage
-FROM golang:1.21-alpine AS build
+FROM golang:1.23-alpine AS build
 
 WORKDIR /usr/src/bot
 
@@ -16,7 +16,7 @@ COPY . .
 RUN go build -v -o /usr/local/bin/bot
 
 ### deploy stage
-FROM alpine:3.18
+FROM alpine:3.21
 
 WORKDIR /usr/local/bin
 

@@ -1,6 +1,7 @@
 package modules
 
 import (
+	"github.com/twoscott/haseul-bot-2/modules/admin"
 	"github.com/twoscott/haseul-bot-2/modules/bot"
 	"github.com/twoscott/haseul-bot-2/modules/commands"
 	"github.com/twoscott/haseul-bot-2/modules/emoji"
@@ -18,6 +19,7 @@ import (
 )
 
 func Init(rt *router.Router) {
+	admin.Init(rt)
 	bot.Init(rt)
 	commands.Init(rt)
 	emoji.Init(rt)

@@ -117,6 +117,9 @@ func (b *ButtonPager) handleButtonPress(
 	}
 
 	if user.ID != b.Interaction.SenderID() {
+		// TODO: can itx be wrapped in an interaction-ctx before being passed,
+		// so interaction response helper methods can be used instead of a
+		// verbose state method, manually building an InteractionResponse object
 		rt.State.RespondInteraction(itx.ID, itx.Token,
 			api.InteractionResponse{
 				Type: api.MessageInteractionWithSource,

@@ -2,17 +2,17 @@ package botutil
 
 import (
 	"github.com/diamondburned/arikawa/v3/discord"
-	"golang.org/x/exp/slices"
+	"github.com/twoscott/haseul-bot-2/config"
 )
 
 // BotAuthorID returns the user ID of the bot author.
 func AuthorID() discord.UserID {
-	return 125414437229297664
+	cfg := config.GetInstance()
+	return cfg.Bot.AdminUserID
 }
 
 // IsBotAdmin returns whether the given user ID matches the ID of a bot admin.
 func IsBotAdmin(userID discord.UserID) bool {
-	adminIDs := []discord.UserID{125414437229297664}
-
-	return slices.Contains(adminIDs, userID)
+	cfg := config.GetInstance()
+	return userID == cfg.Bot.AdminUserID
 }

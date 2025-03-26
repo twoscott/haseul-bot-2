@@ -16,7 +16,8 @@ type Config struct {
 	} `env:",prefix=DISCORD_"`
 	Bot struct {
 		LogChannelID discord.ChannelID `env:"LOG_CHANNEL_ID"`
-		RootGuildID  discord.GuildID   `env:"HOME_GUILD_ID,required"`
+		HomeGuildID  discord.GuildID   `env:"HOME_GUILD_ID,required"`
+		AdminUserID  discord.UserID    `env:"ADMIN_USER_ID,required"`
 	} `env:",prefix=BOT_"`
 	PostgreSQL struct {
 		Host     string `env:"HOST"`

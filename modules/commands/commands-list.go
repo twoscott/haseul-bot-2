@@ -74,7 +74,7 @@ func getCommandsListPages(
 	commandList := make([]string, 0, len(commands))
 	for _, cmd := range commands {
 		row := fmt.Sprintf(
-			"`%s` (%s)",
+			"- `%s` (%s)",
 			cmd.Name,
 			util.PluraliseWithCount("use", cmd.Uses),
 		)

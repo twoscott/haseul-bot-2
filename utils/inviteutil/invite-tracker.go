@@ -49,7 +49,7 @@ func (tr *Tracker) vanityInvite(
 		return nil, err
 	}
 
-	if !dctools.GuildHasFeature(guild, discord.VanityURL) {
+	if !dctools.GuildHasFeature(*guild, discord.VanityURL) {
 		return nil, nil
 	}
 

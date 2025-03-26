@@ -17,6 +17,7 @@ const (
 	Website = "https://haseulbot.xyz"
 	Discord = "https://discord.gg/w4q5qux"
 	Patreon = "https://www.patreon.com/haseulbot"
+	Invite  = "https://discord.com/api/oauth2/authorize?client_id=457640781558054925&permissions=517879491681&scope=bot"
 )
 
 var startTime = time.Now()

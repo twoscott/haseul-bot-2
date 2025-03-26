@@ -8,6 +8,8 @@ import (
 	"github.com/diamondburned/arikawa/v3/discord"
 	"github.com/diamondburned/arikawa/v3/gateway"
 	"github.com/diamondburned/arikawa/v3/state"
+	"github.com/twoscott/haseul-bot-2/config"
+	"github.com/twoscott/haseul-bot-2/utils/botutil"
 	"github.com/twoscott/haseul-bot-2/utils/dctools"
 )
 
@@ -85,7 +87,7 @@ func (rt *Router) HandleCommand(
 	handler, ok := rt.commandHandlers[key]
 	if !ok {
 		err := errors.New("No command registered for '" + key + "'")
-		log.Print(err)
+		log.Println(err)
 		return
 	}
 
@@ -106,6 +108,13 @@ func (rt *Router) HandleCommand(
 
 	if handler.Defer {
 		itx.Defer()
+	}
+
+	if handler.adminOnly && !botutil.IsBotAdmin(ctx.Interaction.SenderID()) {
+		ctx.RespondWarning(
+			"You do not have permission to use this command.",
+		)
+		return
 	}
 
 	handler.Execute(ctx)
@@ -141,13 +150,27 @@ func (rt *Router) HandleAutocomplete(
 	handler.Autocomplete(ctx)
 }
 
-// GetRawCreateCommandData converts all commands stored in the router to
-// Discord API create command data types.
-func (rt Router) GetRawCreateCommandData() []api.CreateCommandData {
-	newCommandData := make([]api.CreateCommandData, len(rt.commands))
+// GetGlobalCreateCommandData converts all global commands stored in the router
+// to Discord API create command data types.
+func (rt Router) GetGlobalCreateCommandData() []api.CreateCommandData {
+	newCommandData := make([]api.CreateCommandData, 0, len(rt.commands))
+	for _, cmd := range rt.commands {
+		if cmd.IsGlobal() {
+			newCommandData = append(newCommandData, *cmd.CreateData())
+		}
+	}
 
-	for i, cmd := range rt.commands {
-		newCommandData[i] = *cmd.CreateData()
+	return newCommandData
+}
+
+// GetAdminCreateCommandData converts all global commands stored in the router
+// to Discord API create command data types.
+func (rt Router) GetAdminCreateCommandData() []api.CreateCommandData {
+	newCommandData := make([]api.CreateCommandData, 0, len(rt.commands))
+	for _, cmd := range rt.commands {
+		if cmd.IsAdminOnly {
+			newCommandData = append(newCommandData, *cmd.CreateData())
+		}
 	}
 
 	return newCommandData
@@ -168,15 +191,31 @@ func (rt Router) FindCommand(name string) *Command {
 // converted to their Discord API slash command types so that users can
 // execute the commands.
 func (rt *Router) AddCommandsToDiscord() error {
-	createData := rt.GetRawCreateCommandData()
+	cfg := config.GetInstance()
+
+	globalData := rt.GetGlobalCreateCommandData()
+	homeGuildData := rt.GetAdminCreateCommandData()
 
 	app, err := rt.State.CurrentApplication()
 	if err != nil {
 		return err
 	}
 
-	discordCommands, err := rt.State.BulkOverwriteCommands(app.ID, createData)
-	for _, dcCmd := range discordCommands {
+	globalCommands, err := rt.State.BulkOverwriteCommands(app.ID, globalData)
+	if err != nil {
+		return err
+	}
+
+	homeGuildCommands, err := rt.State.BulkOverwriteGuildCommands(
+		app.ID,
+		cfg.Bot.HomeGuildID,
+		homeGuildData,
+	)
+	if err != nil {
+		return err
+	}
+
+	for _, dcCmd := range append(globalCommands, homeGuildCommands...) {
 		cmd := rt.FindCommand(dcCmd.Name)
 		if cmd == nil {
 			log.Panic(
@@ -196,28 +235,28 @@ func (rt *Router) MustRegisterCommandHandlers() {
 	for _, cmd := range rt.commands {
 		for _, group := range cmd.SubCommandGroups {
 			prefix := cmd.Name + " " + group.Name
-			rt.mustRegisterSubCommandHandlers(prefix, group.SubCommands)
+			rt.mustRegisterSubCommandHandlers(*cmd, prefix, group.SubCommands)
 		}
 
 		prefix := cmd.Name
-		rt.mustRegisterSubCommandHandlers(prefix, cmd.SubCommands)
+		rt.mustRegisterSubCommandHandlers(*cmd, prefix, cmd.SubCommands)
 
 		if len(cmd.SubCommandGroups) < 1 && len(cmd.SubCommands) < 1 {
-			rt.mustRegisterCommandHandler(cmd.Name, cmd.Handler)
+			rt.mustRegisterCommandHandler(*cmd, cmd.Name, cmd.Handler)
 		}
 	}
 }
 
 func (rt *Router) mustRegisterSubCommandHandlers(
-	prefix string, subCommands []*SubCommand) {
+	parent Command, prefix string, subCommands []*SubCommand) {
 	for _, cmd := range subCommands {
 		trigger := prefix + " " + cmd.Name
-		rt.mustRegisterCommandHandler(trigger, cmd.Handler)
+		rt.mustRegisterCommandHandler(parent, trigger, cmd.Handler)
 	}
 }
 
 func (rt *Router) mustRegisterCommandHandler(
-	name string, handler *CommandHandler) {
+	cmd Command, name string, handler *CommandHandler) {
 
 	if handler == nil {
 		log.Panicf("'%s' does not have a command handler", name)
@@ -226,6 +265,10 @@ func (rt *Router) mustRegisterCommandHandler(
 	nameCheck, ok := rt.commandHandlers[name]
 	if ok {
 		log.Panicf("'%v' is already registered to another command", nameCheck)
+	}
+
+	if cmd.IsAdminOnly {
+		handler.adminOnly = true
 	}
 
 	rt.commandHandlers[name] = handler

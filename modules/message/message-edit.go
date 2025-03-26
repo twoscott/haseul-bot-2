@@ -12,7 +12,7 @@ import (
 
 var messageEditCommand = &router.SubCommand{
 	Name:        "edit",
-	Description: "Edits a message to a channel.",
+	Description: "Edits a message in a channel.",
 	Handler: &router.CommandHandler{
 		Executor: messageEditExec,
 		Defer:    false,

@@ -145,14 +145,15 @@ func sendNotification(
 		return
 	}
 
+	name := msg.Author.DisplayOrUsername()
 	matchString := strings.Join(matches, "`, `")
-	content := fmt.Sprintf("💬 **%s** mentioned `%s`",
-		msg.Author.DisplayOrUsername(), matchString,
+	content := fmt.Sprintf("💬 %s mentioned `%s`",
+		dctools.Bold(name), matchString,
 	)
 
 	guild, err := rt.State.Guild(msg.GuildID)
 	if err == nil {
-		content += fmt.Sprintf(" in **%s**", guild.Name)
+		content += fmt.Sprintf(" in %s", dctools.Bold(guild.Name))
 	}
 
 	colour, _ := rt.State.MemberColor(msg.GuildID, msg.Author.ID)
