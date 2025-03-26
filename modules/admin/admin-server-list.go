@@ -17,6 +17,7 @@ var adminServerList = &router.SubCommand{
 	Description: "Lists servers the bot is in",
 	Handler: &router.CommandHandler{
 		Executor: adminServerListExec,
+		Defer:    true,
 	},
 }
 
