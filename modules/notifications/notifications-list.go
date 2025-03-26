@@ -3,12 +3,12 @@ package notifications
 import (
 	"fmt"
 	"log"
+	"slices"
 
 	"github.com/diamondburned/arikawa/v3/discord"
 	"github.com/twoscott/haseul-bot-2/router"
 	"github.com/twoscott/haseul-bot-2/utils/dctools"
 	"github.com/twoscott/haseul-bot-2/utils/util"
-	"golang.org/x/exp/slices"
 )
 
 var notificationsListCommand = &router.SubCommand{

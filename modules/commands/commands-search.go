@@ -2,13 +2,13 @@ package commands
 
 import (
 	"log"
+	"slices"
 	"strings"
 
 	"github.com/diamondburned/arikawa/v3/discord"
 	"github.com/diamondburned/arikawa/v3/utils/json/option"
 	"github.com/twoscott/haseul-bot-2/database/commanddb"
 	"github.com/twoscott/haseul-bot-2/router"
-	"golang.org/x/exp/slices"
 )
 
 var commandsSearchCommand = &router.SubCommand{
@@ -51,14 +51,14 @@ func commandsSearchExec(ctx router.CommandCtx) {
 		}
 	}
 
-	slices.SortStableFunc(filteredCommands, func(a, b commanddb.Command) bool {
-		return len(a.Name) < len(b.Name)
+	slices.SortStableFunc(filteredCommands, func(a, b commanddb.Command) int {
+		return len(a.Name) - len(b.Name)
 	})
-	slices.SortStableFunc(filteredCommands, func(a, b commanddb.Command) bool {
-		return strings.Index(a.Name, query) < strings.Index(b.Name, query)
+	slices.SortStableFunc(filteredCommands, func(a, b commanddb.Command) int {
+		return strings.Index(a.Name, query) - strings.Index(b.Name, query)
 	})
 
-	pages := getCommandsListPages(filteredCommands, nameSort)
+	pages := getCommandsListPages(filteredCommands)
 	ctx.RespondPaging(pages)
 }
 

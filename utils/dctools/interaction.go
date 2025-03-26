@@ -1,11 +1,11 @@
 package dctools
 
 import (
+	"slices"
 	"strings"
 
 	"github.com/diamondburned/arikawa/v3/api"
 	"github.com/diamondburned/arikawa/v3/discord"
-	"golang.org/x/exp/slices"
 )
 
 const MaxChoices = 25
@@ -151,14 +151,14 @@ func SearchSortStringChoices(
 		}
 	}
 
-	slices.SortFunc(matches, func(a, b discord.StringChoice) bool {
-		return strings.Compare(a.Name, b.Name) < 0
+	slices.SortFunc(matches, func(a, b discord.StringChoice) int {
+		return strings.Compare(a.Name, b.Name)
 	})
-	slices.SortStableFunc(matches, func(a, b discord.StringChoice) bool {
-		return len(a.Name) < len(b.Name)
+	slices.SortStableFunc(matches, func(a, b discord.StringChoice) int {
+		return len(a.Name) - len(b.Name)
 	})
-	slices.SortStableFunc(matches, func(a, b discord.StringChoice) bool {
-		return strings.Index(a.Name, query) < strings.Index(b.Name, query)
+	slices.SortStableFunc(matches, func(a, b discord.StringChoice) int {
+		return strings.Index(a.Name, query) - strings.Index(b.Name, query)
 	})
 
 	return matches
@@ -177,14 +177,14 @@ func SearchSortIntChoices(
 		}
 	}
 
-	slices.SortStableFunc(matches, func(a, b discord.IntegerChoice) bool {
-		return strings.Compare(a.Name, b.Name) < 0
+	slices.SortFunc(matches, func(a, b discord.IntegerChoice) int {
+		return strings.Compare(a.Name, b.Name)
 	})
-	slices.SortStableFunc(matches, func(a, b discord.IntegerChoice) bool {
-		return len(a.Name) < len(b.Name)
+	slices.SortStableFunc(matches, func(a, b discord.IntegerChoice) int {
+		return len(a.Name) - len(b.Name)
 	})
-	slices.SortStableFunc(matches, func(a, b discord.IntegerChoice) bool {
-		return strings.Index(a.Name, query) < strings.Index(b.Name, query)
+	slices.SortStableFunc(matches, func(a, b discord.IntegerChoice) int {
+		return strings.Index(a.Name, query) - strings.Index(b.Name, query)
 	})
 
 	return matches

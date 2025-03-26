@@ -3,13 +3,13 @@ package reminders
 import (
 	"fmt"
 	"log"
+	"slices"
 
 	"github.com/diamondburned/arikawa/v3/api"
 	"github.com/diamondburned/arikawa/v3/discord"
 	"github.com/twoscott/haseul-bot-2/database/reminderdb"
 	"github.com/twoscott/haseul-bot-2/router"
 	"github.com/twoscott/haseul-bot-2/utils/dctools"
-	"golang.org/x/exp/slices"
 )
 
 var remindersDeleteCommand = &router.SubCommand{
@@ -53,8 +53,8 @@ func completeReminderDelete(ctx router.AutocompleteCtx) {
 		log.Println(err)
 	}
 
-	slices.SortFunc(reminders, func(a, b reminderdb.Reminder) bool {
-		return a.Time.Unix() < b.Time.Unix()
+	slices.SortFunc(reminders, func(a, b reminderdb.Reminder) int {
+		return int(a.Time.Unix() - b.Time.Unix())
 	})
 
 	choices := make(api.AutocompleteIntegerChoices, 0, len(reminders))

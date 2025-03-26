@@ -1,10 +1,11 @@
 package dctools
 
 import (
+	"slices"
+
 	"github.com/diamondburned/arikawa/v3/discord"
 	"github.com/diamondburned/arikawa/v3/state"
 	"github.com/enescakir/emoji"
-	"golang.org/x/exp/slices"
 )
 
 // MemberNumber returns the position a member holds in the sequence of all guild

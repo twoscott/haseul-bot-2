@@ -3,13 +3,13 @@ package reminders
 import (
 	"fmt"
 	"log"
+	"slices"
 
 	"github.com/diamondburned/arikawa/v3/discord"
 	"github.com/twoscott/haseul-bot-2/database/reminderdb"
 	"github.com/twoscott/haseul-bot-2/router"
 	"github.com/twoscott/haseul-bot-2/utils/dctools"
 	"github.com/twoscott/haseul-bot-2/utils/util"
-	"golang.org/x/exp/slices"
 )
 
 var remindersListCommand = &router.SubCommand{
@@ -34,9 +34,8 @@ func remindersListExec(ctx router.CommandCtx) {
 		return
 	}
 
-	// TODO: update all uses of "golang.org/x/exp/slices" to "slices" package
-	slices.SortFunc(reminders, func(a, b reminderdb.Reminder) bool {
-		return a.Time.Unix() > b.Time.Unix()
+	slices.SortFunc(reminders, func(a, b reminderdb.Reminder) int {
+		return int(a.Time.Unix() - b.Time.Unix())
 	})
 
 	lines := make([]string, len(reminders))

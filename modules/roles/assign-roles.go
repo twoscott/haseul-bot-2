@@ -2,6 +2,7 @@ package roles
 
 import (
 	"log"
+	"slices"
 	"strconv"
 	"strings"
 
@@ -11,7 +12,6 @@ import (
 	"github.com/diamondburned/arikawa/v3/utils/json/option"
 	"github.com/twoscott/haseul-bot-2/router"
 	"github.com/twoscott/haseul-bot-2/utils/dctools"
-	"golang.org/x/exp/slices"
 )
 
 type roleAction int

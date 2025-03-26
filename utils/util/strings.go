@@ -3,10 +3,10 @@ package util
 import (
 	"fmt"
 	"regexp"
+	"slices"
 	"strings"
 
 	"github.com/dustin/go-humanize"
-	"golang.org/x/exp/slices"
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
 )
@@ -175,11 +175,11 @@ func SearchSort(results []string, query string) []string {
 	}
 
 	slices.Sort(matches)
-	slices.SortStableFunc(matches, func(a, b string) bool {
-		return len(a) < len(b)
+	slices.SortStableFunc(matches, func(a, b string) int {
+		return len(a) - len(b)
 	})
-	slices.SortStableFunc(matches, func(a, b string) bool {
-		return strings.Index(a, query) < strings.Index(b, query)
+	slices.SortStableFunc(matches, func(a, b string) int {
+		return strings.Index(a, query) - strings.Index(b, query)
 	})
 
 	return matches

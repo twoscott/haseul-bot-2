@@ -3,6 +3,7 @@ package commands
 import (
 	"fmt"
 	"log"
+	"slices"
 	"strings"
 
 	"github.com/diamondburned/arikawa/v3/discord"
@@ -10,7 +11,6 @@ import (
 	"github.com/twoscott/haseul-bot-2/router"
 	"github.com/twoscott/haseul-bot-2/utils/dctools"
 	"github.com/twoscott/haseul-bot-2/utils/util"
-	"golang.org/x/exp/slices"
 )
 
 type commandListSort int
@@ -54,22 +54,21 @@ func commandsListExec(ctx router.CommandCtx) {
 	sort, _ := ctx.Options.Find("sort-by").IntValue()
 	sortType := commandListSort(sort)
 
-	pages := getCommandsListPages(commands, sortType)
+	slices.SortFunc(commands, func(a, b commanddb.Command) int {
+		return strings.Compare(a.Name, b.Name)
+	})
+
+	if sortType == usesSort {
+		slices.SortStableFunc(commands, func(a, b commanddb.Command) int {
+			return int(b.Uses - a.Uses)
+		})
+	}
+
+	pages := getCommandsListPages(commands)
 	ctx.RespondPaging(pages)
 }
 
-func getCommandsListPages(
-	commands []commanddb.Command, sort commandListSort) []router.MessagePage {
-
-	slices.SortFunc(commands, func(a, b commanddb.Command) bool {
-		return strings.Compare(a.Name, b.Name) < 0
-	})
-
-	if sort == usesSort {
-		slices.SortStableFunc(commands, func(a, b commanddb.Command) bool {
-			return a.Uses-b.Uses > 0
-		})
-	}
+func getCommandsListPages(commands []commanddb.Command) []router.MessagePage {
 
 	commandList := make([]string, 0, len(commands))
 	for _, cmd := range commands {
