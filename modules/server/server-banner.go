@@ -41,7 +41,7 @@ func serverBannerExec(ctx router.CommandCtx) {
 
 	name := util.Possessive(guild.Name)
 	title := name + " Banner"
-	url := dctools.ResizeImage(guild.BannerURL(), 4096)
+	url := dctools.ResizeImage(dctools.GuildBannerURL(*guild), 4096)
 
 	embed := cmdutil.ImageInfoEmbed(title, url, dctools.EmbedBackColour)
 

@@ -75,7 +75,7 @@ func ServerInfoEmbed(st *state.State, guild discord.Guild) discord.Embed {
 	}
 
 	if guild.Banner != "" {
-		url := dctools.ResizeImage(guild.BannerURL(), 4096)
+		url := dctools.ResizeImage(dctools.GuildBannerURL(guild), 4096)
 		embed.Image = &discord.EmbedImage{URL: url}
 	}
 

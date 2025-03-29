@@ -44,6 +44,12 @@ func IsEveryoneRole(guildID discord.GuildID, roleID discord.RoleID) bool {
 	return discord.Snowflake(guildID) == discord.Snowflake(roleID)
 }
 
+// GuildBannerURL returns the given guild's banner URL. It will automatically
+// detect the appropriate image type.
+func GuildBannerURL(guild discord.Guild) string {
+	return guild.BannerURLWithType(discord.AutoImage)
+}
+
 // GuildStatuses returns the approximate number of online and offline
 // members in a guild.
 func GuildStatuses(guild discord.Guild) (uint64, uint64) {
