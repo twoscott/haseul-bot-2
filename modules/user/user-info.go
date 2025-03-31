@@ -41,7 +41,6 @@ func userInfoExec(ctx router.CommandCtx) {
 	}
 
 	user, err := ctx.State.User(userID)
-
 	if dctools.ErrUnknownUser(err) {
 		ctx.RespondWarning("User does not exist.")
 		return
@@ -54,16 +53,22 @@ func userInfoExec(ctx router.CommandCtx) {
 
 	var embed *discord.Embed
 	if member == nil {
-		embed = userEmbed(user)
+		embed = userEmbed(*user)
 	} else {
-		embed = memberEmbed(&ctx, member, user)
+		embed = memberEmbed(ctx, *member, *user)
 	}
 
 	ctx.RespondEmbed(*embed)
 }
 
 // TODO: combine into single embed function to minimise repetition
-func userEmbed(user *discord.User) *discord.Embed {
+func userEmbed(user discord.User) *discord.Embed {
+	url := user.AvatarURLWithType(discord.PNGImage)
+	colour, err := dctools.EmbedImageColour(url)
+	if err != nil || dctools.ColourInvalid(colour) {
+		colour = user.Accent
+	}
+
 	embed := discord.Embed{
 		Title: fmt.Sprintf("%s (@%s)", user.DisplayOrUsername(), user.Tag()),
 		Thumbnail: &discord.EmbedThumbnail{
@@ -71,7 +76,7 @@ func userEmbed(user *discord.User) *discord.Embed {
 		},
 		Description: user.Mention(),
 		Fields:      []discord.EmbedField{},
-		Color:       dctools.EmbedColour(user.Accent),
+		Color:       dctools.EmbedColour(colour),
 		Footer: &discord.EmbedFooter{
 			Text: "Member #N/A - User not in server",
 		},
@@ -119,19 +124,21 @@ func userEmbed(user *discord.User) *discord.Embed {
 }
 
 func memberEmbed(
-	ctx *router.CommandCtx,
-	member *discord.Member,
-	user *discord.User) *discord.Embed {
+	ctx router.CommandCtx,
+	member discord.Member,
+	user discord.User) *discord.Embed {
 
-	colour := user.Accent
-	if dctools.ColourInvalid(colour) {
-		colour, _ = ctx.State.MemberColor(ctx.Interaction.GuildID, user.ID)
+	guildID := ctx.Interaction.GuildID
+	colour, ok := ctx.State.MemberColor(guildID, user.ID)
+	if !ok || dctools.ColourInvalid(colour) {
+		url := dctools.MemberAvatarURL(member, guildID)
+		colour, _ = dctools.EmbedImageColour(url)
 	}
 
 	embed := discord.Embed{
 		Title: fmt.Sprintf("%s (@%s)", user.DisplayOrUsername(), user.Tag()),
 		Thumbnail: &discord.EmbedThumbnail{
-			URL: user.AvatarURL(),
+			URL: dctools.MemberAvatarURL(member, guildID),
 		},
 		Description: member.Mention(),
 		Fields:      []discord.EmbedField{},
@@ -213,8 +220,8 @@ func memberEmbed(
 		Inline: true,
 	})
 
-	if user.Banner != "" {
-		url := dctools.ResizeImage(user.BannerURL(), 4096)
+	if member.Banner != "" || member.User.Banner != "" {
+		url := dctools.MemberBannerURL(member, guildID)
 		embed.Image = &discord.EmbedImage{URL: url}
 	}
 

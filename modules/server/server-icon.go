@@ -41,7 +41,7 @@ func serverIconExec(ctx router.CommandCtx) {
 	title := name + " Icon"
 	url := dctools.ResizeImage(guild.IconURL(), 4096)
 
-	embed := cmdutil.ImageInfoEmbed(title, url, dctools.EmbedBackColour)
+	embed := cmdutil.ImageInfoEmbed(title, url)
 
 	ctx.RespondEmbed(*embed)
 }

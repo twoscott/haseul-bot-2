@@ -43,13 +43,24 @@ func welcomeMember(
 		return nil
 	}
 
+	colour := discord.Color(dctools.EmbedBackColour)
+	if welcome.Colour() != dctools.EmbedBackColour {
+		colour = welcome.Colour()
+	} else {
+		url := dctools.MemberAvatarURL(member, guild.ID)
+		c, err := dctools.EmbedImageColour(url)
+		if err == nil {
+			colour = c
+		}
+	}
+
 	embed := discord.Embed{
 		Title:       welcome.Title(),
 		Description: welcome.FormattedMessage(member, guild),
 		Thumbnail: &discord.EmbedThumbnail{
 			URL: member.User.AvatarURL(),
 		},
-		Color: welcome.Colour(),
+		Color: colour,
 		Footer: &discord.EmbedFooter{
 			Text: fmt.Sprintf("Member #%d", guild.ApproximateMembers),
 		},

@@ -69,3 +69,49 @@ func MemberCanModifyRole(
 
 	return true, nil
 }
+
+// MemberAvatarURL returns the member's avatar URL if present. Otherwise,
+// returns the user's avatar URL. Auto-detects the image type.
+func MemberAvatarURL(member discord.Member, guildID discord.GuildID) string {
+	return MemberAvatarURLWithType(member, guildID, discord.AutoImage)
+}
+
+// MemberAvatarURLWithType returns the member's avatar URL if present. 
+// Otherwise, returns the user's avatar URL. Returns the image in the given 
+// image format.
+func MemberAvatarURLWithType(
+	member discord.Member, guildID discord.GuildID, t discord.ImageType) string {
+
+	if member.Avatar != "" {
+		return member.AvatarURLWithType(t, guildID)
+	}
+
+	if member.User.Avatar != "" {
+		return member.User.AvatarURLWithType(t)
+	}
+
+	return ""
+}
+
+// MemberBannerURL returns the member's banner URL if present. Otherwise,
+// returns the user's banner URL. Auto-detects the image type.
+func MemberBannerURL(member discord.Member, guildID discord.GuildID) string {
+	return MemberBannerURLWithType(member, guildID, discord.AutoImage)
+}
+
+// MemberBannerURLWithType returns the member's banner URL if present. 
+// Otherwise, returns the user's banner URL. Returns the image in the given 
+// image format.
+func MemberBannerURLWithType(
+	member discord.Member, guildID discord.GuildID, t discord.ImageType) string {
+
+	if member.Banner != "" {
+		return member.BannerURLWithType(t, guildID)
+	}
+
+	if member.User.Banner != "" {
+		return member.User.BannerURLWithType(t)
+	}
+
+	return ""
+}

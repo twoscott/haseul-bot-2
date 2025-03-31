@@ -4,11 +4,85 @@ import (
 	"bytes"
 	"encoding/binary"
 	"errors"
+	"image"
 	"io"
 	"net/http"
 
+	colx "github.com/marekm4/color-extractor"
 	"github.com/twoscott/haseul-bot-2/utils/httputil"
+
+	"image/color"
+	_ "image/gif"
+	_ "image/jpeg"
+	_ "image/png"
 )
+
+// GetImageURL returns a HTTP response from requesting an image URL.
+func GetImageURL(url string) (*http.Response, error) {
+	res, err := httputil.Get(url)
+	if err != nil {
+		return res, err
+	}
+
+	if res.StatusCode != http.StatusOK {
+		return res, errors.New("bad response")
+	}
+
+	return res, nil
+}
+
+// ImageFromResponse converts a HTTP response containing an image body to a Go
+// image.
+func ImageFromResponse(res http.Response) (image.Image, error) {
+	img, _, err := image.Decode(res.Body)
+	return img, err
+}
+
+// DataFromImageURL returns the raw data from an image URL.
+func DataFromImageURL(url string) ([]byte, error) {
+	res, err := GetImageURL(url)
+	if err != nil {
+		return nil, err
+	}
+
+	bytes, err := io.ReadAll(res.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	return bytes, nil
+}
+
+// ImageFromURL returns a Go image interface representation of an image at URL.
+func ImageFromURL(url string) (image.Image, error) {
+	res, err := GetImageURL(url)
+	if err != nil {
+		return nil, err
+	}
+
+	return ImageFromResponse(*res)
+}
+
+// ColourFromImage returns a set of colours extracted from the given image.
+func ColourFromImage(img image.Image) color.Color {
+	c := colx.ExtractColors(img)
+	if len(c) < 1 {
+		return color.Black
+	}
+
+	return c[0]
+}
+
+// ColourFromURL fetches the image at URL and decodes it into an image, then
+// extracts colours from that image.
+func ColourFromURL(url string) (color.Color, error) {
+	img, err := ImageFromURL(url)
+	if err != nil {
+		return nil, err
+	}
+
+	return ColourFromImage(img), nil
+}
 
 type ImageType uint8
 
@@ -33,41 +107,63 @@ func (t ImageType) String() string {
 	}
 }
 
-// Image represents a raw image.
-type Image struct {
+// RawImage represents a raw image.
+type RawImage struct {
 	data []byte
 }
 
-// NewImage returns a new instance of image containing data.
-func NewImage(data []byte) *Image {
-	return &Image{data: data}
+// NewRawImage returns a new instance of RawImage containing data.
+func NewRawImage(data []byte) *RawImage {
+	return &RawImage{data: data}
 }
 
-func ImageFromURL(url string) (*Image, *http.Response, error) {
-	res, err := httputil.Get(url)
+// RawImageFromURL returns a raw representation of an image with useful helper
+// methods for finding the size, dimensions, and image type.
+func RawImageFromURL(url string) (*RawImage, error) {
+	data, err := DataFromImageURL(url)
 	if err != nil {
-		return nil, res, err
+		return nil, err
 	}
 
-	if res.StatusCode != http.StatusOK {
-		return nil, res, errors.New("bad response")
-	}
+	return NewRawImage(data), nil
+}
 
+// RawImageFromResponse converts a HTTP response containing an image body to a
+// RawImage.
+func RawImageFromResponse(res http.Response) (*RawImage, error) {
 	bytes, err := io.ReadAll(res.Body)
 	if err != nil {
-		return nil, res, err
+		return nil, err
 	}
 
-	return &Image{data: bytes}, res, nil
+	return NewRawImage(bytes), err
+}
+
+// ToImage converts RawImage to a Go Image and returns it.
+func (i RawImage) ToImage() (image.Image, error) {
+	r := bytes.NewReader(i.data)
+
+	img, _, err := image.Decode(r)
+	return img, err
+}
+
+// Colour extracts a prominent colour from the image and returns it.
+func (i RawImage) Colour() (color.Color, error) {
+	c, err := i.ToImage()
+	if err != nil {
+		return nil, err
+	}
+
+	return ColourFromImage(c), nil
 }
 
 // Size returns the image size in bytes.
-func (i Image) Size() int {
+func (i RawImage) Size() int {
 	return len(i.data)
 }
 
 // Dimensions returns the width and height of the image.
-func (i Image) Dimensions() [2]uint32 {
+func (i RawImage) Dimensions() [2]uint32 {
 	switch i.Type() {
 	case JPEG:
 		SOF0 := bytes.Index(i.data, []byte{0xFF, 0xC0})
@@ -88,17 +184,17 @@ func (i Image) Dimensions() [2]uint32 {
 }
 
 // Width returns the width of the image.
-func (i Image) Width() uint32 {
+func (i RawImage) Width() uint32 {
 	return i.Dimensions()[0]
 }
 
 // Height returns the height of the image.
-func (i Image) Height() uint32 {
+func (i RawImage) Height() uint32 {
 	return i.Dimensions()[1]
 }
 
 // Type returns the image's type.
-func (i Image) Type() ImageType {
+func (i RawImage) Type() ImageType {
 	switch {
 	case i.IsJPEG():
 		return JPEG
@@ -112,19 +208,19 @@ func (i Image) Type() ImageType {
 }
 
 // IsJPEG returns whether the image is a JPEG.
-func (i Image) IsJPEG() bool {
+func (i RawImage) IsJPEG() bool {
 	header := i.data[:2]
 	return bytes.Equal(header, []byte{0xFF, 0xD8})
 }
 
 // IsPNG returns whether the image is a PNG.
-func (i Image) IsPNG() bool {
+func (i RawImage) IsPNG() bool {
 	header := i.data[:4]
 	return bytes.Equal(header, []byte{0x89, 'P', 'N', 'G'})
 }
 
 // IsGIF returns whether the image is a GIF.
-func (i Image) IsGIF() bool {
+func (i RawImage) IsGIF() bool {
 	header := i.data[:3]
 	return bytes.Equal(header, []byte{'G', 'I', 'F'})
 }

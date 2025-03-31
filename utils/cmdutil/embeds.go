@@ -2,6 +2,7 @@ package cmdutil
 
 import (
 	"fmt"
+	"net/http"
 	"time"
 
 	"github.com/diamondburned/arikawa/v3/discord"
@@ -12,28 +13,40 @@ import (
 	"github.com/twoscott/haseul-bot-2/utils/util"
 )
 
-// ImageInfoEmbed returns an embed displaying the provided image url
+// ImageInfoEmbedWithColour returns an embed displaying the provided image url
 // along with auxiliary information.
-func ImageInfoEmbed(title, url string, colour discord.Color) *discord.Embed {
+func ImageInfoEmbedWithColour(title, url string, colour discord.Color) *discord.Embed {
 	var (
 		format   string = "Unknown"
 		sizeMB   float64
 		width    uint32
 		height   uint32
 		modified time.Time
+		res      *http.Response
+		img      *util.RawImage
 	)
 
-	image, res, err := util.ImageFromURL(url)
+	res, err := util.GetImageURL(dctools.ResizeImage(url, 256))
 	if err == nil {
-		size := image.Size()
+		img, err = util.RawImageFromResponse(*res)
+	}
+	if err == nil {
+		size := img.Size()
 		sizeMB = float64(size) / humanize.MByte
-		format = image.Type().String()
+		format = img.Type().String()
 
-		dims := image.Dimensions()
+		dims := img.Dimensions()
 		width = dims[0]
 		height = dims[1]
 
 		modified, _ = httputil.HeaderModifiedTime(res.Header)
+
+		if colour == discord.NullColor {
+			c, err := img.Colour()
+			if err == nil {
+				colour = dctools.ConvertColour(c)
+			}
+		}
 	}
 
 	embed := discord.Embed{
@@ -59,15 +72,24 @@ func ImageInfoEmbed(title, url string, colour discord.Color) *discord.Embed {
 	return &embed
 }
 
+// ImageInfoEmbedWithColour returns an embed displaying the provided image url
+// along with auxiliary information. Auto-detects a colour from the image.
+func ImageInfoEmbed(title, url string) *discord.Embed {
+	return ImageInfoEmbedWithColour(title, url, discord.NullColor)
+}
+
 // ServerInfoEmbed returns an embed for displaying information about a guild.
 func ServerInfoEmbed(st *state.State, guild discord.Guild) discord.Embed {
+	url := guild.IconURLWithType(discord.PNGImage)
+	colour, _ := dctools.EmbedImageColour(url)
+
 	embed := discord.Embed{
 		Title: guild.Name,
 		Thumbnail: &discord.EmbedThumbnail{
 			URL: guild.IconURL(),
 		},
 		Fields: []discord.EmbedField{},
-		Color:  dctools.EmbedBackColour,
+		Color:  dctools.EmbedColour(colour),
 	}
 
 	if dctools.GuildHasFeature(guild, discord.Discoverable) {
@@ -75,7 +97,7 @@ func ServerInfoEmbed(st *state.State, guild discord.Guild) discord.Embed {
 	}
 
 	if guild.Banner != "" {
-		url := dctools.ResizeImage(dctools.GuildBannerURL(guild), 4096)
+		url := dctools.ResizeImage(guild.BannerURL(), 4096)
 		embed.Image = &discord.EmbedImage{URL: url}
 	}
 

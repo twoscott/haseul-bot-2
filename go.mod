@@ -4,12 +4,13 @@ go 1.23
 
 require (
 	github.com/PuerkitoBio/goquery v1.8.0
-	github.com/diamondburned/arikawa/v3 v3.4.1-0.20250326044943-b01afe1b805c
+	github.com/diamondburned/arikawa/v3 v3.4.1-0.20250331213009-0bf2103a1eb6
 	github.com/dustin/go-humanize v1.0.0
 	github.com/enescakir/emoji v1.0.0
 	github.com/jmoiron/sqlx v1.3.5
 	github.com/joho/godotenv v1.4.0
 	github.com/lib/pq v1.10.6
+	github.com/marekm4/color-extractor v1.2.1
 	github.com/sethvargo/go-envconfig v0.7.0
 	github.com/shkh/lastfm-go v0.0.0-20191215035245-89a801c244e0
 	github.com/twoscott/patreon-go v0.0.0-20210516030041-c0b59ebddeb4

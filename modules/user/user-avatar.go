@@ -10,11 +10,6 @@ import (
 	"github.com/twoscott/haseul-bot-2/utils/util"
 )
 
-const (
-	serverAvatarType int64 = iota
-	globalAvatarType
-)
-
 var userAvatarCommand = &router.SubCommand{
 	Name:        "avatar",
 	Description: "Displays a Discord user's avatar",
@@ -30,8 +25,8 @@ var userAvatarCommand = &router.SubCommand{
 			OptionName:  "type",
 			Description: "The type of avatar to show",
 			Choices: []discord.IntegerChoice{
-				{Name: "Server", Value: int(serverAvatarType)},
-				{Name: "Global", Value: int(globalAvatarType)},
+				{Name: "Server", Value: int(serverType)},
+				{Name: "Global", Value: int(globalType)},
 			},
 		},
 	},
@@ -41,6 +36,8 @@ func userAvatarExec(ctx router.CommandCtx) {
 	userSnowflake, _ := ctx.Options.Find("user").SnowflakeValue()
 	avatarType, _ := ctx.Options.Find("type").IntValue()
 
+	guildID := ctx.Interaction.GuildID
+
 	var member *discord.Member
 	userID := discord.UserID(userSnowflake)
 	if !userID.IsValid() {
@@ -48,17 +45,10 @@ func userAvatarExec(ctx router.CommandCtx) {
 		member = ctx.Interaction.Member
 	}
 	if member == nil {
-		member, _ = ctx.State.Member(ctx.Interaction.GuildID, userID)
+		member, _ = ctx.State.Member(guildID, userID)
 	}
 
-	var user *discord.User
-	var err error
-	if member == nil {
-		user, err = ctx.State.User(userID)
-	} else {
-		user = &member.User
-	}
-
+	user, err := ctx.State.User(userID)
 	if dctools.ErrUnknownUser(err) {
 		ctx.RespondWarning("User does not exist.")
 		return
@@ -73,22 +63,19 @@ func userAvatarExec(ctx router.CommandCtx) {
 	title := name + " Avatar"
 
 	var embed *discord.Embed
-	if member == nil || avatarType == globalAvatarType {
+	if member == nil || avatarType == globalType {
 		url := dctools.ResizeImage(user.AvatarURL(), 4096)
-		embed = cmdutil.ImageInfoEmbed(title, url, user.Accent)
+		embed = cmdutil.ImageInfoEmbedWithColour(title, url, user.Accent)
 	} else {
-		avatar := member.AvatarURL(ctx.Interaction.GuildID)
-		if avatar == "" {
-			avatar = member.User.AvatarURL()
-		}
-		url := dctools.ResizeImage(avatar, 4096)
+		url := dctools.MemberAvatarURL(*member, guildID)
+		url = dctools.ResizeImage(url, 4096)
 
-		colour, _ := ctx.State.MemberColor(ctx.Interaction.GuildID, member.User.ID)
+		colour, _ := ctx.State.MemberColor(guildID, member.User.ID)
 		if dctools.ColourInvalid(colour) {
-			colour = member.User.Accent
+			colour = discord.NullColor
 		}
 
-		embed = cmdutil.ImageInfoEmbed(title, url, colour)
+		embed = cmdutil.ImageInfoEmbedWithColour(title, url, colour)
 	}
 
 	ctx.RespondEmbed(*embed)
