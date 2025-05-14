@@ -6,7 +6,7 @@ import (
 	"strings"
 )
 
-var markdownEscapeRegex = regexp.MustCompile("([\\|\\*\\`\\~\\_\\]\\)])")
+var markdownEscapeRegex = regexp.MustCompile("([\\|\\*\\`\\~\\_])")
 
 // EscapeMarkdown returns a string with all instances if special Discord
 // markdown characters escaped.
@@ -25,8 +25,9 @@ func MultiEscapeMarkdown(unescapedS ...string) []string {
 }
 
 // Hyperlink returns a Discord markdown hyperlink in the form [name](url).
-func Hyperlink(name string, url string) string {
-	return fmt.Sprintf("[%s](%s)", name, url)
+func Hyperlink(name string, link string) string {
+	link = strings.ReplaceAll(link, ")", "\\)")
+	return fmt.Sprintf("[%s](%s)", name, link)
 }
 
 // ResizeImage appends the provided size to url.
