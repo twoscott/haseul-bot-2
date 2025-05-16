@@ -5,32 +5,30 @@ import (
 	"errors"
 	"fmt"
 	"log"
-	"strconv"
-	"time"
 
 	"github.com/diamondburned/arikawa/v3/discord"
-	"github.com/shkh/lastfm-go/lastfm"
+	"github.com/twoscott/gobble-fm/lastfm"
 	"github.com/twoscott/haseul-bot-2/router"
 	"github.com/twoscott/haseul-bot-2/utils/dctools"
 	"github.com/twoscott/haseul-bot-2/utils/util"
 )
 
-var lastFmCurrentCommand = &router.SubCommand{
+var lastFMCurrentCommand = &router.SubCommand{
 	Name:        "current",
 	Description: "Displays your currently scrobbling track",
 	Handler: &router.CommandHandler{
-		Executor: lastFmCurrentExec,
+		Executor: lastFMCurrentExec,
+		Defer:    true,
 	},
 }
 
-func lastFmCurrentExec(ctx router.CommandCtx) {
-	lfUser, err := db.LastFM.GetUser(ctx.Interaction.SenderID())
-
+func lastFMCurrentExec(ctx router.CommandCtx) {
+	fmUser, err := db.LastFM.GetUser(ctx.Interaction.SenderID())
 	if errors.Is(err, sql.ErrNoRows) {
 		ctx.RespondWarning(
 			fmt.Sprintf(
 				"Please link a Last.fm username to your account using %s",
-				lastFmSetCommand.Mention(),
+				lastFMSetCommand.Mention(),
 			),
 		)
 		return
@@ -41,113 +39,84 @@ func lastFmCurrentExec(ctx router.CommandCtx) {
 		return
 	}
 
-	res, err := getRecentTracks(lfUser, 1)
+	res, err := fm.User.RecentTrack(fmUser)
 	if err != nil {
-		errMsg := errorResponseMessage(err)
-		ctx.RespondError(errMsg)
+		log.Println(err)
+		if msg, ok := errMessage(err); ok {
+			ctx.RespondError(msg)
+		} else {
+			ctx.RespondError("Unable to fetch your recent scrobble from Last.fm.")
+		}
 		return
 	}
 
-	if len(res.Tracks) < 1 {
-		ctx.RespondWarning(
-			"You have not scrobbled any tracks on Last.fm.",
-		)
+	if res.Track == nil {
+		ctx.RespondWarning("You have not scrobbled any tracks on Last.fm.")
 		return
 	}
 
-	var playCount string
-	var userLoved string
-	track, err := getTrackInfo(res)
-	if err != nil {
-		playCount = "N/A"
-		userLoved = "0"
-	} else {
-		playCount = track.UserPlayCount
-		userLoved = track.UserLoved
-	}
+	track := res.Track
 
-	embed := npEmbed(ctx, *res, playCount, userLoved)
-
-	ctx.RespondEmbed(*embed)
-}
-
-func npEmbed(
-	ctx router.CommandCtx,
-	recentTracks lastfm.UserGetRecentTracks,
-	playCount string,
-	userLoved string) *discord.Embed {
-
-	track := &recentTracks.Tracks[0]
-	images := track.Images
-	lfUser := recentTracks.User
-	loved, _ := strconv.ParseBool(userLoved)
-
-	nowPlaying, _ := strconv.ParseBool(track.NowPlaying)
-	authorTitle := util.Possessive(lfUser)
-	if nowPlaying {
-		authorTitle += " Now Scrobbling"
-	} else {
-		authorTitle += " Last Scrobbled"
-	}
-	authorURL := lastFmURL + "/user/" + lfUser + "/library"
-
-	thumbnailURL := images[len(images)-1].Url
-	if thumbnailURL == "" {
-		thumbnailURL = getImageURL(noAlbumHash)
-	} else {
-		thumbnailURL = toImage(thumbnailURL)
-	}
-
-	trackFieldName := "Song"
-	trackFieldElems := dctools.MultiEscapeMarkdown(track.Artist.Name, track.Name)
-	trackFieldValue := fmt.Sprintf(
-		"%s - %s",
-		trackFieldElems[0], dctools.Hyperlink(trackFieldElems[1], track.Url),
+	var (
+		playcount int
+		loved     bool
 	)
 
-	if playCount == "0" {
-		playCount = "First"
+	info, err := fm.Track.UserInfo(lastfm.TrackUserInfoParams{
+		Artist: track.Artist.Name,
+		Track:  track.Title,
+		User:   fmUser,
+	})
+	if err == nil {
+		playcount = info.UserPlaycount
+		loved = info.UserLoved.Bool()
 	}
-	footerText := dctools.SeparateEmbedFooter(
-		fmt.Sprintf("Song Scrobbles: %s", playCount),
-		"Powered by Last.fm",
-	)
 
+	title := util.Possessive(fmUser)
+	if track.NowPlaying {
+		title += " Now Scrobbling"
+	} else {
+		title += " Last Scrobbled"
+	}
+
+	artistName := dctools.EscapeMarkdown(track.Artist.Name)
+	trackName := dctools.EscapeMarkdown(track.Title)
+	trackLink := dctools.Hyperlink(trackName, track.URL)
+
+	trackField := fmt.Sprintf("%s - %s", artistName, trackLink)
+
+	imageURL := track.Image.SizedURL(lastfm.ImgSizeLarge)
+	if imageURL == "" {
+		imageURL = lastfm.NoAlbumImageURL.Resize(lastfm.ImgSizeLarge)
+	}
+
+	footer := util.PluraliseWithCount("Scrobble", int64(playcount))
 	if loved {
-		lovedText := "❤ Loved"
-		footerText = dctools.SeparateEmbedFooter(footerText, lovedText)
+		footer = dctools.SeparateEmbedFooter(footer, "❤ Loved")
 	}
+	footer = dctools.SeparateEmbedFooter(footer, "Powered by Last.fm")
 
 	embed := discord.Embed{
 		Author: &discord.EmbedAuthor{
-			Name: authorTitle, URL: authorURL, Icon: scrobbleIcon,
+			Name: title, URL: userURL(fmUser), Icon: scrobbleIcon,
 		},
-		Thumbnail: &discord.EmbedThumbnail{URL: thumbnailURL},
 		Fields: []discord.EmbedField{
-			{Name: trackFieldName, Value: trackFieldValue, Inline: false},
+			{Name: "Track", Value: trackField},
 		},
-		Color:  scrobbleColour,
-		Footer: &discord.EmbedFooter{Text: footerText},
+		Color:     scrobbleColour,
+		Thumbnail: &discord.EmbedThumbnail{URL: imageURL},
+		Footer:    &discord.EmbedFooter{Text: footer},
 	}
 
-	if track.Album.Name != "" {
-		albumFieldName := "Album"
-		albumFieldValue := dctools.EscapeMarkdown(track.Album.Name)
-		albumField := discord.EmbedField{
-			Name: albumFieldName, Value: albumFieldValue, Inline: false,
-		}
-		embed.Fields = append(embed.Fields, albumField)
+	if track.Album.Title != "" {
+		title := dctools.EscapeMarkdown(track.Album.Title)
+		field := discord.EmbedField{Name: "Album", Value: title}
+		embed.Fields = append(embed.Fields, field)
 	}
 
-	if !nowPlaying {
-		timestamp, err := strconv.ParseInt(track.Date.Uts, 10, 64)
-		if err != nil {
-			log.Println(err)
-		} else {
-			time := time.Unix(timestamp, 0)
-			embed.Timestamp = discord.NewTimestamp(time)
-		}
+	if !track.NowPlaying {
+		embed.Timestamp = discord.Timestamp(track.ScrobbledAt)
 	}
 
-	return &embed
+	ctx.RespondEmbed(embed)
 }

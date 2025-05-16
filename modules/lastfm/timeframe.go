@@ -1,65 +1,56 @@
 package lastfm
 
-type lastFmPeriod int
-
-const (
-	weekPeriod lastFmPeriod = iota
-	monthPeriod
-	threeMonthPeriod
-	sixMonthPeriod
-	yearPeriod
-	allTimePeriod
-)
+import "github.com/twoscott/gobble-fm/lastfm"
 
 type timeframe struct {
-	apiPeriod     string
+	apiPeriod     lastfm.Period
 	datePreset    string
 	displayPeriod string
 }
 
-func (p lastFmPeriod) Timeframe() *timeframe {
-	switch p {
-	case weekPeriod:
+func newTimeframe(period lastfm.Period) *timeframe {
+	switch period {
+	case lastfm.PeriodWeek:
 		return &timeframe{
-			apiPeriod:     "7day",
+			apiPeriod:     lastfm.PeriodWeek,
 			datePreset:    "LAST_7_DAYS",
-			displayPeriod: "Last Week",
+			displayPeriod: "Past Week",
 		}
-	case monthPeriod:
+	case lastfm.PeriodMonth:
 		return &timeframe{
-			apiPeriod:     "1month",
+			apiPeriod:     lastfm.PeriodMonth,
 			datePreset:    "LAST_30_DAYS",
-			displayPeriod: "Last Month",
+			displayPeriod: "Past Month",
 		}
-	case threeMonthPeriod:
+	case lastfm.Period3Months:
 		return &timeframe{
-			apiPeriod:     "3month",
+			apiPeriod:     lastfm.Period3Months,
 			datePreset:    "LAST_90_DAYS",
-			displayPeriod: "Last 3 Months",
+			displayPeriod: "Past 3 Months",
 		}
-	case sixMonthPeriod:
+	case lastfm.Period6Months:
 		return &timeframe{
-			apiPeriod:     "6month",
+			apiPeriod:     lastfm.Period6Months,
 			datePreset:    "LAST_180_DAYS",
-			displayPeriod: "Last 6 Months",
+			displayPeriod: "Past 6 Months",
 		}
-	case yearPeriod:
+	case lastfm.PeriodYear:
 		return &timeframe{
-			apiPeriod:     "12month",
+			apiPeriod:     lastfm.PeriodYear,
 			datePreset:    "LAST_365_DAYS",
-			displayPeriod: "Last Year",
+			displayPeriod: "Past Year",
 		}
-	case allTimePeriod:
+	case lastfm.PeriodOverall:
 		return &timeframe{
-			apiPeriod:     "overall",
+			apiPeriod:     lastfm.PeriodOverall,
 			datePreset:    "ALL",
 			displayPeriod: "All Time",
 		}
 	default:
 		return &timeframe{
-			apiPeriod:     "7day",
+			apiPeriod:     lastfm.PeriodWeek,
 			datePreset:    "LAST_7_DAYS",
-			displayPeriod: "Last Week",
+			displayPeriod: "Past Week",
 		}
 	}
 }

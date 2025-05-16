@@ -26,7 +26,7 @@ type Config struct {
 		Username string `env:"USER"`
 		Password string `env:"PASSWORD,required"`
 	} `env:",prefix=POSTGRES_"`
-	LastFm struct {
+	LastFM struct {
 		Key    string `env:"KEY"`
 		Secret string `env:"SECRET"`
 	} `env:",prefix=LASTFM_"`

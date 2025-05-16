@@ -2,19 +2,20 @@ package lastfm
 
 import (
 	"github.com/diamondburned/arikawa/v3/discord"
+	"github.com/twoscott/gobble-fm/lastfm"
 	"github.com/twoscott/haseul-bot-2/router"
 )
 
-var timePeriodChoices = []discord.IntegerChoice{
-	{Name: "Last Week", Value: int(weekPeriod)},
-	{Name: "Last Month", Value: int(monthPeriod)},
-	{Name: "Last 3 Months", Value: int(threeMonthPeriod)},
-	{Name: "Last 6 Months", Value: int(sixMonthPeriod)},
-	{Name: "Last Year", Value: int(yearPeriod)},
-	{Name: "All Time", Value: int(allTimePeriod)},
+var timePeriodChoices = []discord.StringChoice{
+	{Name: "Past Week", Value: string(lastfm.PeriodWeek)},
+	{Name: "Past Month", Value: string(lastfm.PeriodMonth)},
+	{Name: "Past 3 Months", Value: string(lastfm.Period3Months)},
+	{Name: "Past 6 Months", Value: string(lastfm.Period6Months)},
+	{Name: "Past Year", Value: string(lastfm.PeriodYear)},
+	{Name: "All Time", Value: string(lastfm.PeriodOverall)},
 }
 
-var lastFmTopCommandGroup = &router.SubCommandGroup{
+var lastFMTopCommandGroup = &router.SubCommandGroup{
 	Name:        "top",
 	Description: "Commands for displaying top stats from your Last.fm library",
 }

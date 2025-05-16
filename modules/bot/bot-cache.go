@@ -148,7 +148,7 @@ func botCacheExec(ctx router.CommandCtx) {
 	embed.Fields = append(embed.Fields,
 		discord.EmbedField{
 			Name:   "Last GC",
-			Value:  dctools.UnixTimestamp(gcStats.LastGC),
+			Value:  dctools.Timestamp(gcStats.LastGC),
 			Inline: true,
 		},
 		discord.EmbedField{

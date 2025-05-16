@@ -3,7 +3,7 @@ package lastfmdb
 import "github.com/diamondburned/arikawa/v3/discord"
 
 const (
-	createLastFmUsersTableQuery = `
+	createLastFMUsersTableQuery = `
 		CREATE TABLE IF NOT EXISTS LastFmUsers(
 			userID INT8        NOT NULL PRIMARY KEY,
 			lfUser VARCHAR(15) NOT NULL

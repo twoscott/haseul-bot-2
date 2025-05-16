@@ -24,9 +24,9 @@ const (
 	RelativeTime TimestampStyle = "R"
 )
 
-// UnixTimestampStyled returns markdown for displaying a time in Discord,
+// TimestampStyled returns markdown for displaying a time in Discord,
 // with the provided style.
-func UnixTimestampStyled(timestamp time.Time, style TimestampStyle) string {
+func TimestampStyled(timestamp time.Time, style TimestampStyle) string {
 	if style == "" {
 		return fmt.Sprintf("<t:%d>", timestamp.Unix())
 	}
@@ -34,7 +34,7 @@ func UnixTimestampStyled(timestamp time.Time, style TimestampStyle) string {
 	return fmt.Sprintf("<t:%d:%s>", timestamp.Unix(), style)
 }
 
-// UnixTimestamp returns markdown for displaying a time in Discord.
-func UnixTimestamp(timestamp time.Time) string {
-	return UnixTimestampStyled(timestamp, "")
+// Timestamp returns markdown for displaying a time in Discord.
+func Timestamp(timestamp time.Time) string {
+	return TimestampStyled(timestamp, "")
 }

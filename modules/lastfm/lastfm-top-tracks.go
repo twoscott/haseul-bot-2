@@ -5,22 +5,21 @@ import (
 	"errors"
 	"fmt"
 	"log"
-	"strconv"
 
 	"github.com/diamondburned/arikawa/v3/discord"
 	"github.com/diamondburned/arikawa/v3/utils/json/option"
-	"github.com/dustin/go-humanize"
-	"github.com/shkh/lastfm-go/lastfm"
+
+	"github.com/twoscott/gobble-fm/lastfm"
 	"github.com/twoscott/haseul-bot-2/router"
 	"github.com/twoscott/haseul-bot-2/utils/dctools"
 	"github.com/twoscott/haseul-bot-2/utils/util"
 )
 
-var lastFmTopTracksCommand = &router.SubCommand{
+var lastFMTopTracksCommand = &router.SubCommand{
 	Name:        "tracks",
 	Description: "Displays your most scrobbled tracks",
 	Handler: &router.CommandHandler{
-		Executor: lastFmTopTracksExec,
+		Executor: lastFMTopTracksExec,
 		Defer:    true,
 	},
 	Options: []discord.CommandOptionValue{
@@ -30,7 +29,7 @@ var lastFmTopTracksCommand = &router.SubCommand{
 			Min:         option.NewInt(1),
 			Max:         option.NewInt(1000),
 		},
-		&discord.IntegerOption{
+		&discord.StringOption{
 			OptionName:  "period",
 			Description: "The period of time to search for top tracks within",
 			Choices:     timePeriodChoices,
@@ -38,21 +37,21 @@ var lastFmTopTracksCommand = &router.SubCommand{
 	},
 }
 
-func lastFmTopTracksExec(ctx router.CommandCtx) {
+func lastFMTopTracksExec(ctx router.CommandCtx) {
 	trackCount, _ := ctx.Options.Find("tracks").IntValue()
 	if trackCount == 0 {
 		trackCount = 10
 	}
 
-	periodOption, _ := ctx.Options.Find("period").IntValue()
-	timeframe := lastFmPeriod(periodOption).Timeframe()
+	periodOption := ctx.Options.Find("period").String()
+	timeframe := newTimeframe(lastfm.Period(periodOption))
 
-	lfUser, err := db.LastFM.GetUser(ctx.Interaction.SenderID())
+	fmUser, err := db.LastFM.GetUser(ctx.Interaction.SenderID())
 	if errors.Is(err, sql.ErrNoRows) {
 		ctx.RespondWarning(
 			fmt.Sprintf(
 				"Please link a Last.fm username to your account using %s",
-				lastFmSetCommand.Mention(),
+				lastFMSetCommand.Mention(),
 			),
 		)
 		return
@@ -63,118 +62,77 @@ func lastFmTopTracksExec(ctx router.CommandCtx) {
 		return
 	}
 
-	res, err := getTopTracks(timeframe, lfUser, trackCount)
+	res, err := fm.User.TopTracks(lastfm.UserTopTracksParams{
+		User:   fmUser,
+		Limit:  uint(trackCount),
+		Period: timeframe.apiPeriod,
+	})
 	if err != nil {
-		errMsg := errorResponseMessage(err)
-		ctx.RespondError(errMsg)
+		log.Println(err)
+		if msg, ok := errMessage(err); ok {
+			ctx.RespondError(msg)
+		} else {
+			ctx.RespondError("Unable to fetch your top tracks from Last.fm.")
+		}
 		return
 	}
 
 	if len(res.Tracks) < 1 {
-		ctx.RespondWarning(
-			"You have not scrobbled any tracks on Last.fm in this period.",
-		)
+		m := "You have not scrobbled any tracks on Last.fm during '%s'."
+		ctx.RespondWarning(fmt.Sprintf(m, timeframe.displayPeriod))
 		return
 	}
 
-	messagePages := topTracksEmbeds(*res, *timeframe)
-
-	err = ctx.RespondPaging(messagePages)
-	if err != nil {
-		log.Println(err)
-	}
-}
-
-func getTopTracks(
-	tf *timeframe,
-	lfUser string,
-	limit int64) (*lastfm.UserGetTopTracks, error) {
-
-	res, err := lf.User.GetTopTracks(
-		lastfm.P{"user": lfUser, "limit": limit, "period": tf.apiPeriod},
-	)
-	if err != nil {
-		return nil, err
+	if res.User != "" {
+		fmUser = res.User
 	}
 
-	if res.User == "" {
-		res.User = lfUser
-	}
+	trackList := make([]string, 0, len(res.Tracks))
+	for i, track := range res.Tracks {
+		artistName := dctools.EscapeMarkdown(track.Artist.Name)
+		trackName := dctools.EscapeMarkdown(track.Title)
+		trackLink := dctools.Hyperlink(trackName, track.URL)
+		scrobbles := util.PluraliseWithCount("Scrobble", int64(track.Playcount))
 
-	if int64(len(res.Tracks)) > limit {
-		res.Tracks = res.Tracks[:limit]
-	}
-
-	return &res, nil
-}
-
-func topTracksEmbeds(
-	topTracks lastfm.UserGetTopTracks,
-	tf timeframe) []router.MessagePage {
-
-	tracks := topTracks.Tracks
-	lfUser := topTracks.User
-	totalTracks := humanize.Comma(int64(topTracks.Total))
-
-	authorTitle := util.Possessive(lfUser) + " Top Tracks"
-	authorURL := getTrackLibraryURL(lfUser, tf)
-	title := tf.displayPeriod
-
-	thumbnailURL, err := scrapeArtistImage(tracks[0].Artist.Name)
-	if err != nil {
-		thumbnailURL = getImageURL(noTrackHash)
-	} else {
-		thumbnailURL = toImage(thumbnailURL)
-	}
-
-	footerText := dctools.SeparateEmbedFooter(
-		fmt.Sprintf("Total Tracks: %s", totalTracks),
-		"Powered by Last.fm",
-	)
-
-	trackList := make([]string, 0, len(tracks))
-	for i, track := range tracks {
-		var playCount string
-
-		int64Plays, err := strconv.ParseInt(track.PlayCount, 10, 64)
-		if err != nil {
-			playCount = "N/A"
-		} else {
-			playCount = humanize.Comma(int64Plays)
-		}
-
-		trackElems := dctools.MultiEscapeMarkdown(track.Artist.Name, track.Name)
-		line := fmt.Sprintf(
-			"%d. %s - %s (%s Scrobbles)",
-			i+1, trackElems[0],
-			dctools.Hyperlink(trackElems[1], track.Url),
-			playCount,
-		)
-
+		line := fmt.Sprintf("%d. %s - %s (%s)", i+1, artistName, trackLink, scrobbles)
 		trackList = append(trackList, line)
 	}
 
-	descriptionPages := util.PagedLines(trackList, 2048, 25)
-	messagePages := make([]router.MessagePage, len(descriptionPages))
-	for i, description := range descriptionPages {
-		pageID := fmt.Sprintf("Page %d/%d", i+1, len(descriptionPages))
-		messagePages[i] = router.MessagePage{
-			Embeds: []discord.Embed{
-				{
-					Author: &discord.EmbedAuthor{
-						Name: authorTitle, URL: authorURL, Icon: trackIcon,
-					},
-					Title:       title,
-					Description: description,
-					Thumbnail:   &discord.EmbedThumbnail{URL: thumbnailURL},
-					Color:       trackColour,
-					Footer: &discord.EmbedFooter{
-						Text: dctools.SeparateEmbedFooter(pageID, footerText),
-					},
-				},
-			},
-		}
+	title := util.Possessive(fmUser) + " Top Tracks"
+
+	firstArtistName := res.Tracks[0].Artist.Name
+	imageURL, err := scrapeArtistImage(firstArtistName, lastfm.ImgSizeLarge)
+	if err != nil {
+		log.Println(err)
+		imageURL = lastfm.NoTrackImageURL.Resize(lastfm.ImgSizeLarge)
 	}
 
-	return messagePages
+	footer := util.PluraliseWithCount("Track", int64(res.Total))
+	footer += " " + timeframe.displayPeriod
+	footer = dctools.SeparateEmbedFooter(footer, "Powered by Last.fm")
+
+	pages := util.PagedLines(trackList, 2048, 25)
+	messagePages := make([]router.MessagePage, len(pages))
+	for i, page := range pages {
+		id := fmt.Sprintf("Page %d/%d", i+1, len(pages))
+
+		e := discord.Embed{
+			Title: timeframe.displayPeriod,
+			Author: &discord.EmbedAuthor{
+				Name: title,
+				URL:  trackLibraryURL(fmUser, *timeframe),
+				Icon: trackIcon,
+			},
+			Description: page,
+			Color:       trackColour,
+			Thumbnail:   &discord.EmbedThumbnail{URL: imageURL},
+			Footer: &discord.EmbedFooter{
+				Text: dctools.SeparateEmbedFooter(id, footer),
+			},
+		}
+
+		messagePages[i] = router.MessagePage{Embeds: []discord.Embed{e}}
+	}
+
+	ctx.RespondPaging(messagePages)
 }

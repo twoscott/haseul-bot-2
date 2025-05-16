@@ -15,5 +15,5 @@ func New(dbConn *sqlx.DB) *DB {
 }
 
 func (db *DB) createTables() {
-	db.MustExec(createLastFmUsersTableQuery)
+	db.MustExec(createLastFMUsersTableQuery)
 }

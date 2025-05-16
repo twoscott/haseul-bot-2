@@ -5,15 +5,16 @@ import (
 	"log"
 
 	"github.com/diamondburned/arikawa/v3/discord"
-	"github.com/shkh/lastfm-go/lastfm"
+
+	"github.com/twoscott/gobble-fm/api"
 	"github.com/twoscott/haseul-bot-2/router"
 )
 
-var lastFmSetCommand = &router.SubCommand{
+var lastFMSetCommand = &router.SubCommand{
 	Name:        "set",
 	Description: "Links a Last.fm username to your Discord account",
 	Handler: &router.CommandHandler{
-		Executor: lastFmSetExec,
+		Executor: lastFMSetExec,
 	},
 	Options: []discord.CommandOptionValue{
 		&discord.StringOption{
@@ -24,44 +25,35 @@ var lastFmSetCommand = &router.SubCommand{
 	},
 }
 
-func lastFmSetExec(ctx router.CommandCtx) {
-	lfUser := ctx.Options.Find("username").String()
-	if len(lfUser) < 1 {
-		ctx.RespondError(
-			"You must provide a Last.fm username to " +
-				"link to your Discord account.",
-		)
-	}
+func lastFMSetExec(ctx router.CommandCtx) {
+	fmUser := ctx.Options.Find("username").String()
 
-	res, err := lf.User.GetInfo(lastfm.P{"user": lfUser})
-	if err != nil {
-		log.Println(err)
-		lfErr := getLfError(err)
-
-		switch lfErr.Code {
-		case 6:
-			ctx.RespondWarning(
-				fmt.Sprintf("Last.fm user %s does not exist.", lfUser),
-			)
-		case 8:
-			ctx.RespondError(
-				fmt.Sprintf(
-					"Error occurred while checking if %s is a valid username.",
-					lfUser,
-				),
-			)
-		default:
-			ctx.RespondError("Unknown Last.fm Error occurred.")
-		}
-
+	setUser, err := db.LastFM.GetUser(ctx.Interaction.SenderID())
+	if err == nil && fmUser == setUser {
+		m := "You already have Last.fm username '%s' linked to your Discord account."
+		ctx.RespondWarning(fmt.Sprintf(m, setUser))
 		return
 	}
 
-	if res.Name != "" {
-		lfUser = res.Name
+	user, err := fm.User.Info(fmUser)
+	if err != nil {
+		log.Println(err)
+		fmerr, ok := fmError(err)
+		if ok && fmerr.Code == api.ErrInvalidParameters {
+			ctx.RespondWarning(
+				fmt.Sprintf("Invalid Last.fm username '%s' provided.", fmUser),
+			)
+		} else {
+			ctx.RespondError("Unable to fetch your recent scrobbles from Last.fm.")
+		}
+		return
 	}
 
-	err = db.LastFM.SetUser(ctx.Interaction.SenderID(), lfUser)
+	if user.Name != "" {
+		fmUser = user.Name
+	}
+
+	err = db.LastFM.SetUser(ctx.Interaction.SenderID(), fmUser)
 	if err != nil {
 		log.Println(err)
 		ctx.RespondError(
@@ -70,10 +62,6 @@ func lastFmSetExec(ctx router.CommandCtx) {
 		return
 	}
 
-	ctx.RespondSuccess(fmt.Sprintf(
-		"Your Last.fm username was set to %s. "+
-			"You can now use Last.fm commands freely!",
-		lfUser,
-	),
-	)
+	m := "Your Last.fm username was set to %s. You can now use Last.fm commands!"
+	ctx.RespondSuccess(fmt.Sprintf(m, fmUser))
 }

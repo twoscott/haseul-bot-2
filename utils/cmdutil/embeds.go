@@ -226,7 +226,7 @@ func ServerInfoEmbed(st *state.State, guild discord.Guild) discord.Embed {
 
 	embed.Fields = append(embed.Fields, discord.EmbedField{
 		Name:   "Server Created",
-		Value:  dctools.UnixTimestamp(guild.CreatedAt()),
+		Value:  dctools.Timestamp(guild.CreatedAt()),
 		Inline: true,
 	})
 
@@ -237,7 +237,7 @@ func ServerInfoEmbed(st *state.State, guild discord.Guild) discord.Embed {
 	if !iconUploaded.IsZero() {
 		embed.Fields = append(embed.Fields, discord.EmbedField{
 			Name:   "Icon Uploaded",
-			Value:  dctools.UnixTimestamp(iconUploaded),
+			Value:  dctools.Timestamp(iconUploaded),
 			Inline: true,
 		})
 	}

@@ -124,7 +124,7 @@ func logMemberJoin(
 		}
 
 		if usedInvite.CreatedAt.IsValid() {
-			inviteField += " " + dctools.UnixTimestampStyled(
+			inviteField += " " + dctools.TimestampStyled(
 				usedInvite.CreatedAt.Time(),
 				dctools.RelativeTime,
 			)
@@ -144,12 +144,12 @@ func logMemberJoin(
 		Fields: []discord.EmbedField{
 			{
 				Name:   "User Joined On",
-				Value:  dctools.UnixTimestamp(member.Joined.Time()),
+				Value:  dctools.Timestamp(member.Joined.Time()),
 				Inline: true,
 			},
 			{
 				Name:   "Account Created On",
-				Value:  dctools.UnixTimestamp(member.User.CreatedAt()),
+				Value:  dctools.Timestamp(member.User.CreatedAt()),
 				Inline: true,
 			},
 			{

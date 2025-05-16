@@ -32,7 +32,7 @@ func repStatusExec(ctx router.CommandCtx) {
 		message = fmt.Sprintf("You have %s remaining to give.", repsString)
 	} else {
 		resetTime := getNextRepResetFromNow()
-		timeString := dctools.UnixTimestampStyled(
+		timeString := dctools.TimestampStyled(
 			resetTime,
 			dctools.RelativeTime,
 		)

@@ -33,7 +33,7 @@ services:
     networks:
       - haseul_bot
   sushii-image-server:
-    image: sushii-image-server:5.2.3
+    image: sushii-image-server:5.3.1
     container_name: sushii-image-server
     build:
       context: .

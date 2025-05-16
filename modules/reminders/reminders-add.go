@@ -89,7 +89,7 @@ func remindersAddExec(ctx router.CommandCtx) {
 
 	dmMsg := fmt.Sprintf(
 		"You will be be reminded to '%s' on %s.",
-		reminder, dctools.UnixTimestamp(newTime),
+		reminder, dctools.Timestamp(newTime),
 	)
 
 	_, err = ctx.State.SendMessage(dmChannel.ID, dmMsg)
@@ -105,7 +105,7 @@ func remindersAddExec(ctx router.CommandCtx) {
 	ctx.RespondSuccess(
 		fmt.Sprintf(
 			"Reminder set for %s.",
-			dctools.UnixTimestampStyled(newTime, dctools.LongDateTime),
+			dctools.TimestampStyled(newTime, dctools.LongDateTime),
 		),
 	)
 }

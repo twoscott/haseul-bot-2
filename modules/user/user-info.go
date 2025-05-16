@@ -94,7 +94,7 @@ func userEmbed(user discord.User) *discord.Embed {
 
 	embed.Fields = append(embed.Fields, discord.EmbedField{
 		Name:   "Account Created",
-		Value:  dctools.UnixTimestamp(user.CreatedAt()),
+		Value:  dctools.Timestamp(user.CreatedAt()),
 		Inline: true,
 	})
 
@@ -105,7 +105,7 @@ func userEmbed(user discord.User) *discord.Embed {
 	if !avatarUploaded.IsZero() {
 		embed.Fields = append(embed.Fields, discord.EmbedField{
 			Name:   "Avatar Uploaded",
-			Value:  dctools.UnixTimestamp(avatarUploaded),
+			Value:  dctools.Timestamp(avatarUploaded),
 			Inline: true,
 		})
 	}
@@ -159,7 +159,7 @@ func memberEmbed(
 	}
 
 	if member.BoostedSince.IsValid() {
-		field := dctools.UnixTimestamp(member.BoostedSince.Time())
+		field := dctools.Timestamp(member.BoostedSince.Time())
 
 		emoji := dctools.UserBoostEmoji(member.BoostedSince)
 		if emoji != nil {
@@ -174,14 +174,14 @@ func memberEmbed(
 
 	embed.Fields = append(embed.Fields, discord.EmbedField{
 		Name:   "Account Created",
-		Value:  dctools.UnixTimestamp(user.CreatedAt()),
+		Value:  dctools.Timestamp(user.CreatedAt()),
 		Inline: true,
 	})
 
 	if member.Joined.IsValid() {
 		embed.Fields = append(embed.Fields, discord.EmbedField{
 			Name:   "Joined Server",
-			Value:  dctools.UnixTimestamp(member.Joined.Time()),
+			Value:  dctools.Timestamp(member.Joined.Time()),
 			Inline: true,
 		})
 	}
@@ -209,7 +209,7 @@ func memberEmbed(
 	if !avatarUploaded.IsZero() {
 		embed.Fields = append(embed.Fields, discord.EmbedField{
 			Name:   "Avatar Uploaded",
-			Value:  dctools.UnixTimestamp(avatarUploaded),
+			Value:  dctools.Timestamp(avatarUploaded),
 			Inline: true,
 		})
 	}

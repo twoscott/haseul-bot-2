@@ -6,21 +6,21 @@ import (
 	"net/url"
 
 	"github.com/PuerkitoBio/goquery"
+	"github.com/twoscott/gobble-fm/lastfm"
 	"github.com/twoscott/haseul-bot-2/utils/httputil"
 )
 
 var errScrapingArtistImage = errors.New("unable to scrape Last.fm artist image")
 
-func scrapeArtistImage(artist string) (string, error) {
-	artistImagesURL, err := url.Parse(lastFmURL)
+func scrapeArtistImage(artist string, size lastfm.ImgSize) (string, error) {
+	artistURL, err := url.Parse(lastfm.BaseURL)
 	if err != nil {
 		return "", err
 	}
 
-	artistNamePath := url.PathEscape(artist)
-	artistImagesURL.Path = "music/" + artistNamePath + "/+images"
+	artistURL.Path = "music/" + url.PathEscape(artist)
 
-	res, err := httputil.Get(artistImagesURL.String())
+	res, err := httputil.Get(artistURL.String())
 	if err != nil {
 		return "", err
 	}
@@ -33,10 +33,10 @@ func scrapeArtistImage(artist string) (string, error) {
 		return "", err
 	}
 
-	imageItem := doc.Find(".image-list-item").First()
-	image := imageItem.ChildrenFiltered("img").First()
-	imageURL := image.AttrOr("src", getThumbURL(noArtistHash))
-	imageURL = toImage(imageURL)
+	noArtistImg := lastfm.NoArtistImageURL.Resize(size)
+	image := doc.Find(`meta[property="og:image"]`).First()
+	imageURL := image.AttrOr("content", noArtistImg)
+	imageURL = lastfm.ImageURL(imageURL).Resize(size)
 
 	return imageURL, nil
 }

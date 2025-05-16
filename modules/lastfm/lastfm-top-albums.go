@@ -5,22 +5,21 @@ import (
 	"errors"
 	"fmt"
 	"log"
-	"strconv"
 
 	"github.com/diamondburned/arikawa/v3/discord"
 	"github.com/diamondburned/arikawa/v3/utils/json/option"
-	"github.com/dustin/go-humanize"
-	"github.com/shkh/lastfm-go/lastfm"
+
+	"github.com/twoscott/gobble-fm/lastfm"
 	"github.com/twoscott/haseul-bot-2/router"
 	"github.com/twoscott/haseul-bot-2/utils/dctools"
 	"github.com/twoscott/haseul-bot-2/utils/util"
 )
 
-var lastFmTopAlbumsCommand = &router.SubCommand{
+var lastFMTopAlbumsCommand = &router.SubCommand{
 	Name:        "albums",
 	Description: "Displays your most scrobbled albums",
 	Handler: &router.CommandHandler{
-		Executor: lastFmTopAlbumsExec,
+		Executor: lastFMTopAlbumsExec,
 		Defer:    true,
 	},
 	Options: []discord.CommandOptionValue{
@@ -30,7 +29,7 @@ var lastFmTopAlbumsCommand = &router.SubCommand{
 			Min:         option.NewInt(1),
 			Max:         option.NewInt(1000),
 		},
-		&discord.IntegerOption{
+		&discord.StringOption{
 			OptionName:  "period",
 			Description: "The period of time to search for top albums within",
 			Choices:     timePeriodChoices,
@@ -38,21 +37,21 @@ var lastFmTopAlbumsCommand = &router.SubCommand{
 	},
 }
 
-func lastFmTopAlbumsExec(ctx router.CommandCtx) {
+func lastFMTopAlbumsExec(ctx router.CommandCtx) {
 	albumCount, _ := ctx.Options.Find("albums").IntValue()
 	if albumCount == 0 {
 		albumCount = 10
 	}
 
-	periodOption, _ := ctx.Options.Find("period").IntValue()
-	timeframe := lastFmPeriod(periodOption).Timeframe()
+	periodOption := ctx.Options.Find("period").String()
+	timeframe := newTimeframe(lastfm.Period(periodOption))
 
-	lfUser, err := db.LastFM.GetUser(ctx.Interaction.SenderID())
+	fmUser, err := db.LastFM.GetUser(ctx.Interaction.SenderID())
 	if errors.Is(err, sql.ErrNoRows) {
 		ctx.RespondWarning(
 			fmt.Sprintf(
 				"Please link a Last.fm username to your account using %s",
-				lastFmSetCommand.Mention(),
+				lastFMSetCommand.Mention(),
 			),
 		)
 		return
@@ -63,116 +62,75 @@ func lastFmTopAlbumsExec(ctx router.CommandCtx) {
 		return
 	}
 
-	res, err := getTopAlbums(timeframe, lfUser, albumCount)
+	res, err := fm.User.TopAlbums(lastfm.UserTopAlbumsParams{
+		User:   fmUser,
+		Limit:  uint(albumCount),
+		Period: timeframe.apiPeriod,
+	})
 	if err != nil {
-		errMsg := errorResponseMessage(err)
-		ctx.RespondError(errMsg)
+		log.Println(err)
+		if msg, ok := errMessage(err); ok {
+			ctx.RespondError(msg)
+		} else {
+			ctx.RespondError("Unable to fetch your top albums from Last.fm.")
+		}
 		return
 	}
 
 	if len(res.Albums) < 1 {
-		ctx.RespondWarning(
-			"You have not scrobbled any albums on Last.fm in this period.",
-		)
+		m := "You have not scrobbled any albums on Last.fm during '%s'."
+		ctx.RespondWarning(fmt.Sprintf(m, timeframe.displayPeriod))
 		return
 	}
 
-	messagePages := topAlbumsEmbeds(*res, *timeframe)
-
-	ctx.RespondPaging(messagePages)
-}
-
-func getTopAlbums(
-	tf *timeframe,
-	lfUser string,
-	limit int64) (*lastfm.UserGetTopAlbums, error) {
-
-	res, err := lf.User.GetTopAlbums(
-		lastfm.P{"user": lfUser, "limit": limit, "period": tf.apiPeriod},
-	)
-	if err != nil {
-		return nil, err
+	if res.User != "" {
+		fmUser = res.User
 	}
 
-	if res.User == "" {
-		res.User = lfUser
-	}
+	albumList := make([]string, 0, len(res.Albums))
+	for i, album := range res.Albums {
+		artistName := dctools.EscapeMarkdown(album.Artist.Name)
+		albumName := dctools.EscapeMarkdown(album.Title)
+		albumLink := dctools.Hyperlink(albumName, album.URL)
+		scrobbles := util.PluraliseWithCount("Scrobble", int64(album.Playcount))
 
-	if int64(len(res.Albums)) > limit {
-		res.Albums = res.Albums[:limit]
-	}
-
-	return &res, nil
-}
-
-func topAlbumsEmbeds(
-	topAlbums lastfm.UserGetTopAlbums,
-	tf timeframe) []router.MessagePage {
-
-	albums := topAlbums.Albums
-	images := albums[0].Images
-	lfUser := topAlbums.User
-	totalAlbums := humanize.Comma(int64(topAlbums.Total))
-
-	authorTitle := util.Possessive(lfUser) + " Top Albums"
-	authorURL := getAlbumLibraryURL(lfUser, tf)
-	title := tf.displayPeriod
-
-	thumbnailURL := images[len(images)-1].Url
-	if thumbnailURL == "" {
-		thumbnailURL = getImageURL(noAlbumHash)
-	} else {
-		thumbnailURL = toImage(thumbnailURL)
-	}
-
-	footerText := dctools.SeparateEmbedFooter(
-		fmt.Sprintf("Total Albums: %s", totalAlbums),
-		"Powered by Last.fm",
-	)
-
-	albumList := make([]string, 0, len(albums))
-	for i, album := range albums {
-		var playCount string
-
-		int64Plays, err := strconv.ParseInt(album.PlayCount, 10, 64)
-		if err != nil {
-			playCount = "N/A"
-		} else {
-			playCount = humanize.Comma(int64Plays)
-		}
-
-		albumElems := dctools.MultiEscapeMarkdown(album.Artist.Name, album.Name)
-		line := fmt.Sprintf(
-			"%d. %s - %s (%s Scrobbles)",
-			i+1, albumElems[0],
-			dctools.Hyperlink(albumElems[1], album.Url),
-			playCount,
-		)
-
+		line := fmt.Sprintf("%d. %s - %s (%s)", i+1, artistName, albumLink, scrobbles)
 		albumList = append(albumList, line)
 	}
 
-	descriptionPages := util.PagedLines(albumList, 2048, 25)
-	messagePages := make([]router.MessagePage, len(descriptionPages))
-	for i, description := range descriptionPages {
-		pageID := fmt.Sprintf("Page %d/%d", i+1, len(descriptionPages))
-		messagePages[i] = router.MessagePage{
-			Embeds: []discord.Embed{
-				{
-					Author: &discord.EmbedAuthor{
-						Name: authorTitle, URL: authorURL, Icon: albumIcon,
-					},
-					Title:       title,
-					Description: description,
-					Thumbnail:   &discord.EmbedThumbnail{URL: thumbnailURL},
-					Color:       albumColour,
-					Footer: &discord.EmbedFooter{
-						Text: dctools.SeparateEmbedFooter(pageID, footerText),
-					},
-				},
-			},
-		}
+	title := util.Possessive(fmUser) + " Top Albums"
+
+	imageURL := res.Albums[0].Cover.SizedURL(lastfm.ImgSizeLarge)
+	if imageURL == "" {
+		imageURL = lastfm.NoAlbumImageURL.Resize(lastfm.ImgSizeLarge)
 	}
 
-	return messagePages
+	footer := util.PluraliseWithCount("Album", int64(res.Total))
+	footer += " " + timeframe.displayPeriod
+	footer = dctools.SeparateEmbedFooter(footer, "Powered by Last.fm")
+
+	pages := util.PagedLines(albumList, 2048, 25)
+	messagePages := make([]router.MessagePage, len(pages))
+	for i, page := range pages {
+		id := fmt.Sprintf("Page %d/%d", i+1, len(pages))
+
+		e := discord.Embed{
+			Title: timeframe.displayPeriod,
+			Author: &discord.EmbedAuthor{
+				Name: title,
+				URL:  albumLibraryURL(fmUser, *timeframe),
+				Icon: albumIcon,
+			},
+			Description: page,
+			Color:       albumColour,
+			Thumbnail:   &discord.EmbedThumbnail{URL: imageURL},
+			Footer: &discord.EmbedFooter{
+				Text: dctools.SeparateEmbedFooter(id, footer),
+			},
+		}
+
+		messagePages[i] = router.MessagePage{Embeds: []discord.Embed{e}}
+	}
+
+	ctx.RespondPaging(messagePages)
 }

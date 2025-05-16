@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"log"
 	"math"
-	"strconv"
 	"time"
 
 	"github.com/diamondburned/arikawa/v3/api"
@@ -16,6 +15,7 @@ import (
 	"github.com/diamondburned/arikawa/v3/utils/json/option"
 	"github.com/diamondburned/arikawa/v3/utils/sendpart"
 	"github.com/dustin/go-humanize"
+	"github.com/twoscott/gobble-fm/lastfm"
 	"github.com/twoscott/haseul-bot-2/router"
 	"github.com/twoscott/haseul-bot-2/utils/htmlutil"
 	"github.com/twoscott/haseul-bot-2/utils/util"
@@ -35,11 +35,11 @@ type collageData struct {
 	Entries   []collageEntry `json:"entries"`
 }
 
-var lastFmCollageCommand = &router.SubCommand{
+var lastFMCollageCommand = &router.SubCommand{
 	Name:        "collage",
 	Description: "Displays a visual collage of your most scrobbled albums",
 	Handler: &router.CommandHandler{
-		Executor: lastFmChartAlbumsExec,
+		Executor: lastFMChartAlbumsExec,
 		Defer:    true,
 	},
 	Options: []discord.CommandOptionValue{
@@ -49,7 +49,7 @@ var lastFmCollageCommand = &router.SubCommand{
 			Min:         option.NewInt(1),
 			Max:         option.NewInt(10),
 		},
-		&discord.IntegerOption{
+		&discord.StringOption{
 			OptionName:  "period",
 			Description: "The period of time to search for top albums within",
 			Choices:     timePeriodChoices,
@@ -61,16 +61,17 @@ var lastFmCollageCommand = &router.SubCommand{
 	},
 }
 
-func lastFmChartAlbumsExec(ctx router.CommandCtx) {
+func lastFMChartAlbumsExec(ctx router.CommandCtx) {
 	sizeParam, _ := ctx.Options.Find("size").IntValue()
 	collageSize := int(sizeParam)
 	if collageSize <= 0 || collageSize > 10 {
 		collageSize = 3
 	}
-	albumCount := int64(collageSize * collageSize)
 
-	periodOption, _ := ctx.Options.Find("period").IntValue()
-	timeframe := lastFmPeriod(periodOption).Timeframe()
+	albumCount := collageSize * collageSize
+
+	period := ctx.Options.Find("period").String()
+	timeframe := newTimeframe(lastfm.Period(period))
 
 	removeText, _ := ctx.Options.Find("no-text").BoolValue()
 
@@ -79,7 +80,7 @@ func lastFmChartAlbumsExec(ctx router.CommandCtx) {
 		ctx.RespondWarning(
 			fmt.Sprintf(
 				"Please link a Last.fm username to your account using %s",
-				lastFmSetCommand.Mention(),
+				lastFMSetCommand.Mention(),
 			),
 		)
 		return
@@ -90,23 +91,28 @@ func lastFmChartAlbumsExec(ctx router.CommandCtx) {
 		return
 	}
 
-	res, err := getTopAlbums(timeframe, lfUser, albumCount)
+	res, err := fm.User.TopAlbums(lastfm.UserTopAlbumsParams{
+		User:   lfUser,
+		Period: timeframe.apiPeriod,
+		Limit:  uint(albumCount),
+	})
 	if err != nil {
-		errMsg := errorResponseMessage(err)
-		ctx.RespondError(errMsg)
+		log.Println(err)
+		ctx.RespondGenericError()
 		return
 	}
 
-	albumsScrobbled := len(res.Albums)
-	if albumsScrobbled < 1 {
+	if len(res.Albums) < 1 {
 		ctx.RespondWarning(
-			"You have not scrobbled any music on Last.fm " +
-				"during this time period.",
+			fmt.Sprintf(
+				"You have not scrobbled any albums on Last.fm during '%s'.",
+				timeframe.displayPeriod,
+			),
 		)
 		return
 	}
 
-	adjustedSize := math.Sqrt(float64(albumsScrobbled))
+	adjustedSize := math.Sqrt(float64(len(res.Albums)))
 	newSize := math.Min(float64(collageSize), adjustedSize)
 	collageSize = int(math.Ceil(newSize))
 
@@ -121,20 +127,18 @@ func lastFmChartAlbumsExec(ctx router.CommandCtx) {
 		NoText:    removeText,
 		Entries:   make([]collageEntry, 0, albumCount),
 	}
-	for _, album := range res.Albums {
-		imageURL := album.Images[len(album.Images)-1].Url
-		if imageURL == "" {
-			imageURL = getImageURL(noAlbumHash)
-		}
 
-		playsInt, _ := strconv.ParseInt(album.PlayCount, 10, 64)
-		playCount := humanize.Comma(playsInt)
+	for _, album := range res.Albums {
+		imageURL := album.Cover.URL()
+		if imageURL == "" {
+			imageURL = lastfm.NoAlbumImageURL.Resize(lastfm.ImgSizeLarge)
+		}
 
 		data.Entries = append(data.Entries, collageEntry{
 			ImageURL:   imageURL,
-			AlbumName:  album.Name,
+			AlbumName:  album.Title,
 			ArtistName: album.Artist.Name,
-			PlayCount:  playCount,
+			PlayCount:  humanize.Comma(int64(album.Playcount)),
 		})
 	}
 
@@ -145,7 +149,7 @@ func lastFmChartAlbumsExec(ctx router.CommandCtx) {
 		return
 	}
 
-	dimensions := imageSize * int(collageSize)
+	dimensions := imageSize * collageSize
 	image, err := htmlutil.TemplateToJPEG(
 		"lastfm-collage", jsonContext, dimensions, dimensions, 100,
 	)
@@ -170,12 +174,10 @@ func lastFmChartAlbumsExec(ctx router.CommandCtx) {
 		collageSize,
 	)
 
-	imgBuf := bytes.NewBuffer(image)
-
 	ctx.RespondMessage(api.InteractionResponseData{
 		Content: option.NewNullableString(header),
 		Files: []sendpart.File{
-			{Name: fileName, Reader: imgBuf},
+			{Name: fileName, Reader: bytes.NewBuffer(image)},
 		},
 	})
 }

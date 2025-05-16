@@ -42,7 +42,7 @@ func remindersListExec(ctx router.CommandCtx) {
 	for i, r := range reminders {
 		lines[i] = fmt.Sprintf(
 			"- %s - %s",
-			dctools.UnixTimestampStyled(r.Time, dctools.RelativeTime),
+			dctools.TimestampStyled(r.Time, dctools.RelativeTime),
 			r.Content,
 		)
 	}
