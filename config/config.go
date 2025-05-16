@@ -30,10 +30,6 @@ type Config struct {
 		Key    string `env:"KEY"`
 		Secret string `env:"SECRET"`
 	} `env:",prefix=LASTFM_"`
-	Patreon struct {
-		CampaignID  string `env:"CAMPAIGN_ID"`
-		AccessToken string `env:"ACCESS_TOKEN"`
-	} `env:",prefix=PATREON_"`
 	SushiiImageServer struct {
 		Host string `env:"HOST"`
 		Port int    `env:"PORT"`
