@@ -12,7 +12,7 @@ require (
 	github.com/lib/pq v1.10.6
 	github.com/marekm4/color-extractor v1.2.1
 	github.com/sethvargo/go-envconfig v0.7.0
-	github.com/twoscott/gobble-fm v1.0.6
+	github.com/twoscott/gobble-fm v1.0.7
 	golang.org/x/net v0.21.0
 	golang.org/x/text v0.21.0
 )

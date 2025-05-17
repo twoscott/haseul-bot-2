@@ -32,8 +32,8 @@ github.com/mattn/go-sqlite3 v1.14.6 h1:dNPt6NO46WmLVt2DLNpwczCmdV5boIZ6g/tlDrlRU
 github.com/mattn/go-sqlite3 v1.14.6/go.mod h1:NyWgC/yNuGj7Q9rpYnZvas74GogHl5/Z4A/KQRfk6bU=
 github.com/sethvargo/go-envconfig v0.7.0 h1:P/ljQXSRjgAgsnIripHs53Jg/uNVXu2FYQ9yLSDappA=
 github.com/sethvargo/go-envconfig v0.7.0/go.mod h1:00S1FAhRUuTNJazWBWcJGvEHOM+NO6DhoRMAOX7FY5o=
-github.com/twoscott/gobble-fm v1.0.6 h1:VHU0vH92Guyc5myYuAIH308eLRGdx8fUibmj8fWgT2I=
-github.com/twoscott/gobble-fm v1.0.6/go.mod h1:2AXW+YkZ35vjWgTzzcBwtyBYdAUTrSK9G9+6AJXm/7U=
+github.com/twoscott/gobble-fm v1.0.7 h1:u/V3GgGbDoEM/Ok3xxp3zADvCi1X1vZHHvfUY/P8vhQ=
+github.com/twoscott/gobble-fm v1.0.7/go.mod h1:2AXW+YkZ35vjWgTzzcBwtyBYdAUTrSK9G9+6AJXm/7U=
 golang.org/x/net v0.0.0-20210916014120-12bc252f5db8/go.mod h1:9nx3DQGgdP8bBQD5qxJ1jj9UTztislL4KSBs9R2vV5Y=
 golang.org/x/net v0.21.0 h1:AQyQV4dYCvJ7vGmJyKki9+PBdyvhkSd8EIx/qb0AYv4=
 golang.org/x/net v0.21.0/go.mod h1:bIjVDfnllIU7BJ2DNgfnXvpSvtn8VRwhlsaeUTyUS44=
