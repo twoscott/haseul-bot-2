@@ -1,6 +1,7 @@
 package router
 
 import (
+	"fmt"
 	"io"
 	"log"
 
@@ -75,6 +76,12 @@ func (ctx InteractionCtx) RespondText(content string) error {
 	return ctx.RespondSimple(content)
 }
 
+// RespondTextf responds to the command with the supplied content,
+// formatted with the provided arguments.
+func (ctx InteractionCtx) RespondTextf(content string, a ...any) error {
+	return ctx.RespondText(fmt.Sprintf(content, a...))
+}
+
 // RespondEmbed responds to the command with the supplied embed(s).
 func (ctx InteractionCtx) RespondEmbed(embeds ...discord.Embed) error {
 	return ctx.RespondSimple("", embeds...)
@@ -108,6 +115,24 @@ func (ctx InteractionCtx) RespondWarning(content string) error {
 // prepended with a cross emoji.
 func (ctx InteractionCtx) RespondError(content string) error {
 	return ctx.RespondText(Error(content).String())
+}
+
+// RespondSuccessf responds to a command with the provided content,
+// prepended with a check emoji.
+func (ctx InteractionCtx) RespondSuccessf(content string, a ...any) error {
+	return ctx.RespondText(Successf(content, a...).String())
+}
+
+// RespondWarningf responds to a command with the provided content,
+// prepended with a warning emoji.
+func (ctx InteractionCtx) RespondWarningf(content string, a ...any) error {
+	return ctx.RespondText(Warningf(content, a...).String())
+}
+
+// RespondErrorf responds to a command with the provided content,
+// prepended with a cross emoji.
+func (ctx InteractionCtx) RespondErrorf(content string, a ...any) error {
+	return ctx.RespondText(Errorf(content, a...).String())
 }
 
 // RespondGenericError responds to a command with a

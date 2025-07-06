@@ -15,6 +15,11 @@ func Init(rt *router.Router) {
 	rt.AddCommand(levelsCommand)
 	levelsCommand.AddSubCommand(levelsLeaderboardCommand)
 
+	rt.AddCommand(marriageCommand)
+	marriageCommand.AddSubCommand(marriageDivorceCommand)
+	marriageCommand.AddSubCommand(marriageProposeCommand)
+	marriageCommand.AddSubCommand(marriageShowCommand)
+
 	rt.AddCommand(repCommand)
 	repCommand.AddSubCommand(repGiveCommand)
 	repCommand.AddSubCommand(repStatusCommand)
